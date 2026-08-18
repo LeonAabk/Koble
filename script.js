@@ -1,7 +1,7 @@
 // --- Supabase Setup ---
 const SUPABASE_URL = 'https://ogpmuicqbcfyxznxjkto.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yBZlKvvzPzBHkQGntQErjQ_uhSC8bKl';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- Auth State ---
 let currentUser = null;
@@ -108,13 +108,13 @@ async function handleAuthSubmit(e) {
 
     try {
         if (isLoginMode) {
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email,
                 password,
             });
             if (error) throw error;
         } else {
-            const { data, error } = await supabase.auth.signUp({
+            const { data, error } = await supabaseClient.auth.signUp({
                 email,
                 password,
             });
@@ -137,7 +137,7 @@ async function handleAuthSubmit(e) {
 }
 
 async function handleLogout() {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabaseClient.auth.signOut();
     if (error) {
         console.error('Logout error:', error);
         showToast('Feil ved utlogging', 'error');
@@ -163,7 +163,7 @@ function updateNavForUser(user) {
 }
 
 // Listen for Auth changes
-supabase.auth.onAuthStateChange((event, session) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
     updateNavForUser(session?.user || null);
     if (event === 'SIGNED_IN') {
         showView(elEmployerSection);
@@ -263,7 +263,7 @@ function showToast(message, type = 'success') {
 
 // --- Database Operations ---
 async function getJobs() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('jobs')
         .select('*')
         .order('created_at', { ascending: false });
@@ -318,7 +318,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
     };
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('jobs')
             .insert([newJob]);
 
@@ -342,7 +342,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
 async function renderMyJobs() {
     if (!currentUser) return;
 
-    const { data: myJobs, error } = await supabase
+    const { data: myJobs, error } = await supabaseClient
         .from('jobs')
         .select('*')
         .eq('user_id', currentUser.id)
@@ -398,7 +398,7 @@ async function renderMyJobs() {
 async function deleteJob(jobId) {
     if (confirm('Er du sikker på at du vil slette dette oppdraget?')) {
         try {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('jobs')
                 .delete()
                 .eq('id', jobId);
@@ -545,7 +545,7 @@ if (btnCreateFirstJob) {
 }
 
 // Check initial session
-supabase.auth.getSession().then(({ data: { session } }) => {
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
     updateNavForUser(session?.user || null);
 });
 
