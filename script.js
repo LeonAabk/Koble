@@ -256,9 +256,16 @@ function renderMyJobs() {
         const article = document.createElement('article');
         article.classList.add('job-card');
 
+        // Determine badge class
+        let badgeClass = 'badge-annet';
+        if (job.category === 'Gårdsarbeid') badgeClass = 'badge-gardsarbeid';
+        else if (job.category === 'Vedlikehold') badgeClass = 'badge-vedlikehold';
+        else if (job.category === 'Hushjelp') badgeClass = 'badge-hushjelp';
+        else if (job.category === 'Russedugnad') badgeClass = 'badge-russedugnad';
+
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}</h3>
-            <span class="badge">${escapeHTML(job.category)}</span>
+            <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             <p class="date"><em>Lagt ut: ${job.datePosted}</em></p>
             <button class="btn btn-danger delete-btn" data-id="${job.id}">Slett oppdrag</button>
@@ -396,11 +403,18 @@ function renderJobs() {
         const article = document.createElement('article');
         article.classList.add('job-card');
 
+        // Determine badge class based on category
+        let badgeClass = 'badge-annet';
+        if (job.category === 'Gårdsarbeid') badgeClass = 'badge-gardsarbeid';
+        else if (job.category === 'Vedlikehold') badgeClass = 'badge-vedlikehold';
+        else if (job.category === 'Hushjelp') badgeClass = 'badge-hushjelp';
+        else if (job.category === 'Russedugnad') badgeClass = 'badge-russedugnad';
+
         // Build the inner HTML of the card
         // Note: Instead of an anchor tag with mailto:, we use a button with a data attribute.
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}</h3>
-            <span class="badge">${escapeHTML(job.category)}</span>
+            <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><em>Lagt ut: ${job.datePosted}</em></p>
@@ -444,6 +458,24 @@ function escapeHTML(str) {
 elFilterCategory.addEventListener('change', renderJobs);
 // 'input' event triggers every time a key is pressed or text is pasted
 elSearchInput.addEventListener('input', renderJobs);
+
+// Event listeners for Empty State Reset Buttons
+const btnResetFilters = document.getElementById('btn-reset-filters');
+if (btnResetFilters) {
+    btnResetFilters.addEventListener('click', () => {
+        elSearchInput.value = '';
+        elFilterCategory.value = 'Alle';
+        renderJobs();
+    });
+}
+
+const btnCreateFirstJob = document.getElementById('btn-create-first-job');
+if (btnCreateFirstJob) {
+    btnCreateFirstJob.addEventListener('click', () => {
+        // Switch to the Post Job tab
+        document.getElementById('tab-post-job').click();
+    });
+}
 
 // Initialize: Show the home view on first load
 showHomeView();
