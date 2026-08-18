@@ -412,3 +412,91 @@ textarea:focus {
 .toast.toast-error {
     background-color: var(--error-color);
 }
+
+/* --- Application Modal --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+}
+
+.modal-close:hover {
+    color: var(--text-color);
+}
+
+.contact-info-box {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    margin: var(--spacing-md) 0;
+}
+
+.copy-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-sm);
+    gap: var(--spacing-sm);
+}
+
+.email-display {
+    font-family: monospace;
+    font-size: 1.1rem;
+    background-color: #fff;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    flex-grow: 1;
+    overflow-x: auto;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.tips-box {
+    margin-top: var(--spacing-md);
+}
+
+.tips-box h4 {
+    margin-bottom: var(--spacing-sm);
+}
+
+.tips-box ul {
+    list-style-position: inside;
+    color: var(--text-light);
+}
+
+.tips-box li {
+    margin-bottom: var(--spacing-sm);
+}

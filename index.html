@@ -161,6 +161,32 @@
         </section>
     </main>
 
+    <!-- Application Modal (Replaces mailto:) -->
+    <div id="application-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="close-modal-btn" class="modal-close">&times;</button>
+            <h2>Søk på oppdraget</h2>
+            <p>For å søke på dette oppdraget, send en e-post til arbeidsgiveren med en kort presentasjon av deg selv.</p>
+
+            <div class="contact-info-box">
+                <p><strong>E-postadresse:</strong></p>
+                <div class="copy-group">
+                    <span id="modal-email-display" class="email-display"></span>
+                    <button id="copy-email-btn" class="btn btn-secondary btn-sm">Kopier</button>
+                </div>
+            </div>
+
+            <div class="tips-box">
+                <h4>Tips til e-posten:</h4>
+                <ul>
+                    <li>Nevn hvilket oppdrag du søker på i emnefeltet.</li>
+                    <li>Skriv kort om hvem du/dere er.</li>
+                    <li>Foreslå gjerne når du kan utføre jobben.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <!-- Global Toast Notification -->
     <div id="toast-notification" class="toast hidden">
         <span id="toast-message"></span>
