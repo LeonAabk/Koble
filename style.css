@@ -321,3 +321,94 @@ textarea:focus {
     background-color: var(--bg-color);
     border: 1px dashed var(--border-color);
 }
+
+/* --- New Feature Styles (Search, Employer Tabs, Toast) --- */
+
+/* Search & Filter Layout */
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    align-items: flex-end;
+}
+
+.search-group, .category-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-group label, .category-group label {
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Employer Tabs */
+.employer-tabs {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--spacing-sm);
+}
+
+.employer-tabs .btn-text {
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--text-light);
+    font-weight: normal;
+}
+
+.employer-tabs .btn-text.active-tab {
+    color: var(--primary-color);
+    font-weight: bold;
+    border-bottom: 3px solid var(--primary-color);
+    margin-bottom: calc(-1 * var(--spacing-sm) - 2px); /* overlap border */
+}
+
+/* Danger Button */
+.btn-danger {
+    background-color: var(--error-color);
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--success-color);
+    color: white;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 1000;
+    font-weight: bold;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.toast.hidden {
+    display: block !important; /* Override the default .hidden utility for toast */
+    transform: translateY(100px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toast.toast-error {
+    background-color: var(--error-color);
+}
