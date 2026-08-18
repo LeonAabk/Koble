@@ -301,9 +301,14 @@ elJobPostForm.addEventListener('submit', async (e) => {
     const title = document.getElementById('job-title').value;
     const rawDescription = document.getElementById('job-description').value;
     const time = document.getElementById('job-time').value;
+    const isGroupFriendly = document.getElementById('job-group-friendly').checked;
 
-    // Combine the time and the description into one string so we don't need a DB migration
-    const description = `Når: ${time}\n\n${rawDescription}`;
+    // Combine the time, the description, and the group-friendly tag into one string
+    // This allows us to handle the logic without a DB migration
+    let description = `Når: ${time}\n\n${rawDescription}`;
+    if (isGroupFriendly) {
+        description = "[GROUP_FRIENDLY]" + description;
+    }
 
     if (title.length < 5) {
         showToast("Tittelen må være minst 5 tegn lang.", "error");
@@ -386,7 +391,15 @@ async function renderMyJobs() {
         if (job.category === 'Gårdsarbeid') badgeClass = 'badge-gardsarbeid';
         else if (job.category === 'Vedlikehold') badgeClass = 'badge-vedlikehold';
         else if (job.category === 'Hushjelp') badgeClass = 'badge-hushjelp';
-        else if (job.category === 'Russedugnad') badgeClass = 'badge-russedugnad';
+        else if (job.category === 'Russedugnad / Gruppearbeid') badgeClass = 'badge-russedugnad';
+
+        // Check for the group-friendly tag and remove it from the display string
+        let displayDescription = job.description;
+        let isGroupFriendly = false;
+        if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
+            isGroupFriendly = true;
+            displayDescription = displayDescription.replace("[GROUP_FRIENDLY]", "");
+        }
 
         const d = new Date(job.created_at);
         const formattedDate = d.toLocaleDateString('no-NO');
@@ -394,6 +407,7 @@ async function renderMyJobs() {
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}</h3>
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
+            ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
             <button class="btn btn-danger delete-btn" data-id="${job.id}">Slett oppdrag</button>
@@ -435,18 +449,24 @@ const elApplicationModal = document.getElementById('application-modal');
 const elCloseModalBtn = document.getElementById('close-modal-btn');
 const elModalEmailDisplay = document.getElementById('modal-email-display');
 const elCopyEmailBtn = document.getElementById('copy-email-btn');
+const elApplicantGroupName = document.getElementById('applicant-group-name');
+const elCopyTemplateBtn = document.getElementById('copy-template-btn');
 
 let currentEmailToCopy = '';
+let currentJobTitleForTemplate = '';
 
-function openApplicationModal(email) {
+function openApplicationModal(email, jobTitle) {
     currentEmailToCopy = email;
+    currentJobTitleForTemplate = jobTitle;
     elModalEmailDisplay.textContent = email;
+    elApplicantGroupName.value = ''; // Reset the input
     elApplicationModal.classList.remove('hidden');
 }
 
 function closeApplicationModal() {
     elApplicationModal.classList.add('hidden');
     currentEmailToCopy = '';
+    currentJobTitleForTemplate = '';
 }
 
 elCloseModalBtn.addEventListener('click', closeApplicationModal);
@@ -462,7 +482,26 @@ elCopyEmailBtn.addEventListener('click', () => {
 
     navigator.clipboard.writeText(currentEmailToCopy).then(() => {
         showToast("E-postadresse kopiert!", "success");
-        closeApplicationModal();
+    }).catch(err => {
+        console.error("Kunne ikke kopiere tekst: ", err);
+        showToast("Kunne ikke kopiere. Prøv å markere teksten manuelt.", "error");
+    });
+});
+
+elCopyTemplateBtn.addEventListener('click', () => {
+    if (!currentJobTitleForTemplate) return;
+
+    const groupName = elApplicantGroupName.value.trim();
+    let template = "";
+
+    if (groupName) {
+        template = `Hei!\n\nVi er ${groupName}, og vi vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nVi er en arbeidsvillig gjeng som gjerne tar i et tak. Vi har mulighet til å stille med [ANTALL] personer og kan jobbe [LEGG INN NÅR DERE KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n${groupName}`;
+    } else {
+        template = `Hei!\n\nJeg vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nJeg er en arbeidsvillig og ansvarsfull person som gjerne vil hjelpe til med dette. Jeg har mulighet til å jobbe [LEGG INN NÅR DU KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n[DITT NAVN]`;
+    }
+
+    navigator.clipboard.writeText(template).then(() => {
+        showToast("E-postmal kopiert!", "success");
     }).catch(err => {
         console.error("Kunne ikke kopiere tekst: ", err);
         showToast("Kunne ikke kopiere. Prøv å markere teksten manuelt.", "error");
@@ -501,7 +540,14 @@ async function renderJobs() {
         if (job.category === 'Gårdsarbeid') badgeClass = 'badge-gardsarbeid';
         else if (job.category === 'Vedlikehold') badgeClass = 'badge-vedlikehold';
         else if (job.category === 'Hushjelp') badgeClass = 'badge-hushjelp';
-        else if (job.category === 'Russedugnad') badgeClass = 'badge-russedugnad';
+        else if (job.category === 'Russedugnad / Gruppearbeid') badgeClass = 'badge-russedugnad';
+
+        let displayDescription = job.description;
+        let isGroupFriendly = false;
+        if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
+            isGroupFriendly = true;
+            displayDescription = displayDescription.replace("[GROUP_FRIENDLY]", "");
+        }
 
         const d = new Date(job.created_at);
         const formattedDate = d.toLocaleDateString('no-NO');
@@ -509,11 +555,12 @@ async function renderJobs() {
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}</h3>
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
+            ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
-            <p class="description">${escapeHTML(job.description)}</p>
-            <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}">Søk nå</button>
+            <p class="description">${escapeHTML(displayDescription)}</p>
+            <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}">Søk nå</button>
         `;
 
         elJobBoard.appendChild(article);
@@ -523,7 +570,8 @@ async function renderJobs() {
     applyButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const email = e.target.getAttribute('data-email');
-            openApplicationModal(email);
+            const title = e.target.getAttribute('data-title');
+            openApplicationModal(email, title);
         });
     });
 }
