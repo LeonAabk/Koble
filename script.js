@@ -9,7 +9,7 @@
 // --- 1. DOM Elements ---
 // We grab references to all the HTML elements we need to interact with.
 // Prefixing with 'el' helps us remember these are DOM elements.
-const elRoleSelectionView = document.getElementById('role-selection-view');
+const elLandingView = document.getElementById('landing-view');
 const elEmployerView = document.getElementById('employer-view');
 const elYouthView = document.getElementById('youth-view');
 const elMainNav = document.getElementById('main-nav');
@@ -27,17 +27,17 @@ const btnNavHome = document.getElementById('nav-home-btn');
  * We use the '.hidden' utility class defined in our CSS (`display: none`).
  */
 function hideAllViews() {
-    elRoleSelectionView.classList.add('hidden');
+    elLandingView.classList.add('hidden');
     elEmployerView.classList.add('hidden');
     elYouthView.classList.add('hidden');
 }
 
 /**
- * Shows the Home / Role Selection view.
+ * Shows the Landing / Home view.
  */
 function showHomeView() {
     hideAllViews();
-    elRoleSelectionView.classList.remove('hidden');
+    elLandingView.classList.remove('hidden');
     elMainNav.classList.add('hidden'); // Hide the home button when already home
 }
 
