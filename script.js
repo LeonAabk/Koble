@@ -21,7 +21,7 @@ const authError = document.getElementById('auth-error');
 const navLoginBtn = document.getElementById('nav-login-btn');
 const navUserInfo = document.getElementById('nav-user-info');
 const navUserEmail = document.getElementById('nav-user-email');
-const navLogoutBtn = document.getElementById('nav-logout-btn');
+const navProfileBtn = document.getElementById('nav-profile-btn');
 
 let isLoginMode = true;
 
@@ -30,6 +30,9 @@ let isLoginMode = true;
 const elLandingSection = document.getElementById('landing-view');
 const elEmployerSection = document.getElementById('employer-view');
 const elYouthSection = document.getElementById('youth-view');
+const elProfileSection = document.getElementById('profile-view');
+const elProfileEmailDisplay = document.getElementById('profile-email-display');
+const elProfileLogoutBtn = document.getElementById('profile-logout-btn');
 const elMainNav = document.getElementById('main-nav');
 
 // Navigation Buttons
@@ -156,7 +159,7 @@ function updateNavForUser(user) {
         navUserEmail.textContent = '';
 
         // If they are on employer view but logged out, send to home
-        if (!elEmployerSection.classList.contains('hidden')) {
+        if (!elEmployerSection.classList.contains('hidden') || !elProfileSection.classList.contains('hidden')) {
             showHomeView();
         }
     }
@@ -176,7 +179,13 @@ navLoginBtn.addEventListener('click', openAuthModal);
 closeAuthBtn.addEventListener('click', closeAuthModal);
 toggleAuthBtn.addEventListener('click', toggleAuthMode);
 authForm.addEventListener('submit', handleAuthSubmit);
-navLogoutBtn.addEventListener('click', handleLogout);
+
+navProfileBtn.addEventListener('click', () => {
+    showView(elProfileSection);
+    elProfileEmailDisplay.textContent = currentUser.email;
+});
+
+elProfileLogoutBtn.addEventListener('click', handleLogout);
 
 authModal.addEventListener('click', (e) => {
     if (e.target === authModal) {
@@ -189,6 +198,7 @@ function hideAllViews() {
     elLandingSection.classList.add('hidden');
     elEmployerSection.classList.add('hidden');
     elYouthSection.classList.add('hidden');
+    elProfileSection.classList.add('hidden');
 }
 
 function showView(viewElement) {

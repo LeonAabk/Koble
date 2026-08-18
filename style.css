@@ -556,3 +556,32 @@ textarea:focus {
 .tips-box li {
     margin-bottom: var(--spacing-sm);
 }
+
+/* Profile View Styles */
+.profile-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-color);
+    max-width: 500px;
+    margin-top: 1rem;
+}
+
+/* Navigation Auth State */
+#nav-user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: 1rem;
+}
+
+#nav-user-info.hidden {
+    display: none !important;
+}
+
+/* Fix Nav Layout */
+#main-nav {
+    display: flex;
+    align-items: center;
+}

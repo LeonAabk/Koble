@@ -17,9 +17,9 @@
             <nav id="main-nav" class="hidden">
                 <button id="nav-home-btn" class="btn-text">Hjem</button>
                 <button id="nav-login-btn" class="btn-secondary btn-sm" style="margin-left: 1rem;">Logg inn</button>
-                <div id="nav-user-info" class="hidden" style="display: flex; align-items: center; gap: 1rem; margin-left: 1rem;">
-                    <span id="nav-user-email" style="font-size: 0.9rem; color: var(--text-muted);"></span>
-                    <button id="nav-logout-btn" class="btn-text">Logg ut</button>
+                <div id="nav-user-info" class="hidden" >
+                    <span id="nav-user-email" style="font-size: 0.9rem; color: var(--text-light);"></span>
+                    <button id="nav-profile-btn" class="btn-text">Min Profil</button>
                 </div>
             </nav>
         </div>
@@ -120,6 +120,20 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
                     <p>Du har ikke lagt ut noen jobber enda.</p>
                     <button id="btn-create-first-job" class="btn btn-primary">Legg ut ditt første oppdrag</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- View 4: Profile View -->
+        <section id="profile-view" class="view hidden">
+            <h2>Min Profil</h2>
+            <div class="profile-card">
+                <div class="form-group">
+                    <label>E-postadresse</label>
+                    <p id="profile-email-display" style="font-weight: 600; padding: 0.5rem 0;"></p>
+                </div>
+                <div class="form-group" style="margin-top: 2rem;">
+                    <button id="profile-logout-btn" class="btn btn-danger">Logg ut</button>
                 </div>
             </div>
         </section>
