@@ -241,6 +241,25 @@ textarea:focus {
     box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.2);
 }
 
+.input-error {
+    border-color: var(--error-color) !important;
+}
+
+.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(220,53,69,0.1) !important;
+}
+
+.error-text {
+    color: var(--error-color);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.error-text.show {
+    display: block;
+}
+
 .success-message {
     color: var(--success-color);
     font-weight: 600;
@@ -383,14 +402,14 @@ textarea:focus {
     align-items: flex-end;
 }
 
-.search-group, .category-group, .location-group {
+.search-group, .category-group, .location-group, .sort-group {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-width: 200px;
+    min-width: 150px;
 }
 
-.search-group label, .category-group label {
+.search-group label, .category-group label, .location-group label, .sort-group label {
     font-weight: 600;
     margin-bottom: var(--spacing-sm);
 }
@@ -642,4 +661,30 @@ textarea:focus {
     border-radius: var(--border-radius);
     display: inline-block;
     vertical-align: middle;
+}
+
+/* Skeleton Loaders */
+.skeleton {
+    animation: skeleton-loading 1s linear infinite alternate;
+    border-radius: var(--border-radius);
+}
+
+.skeleton-text {
+    height: 1rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.skeleton-text:last-child {
+    margin-bottom: 0;
+    width: 80%;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-color: hsl(200, 20%, 90%);
+    }
+    100% {
+        background-color: hsl(200, 20%, 95%);
+    }
 }

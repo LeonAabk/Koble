@@ -53,6 +53,7 @@ const elNoMyJobsMsg = document.getElementById('no-my-jobs-msg');
 const elJobBoard = document.getElementById('job-board');
 const elFilterCategory = document.getElementById('filter-category');
 const elFilterLocation = document.getElementById('filter-location');
+const elFilterSort = document.getElementById('filter-sort');
 const elSearchInput = document.getElementById('search-input');
 const elNoJobsMsg = document.getElementById('no-jobs-msg');
 
@@ -290,6 +291,33 @@ async function getJobs() {
 }
 
 const elJobPostForm = document.getElementById('job-post-form');
+const btnSubmitJob = document.getElementById('btn-submit-job');
+const btnCancelEdit = document.getElementById('btn-cancel-edit');
+const elJobTitleInput = document.getElementById('job-title');
+const elJobDescInput = document.getElementById('job-description');
+const elJobTitleError = document.getElementById('job-title-error');
+const elJobDescError = document.getElementById('job-description-error');
+let editingJobId = null;
+
+elJobTitleInput.addEventListener('input', (e) => {
+    if (e.target.value.length > 0 && e.target.value.length < 5) {
+        elJobTitleInput.classList.add('input-error');
+        elJobTitleError.classList.add('show');
+    } else {
+        elJobTitleInput.classList.remove('input-error');
+        elJobTitleError.classList.remove('show');
+    }
+});
+
+elJobDescInput.addEventListener('input', (e) => {
+    if (e.target.value.length > 0 && e.target.value.length < 10) {
+        elJobDescInput.classList.add('input-error');
+        elJobDescError.classList.add('show');
+    } else {
+        elJobDescInput.classList.remove('input-error');
+        elJobDescError.classList.remove('show');
+    }
+});
 
 elJobPostForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -329,7 +357,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
     const pay = document.getElementById('job-pay').value;
     const email = currentUser.email;
 
-    const newJob = {
+    const jobData = {
         title,
         category,
         location,
@@ -340,15 +368,22 @@ elJobPostForm.addEventListener('submit', async (e) => {
     };
 
     try {
-        const { error } = await supabaseClient
-            .from('jobs')
-            .insert([newJob]);
+        if (editingJobId) {
+            const { error } = await supabaseClient
+                .from('jobs')
+                .update(jobData)
+                .eq('id', editingJobId);
+            if (error) throw error;
+            showToast('Oppdraget ble oppdatert!', 'success');
+        } else {
+            const { error } = await supabaseClient
+                .from('jobs')
+                .insert([jobData]);
+            if (error) throw error;
+            showToast('Oppdraget ble publisert!', 'success');
+        }
 
-        if (error) throw error;
-
-        elJobPostForm.reset();
-        showToast('Oppdraget ble publisert!', 'success');
-
+        resetJobForm();
         switchEmployerTab(elTabMyJobs, elManageSection);
         renderMyJobs();
     } catch (error) {
@@ -356,13 +391,49 @@ elJobPostForm.addEventListener('submit', async (e) => {
         showToast('Feil ved lagring av oppdrag.', 'error');
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Publiser jobb';
+        submitBtn.textContent = editingJobId ? 'Oppdater jobb' : 'Publiser jobb';
     }
 });
 
+function resetJobForm() {
+    elJobPostForm.reset();
+    editingJobId = null;
+    btnSubmitJob.textContent = 'Publiser jobb';
+    btnCancelEdit.classList.add('hidden');
+
+    // Clear validation states
+    elJobTitleInput.classList.remove('input-error');
+    elJobTitleError.classList.remove('show');
+    elJobDescInput.classList.remove('input-error');
+    elJobDescError.classList.remove('show');
+}
+
+if (btnCancelEdit) {
+    btnCancelEdit.addEventListener('click', resetJobForm);
+}
+
+
+function renderSkeletons(container, count = 3) {
+    container.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+        const skeletonCard = document.createElement('article');
+        skeletonCard.classList.add('job-card');
+        skeletonCard.innerHTML = `
+            <h3 class="skeleton skeleton-text" style="width: 50%; height: 1.5rem; margin-bottom: 1rem;"></h3>
+            <div class="skeleton skeleton-text" style="width: 20%; height: 1.2rem; display: inline-block; margin-bottom: 1rem;"></div>
+            <p class="skeleton skeleton-text"></p>
+            <p class="skeleton skeleton-text"></p>
+            <p class="skeleton skeleton-text"></p>
+        `;
+        container.appendChild(skeletonCard);
+    }
+}
 
 async function renderMyJobs() {
     if (!currentUser) return;
+
+    renderSkeletons(elMyJobsList, 3);
+    elNoMyJobsMsg.classList.add('hidden');
 
     const { data: myJobs, error } = await supabaseClient
         .from('jobs')
@@ -414,7 +485,10 @@ async function renderMyJobs() {
             ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
-            <button class="btn btn-danger delete-btn" data-id="${job.id}">Slett oppdrag</button>
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn btn-secondary edit-btn" data-id="${job.id}">Rediger</button>
+                <button class="btn btn-danger delete-btn" data-id="${job.id}">Slett oppdrag</button>
+            </div>
         `;
 
         elMyJobsList.appendChild(article);
@@ -427,6 +501,65 @@ async function renderMyJobs() {
             deleteJob(jobId);
         });
     });
+
+    const editButtons = document.querySelectorAll('.edit-btn');
+    editButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const jobId = e.target.getAttribute('data-id');
+            const jobToEdit = myJobs.find(j => j.id === jobId);
+            if (jobToEdit) editJob(jobToEdit);
+        });
+    });
+}
+
+function editJob(job) {
+    editingJobId = job.id;
+
+    document.getElementById('job-title').value = job.title;
+    document.getElementById('job-category').value = job.category;
+    document.getElementById('job-location').value = job.location;
+    document.getElementById('job-pay').value = job.pay || '';
+
+    let displayDescription = job.description;
+    let isGroupFriendly = false;
+    if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
+        isGroupFriendly = true;
+        displayDescription = displayDescription.replace("[GROUP_FRIENDLY]", "");
+    }
+    document.getElementById('job-group-friendly').checked = isGroupFriendly;
+
+    // Extract time from the description if it starts with "Når: "
+    let time = '';
+    let rawDescription = displayDescription;
+    if (displayDescription.startsWith("Når: ")) {
+        const parts = displayDescription.split("\n\n");
+        if (parts.length > 1) {
+            time = parts[0].replace("Når: ", "");
+            rawDescription = parts.slice(1).join("\n\n");
+        } else {
+            // fallback if format is slightly off
+            time = displayDescription.replace("Når: ", "");
+            rawDescription = '';
+        }
+    }
+
+    document.getElementById('job-time').value = time;
+    document.getElementById('job-description').value = rawDescription;
+
+    // Trigger validation logic off initial load so it doesn't show errors immediately when editing
+    elJobTitleInput.classList.remove('input-error');
+    elJobTitleError.classList.remove('show');
+    elJobDescInput.classList.remove('input-error');
+    elJobDescError.classList.remove('show');
+
+    btnSubmitJob.textContent = 'Oppdater jobb';
+    btnCancelEdit.classList.remove('hidden');
+
+    // Switch to the form tab
+    switchEmployerTab(elTabPostJob, elPostSection);
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function deleteJob(jobId) {
@@ -515,6 +648,9 @@ elCopyTemplateBtn.addEventListener('click', () => {
 
 // --- Youth Features (Browsing, Searching & Filtering Jobs) ---
 async function renderJobs() {
+    renderSkeletons(elJobBoard, 4);
+    elNoJobsMsg.classList.add('hidden');
+
     const jobs = await getJobs();
     const selectedFilter = elFilterCategory.value;
     const selectedLocation = elFilterLocation.value;
@@ -529,6 +665,14 @@ async function renderJobs() {
                               job.description.toLowerCase().includes(searchQuery);
 
         return matchesCategory && matchesLocation && matchesSearch;
+    });
+
+    // Sort logic
+    const sortOrder = elFilterSort.value;
+    filteredJobs.sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return sortOrder === 'oldest' ? dateA - dateB : dateB - dateA;
     });
 
     if (filteredJobs.length === 0) {
@@ -600,6 +744,7 @@ function escapeHTML(str) {
 
 elFilterCategory.addEventListener('change', renderJobs);
 elFilterLocation.addEventListener('change', renderJobs);
+elFilterSort.addEventListener('change', renderJobs);
 elSearchInput.addEventListener('input', renderJobs);
 
 const btnResetFilters = document.getElementById('btn-reset-filters');
@@ -608,6 +753,7 @@ if (btnResetFilters) {
         elSearchInput.value = '';
         elFilterCategory.value = 'Alle';
         elFilterLocation.value = 'Alle';
+        elFilterSort.value = 'newest';
         renderJobs();
     });
 }
