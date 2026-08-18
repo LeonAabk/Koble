@@ -37,6 +37,7 @@ const elMainNav = document.getElementById('main-nav');
 
 // Navigation Buttons
 const elNavHomeBtn = document.getElementById('nav-home-btn');
+const elLogoTitle = document.getElementById('logo-title');
 const elYouthRoleBtn = document.getElementById('youth-role-btn');
 const elEmployerRoleBtn = document.getElementById('employer-role-btn');
 
@@ -223,6 +224,7 @@ function showHomeView() {
 }
 
 elNavHomeBtn.addEventListener('click', showHomeView);
+elLogoTitle.addEventListener('click', showHomeView);
 
 elYouthRoleBtn.addEventListener('click', () => {
     showView(elYouthSection);

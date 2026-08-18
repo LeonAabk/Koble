@@ -585,3 +585,13 @@ textarea:focus {
     display: flex;
     align-items: center;
 }
+
+/* Logo Title */
+#logo-title {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+#logo-title:hover {
+    opacity: 0.8;
+}
