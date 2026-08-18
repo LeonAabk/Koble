@@ -1,0 +1,259 @@
+/*
+ * CSS Variables for a clean, professional design system.
+ * By using variables, we can easily maintain consistency and make sweeping
+ * changes (like supporting dark mode) in the future simply by updating these roots.
+ */
+:root {
+    /* Color Palette */
+    --primary-color: #0056b3;       /* Trustworthy blue */
+    --primary-hover: #004494;
+    --secondary-color: #28a745;     /* Action-oriented green */
+    --secondary-hover: #218838;
+    --text-color: #333333;          /* High contrast text */
+    --text-light: #666666;
+    --bg-color: #f8f9fa;            /* Soft off-white background */
+    --card-bg: #ffffff;
+    --border-color: #dddddd;
+    --error-color: #dc3545;
+    --success-color: #28a745;
+
+    /* Spacing & Typography */
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 2rem;
+    --border-radius: 8px;
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Base Reset & Typography */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+h1, h2, h3 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-color);
+}
+
+p {
+    margin-bottom: var(--spacing-md);
+}
+
+/* Layout Containers */
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--spacing-md) 0;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+main {
+    flex-grow: 1;
+    padding: var(--spacing-lg) 0;
+}
+
+footer {
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    padding: var(--spacing-md) 0;
+    color: var(--text-light);
+    margin-top: auto;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+/* Views */
+.view {
+    background-color: var(--card-bg);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-hover);
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.btn-text:hover {
+    text-decoration: underline;
+}
+
+/* Role Selection Buttons */
+.role-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+@media (max-width: 600px) {
+    .role-buttons {
+        flex-direction: column;
+    }
+}
+
+/* Forms */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+input[type="text"],
+input[type="email"],
+select,
+textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-family: var(--font-family);
+    font-size: 1rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.2);
+}
+
+.success-message {
+    color: var(--success-color);
+    font-weight: 600;
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: rgba(40, 167, 69, 0.1);
+    border-radius: var(--border-radius);
+}
+
+/* Youth View & Job Board */
+.filter-container {
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.job-board {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.job-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    background-color: var(--card-bg);
+}
+
+.job-card h3 {
+    margin-bottom: var(--spacing-sm);
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background-color: #e9ecef;
+    color: var(--text-color);
+    border-radius: 4px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.job-card p {
+    margin-bottom: var(--spacing-sm);
+}
+
+.job-card .description {
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    color: var(--text-light);
+}

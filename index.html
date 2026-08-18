@@ -1,1 +1,123 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koble - Finn din neste småjobb</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <h1>Koble</h1>
+            <nav id="main-nav" class="hidden">
+                <button id="nav-home-btn" class="btn-text">Hjem</button>
+            </nav>
+        </div>
+    </header>
 
+    <main class="container">
+        <!-- View 1: Role Selection -->
+        <section id="role-selection-view" class="view">
+            <h2>Velkommen til Koble</h2>
+            <p>Plattformen som kobler arbeidsvillig ungdom med de som trenger ekstra hender.</p>
+            <div class="role-buttons">
+                <button id="employer-role-btn" class="btn btn-primary">Jeg vil tilby en jobb</button>
+                <button id="youth-role-btn" class="btn btn-secondary">Jeg ser etter jobb</button>
+            </div>
+        </section>
+
+        <!-- View 2: Employer View (Post a Job) -->
+        <section id="employer-view" class="view hidden">
+            <h2>Legg ut en småjobb</h2>
+            <p>Fyll ut skjemaet under for å nå ut til arbeidsvillig ungdom i ditt nærområde.</p>
+
+            <form id="job-post-form" class="form-container">
+                <div class="form-group">
+                    <label for="job-title">Tittel på jobben</label>
+                    <input type="text" id="job-title" name="job-title" required placeholder="F.eks. Plenklipping og hagearbeid">
+                </div>
+
+                <div class="form-group">
+                    <label for="job-category">Kategori</label>
+                    <select id="job-category" name="job-category" required>
+                        <option value="" disabled selected>Velg en kategori</option>
+                        <option value="Gårdsarbeid">Gårdsarbeid</option>
+                        <option value="Vedlikehold">Vedlikehold</option>
+                        <option value="Hushjelp">Hushjelp</option>
+                        <option value="Russedugnad">Russedugnad</option>
+                        <option value="Annet">Annet</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="job-location">Sted</label>
+                    <input type="text" id="job-location" name="job-location" required placeholder="F.eks. Oslo, Frogner">
+                </div>
+
+                <div class="form-group">
+                    <label for="job-pay">Godtgjørelse (Frivillig)</label>
+                    <input type="text" id="job-pay" name="job-pay" placeholder="F.eks. 200 kr/timen eller avtales">
+                </div>
+
+                <div class="form-group">
+                    <label for="job-email">Din e-postadresse</label>
+                    <input type="email" id="job-email" name="job-email" required placeholder="ola.nordmann@epost.no">
+                </div>
+
+                <div class="form-group">
+                    <label for="job-description">Beskrivelse</label>
+                    <textarea id="job-description" name="job-description" rows="4" required placeholder="Beskriv hva som skal gjøres, når det passer, osv."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Publiser jobb</button>
+                <p id="post-success-msg" class="success-message hidden">Jobben er publisert!</p>
+            </form>
+        </section>
+
+        <!-- View 3: Youth View (Browse Jobs) -->
+        <section id="youth-view" class="view hidden">
+            <h2>Tilgjengelige jobber</h2>
+
+            <div class="filter-container">
+                <label for="filter-category">Filtrer etter kategori:</label>
+                <select id="filter-category">
+                    <option value="Alle">Alle kategorier</option>
+                    <option value="Gårdsarbeid">Gårdsarbeid</option>
+                    <option value="Vedlikehold">Vedlikehold</option>
+                    <option value="Hushjelp">Hushjelp</option>
+                    <option value="Russedugnad">Russedugnad</option>
+                    <option value="Annet">Annet</option>
+                </select>
+            </div>
+
+            <!-- Job cards will be dynamically injected here by JS -->
+            <div id="job-board" class="job-board">
+                <!-- Example of a job card structure (pedagogical purpose, will be overwritten by JS) -->
+                <!--
+                <article class="job-card">
+                    <h3>Plenklipping</h3>
+                    <span class="badge">Vedlikehold</span>
+                    <p class="location"><strong>Sted:</strong> Oslo</p>
+                    <p class="pay"><strong>Lønn:</strong> 200 kr/t</p>
+                    <p class="description">Trenger hjelp til å klippe plenen...</p>
+                    <a href="mailto:..." class="btn btn-primary">Søk nå</a>
+                </article>
+                -->
+            </div>
+
+            <div id="no-jobs-msg" class="hidden">
+                <p>Ingen jobber funnet i denne kategorien akkurat nå.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Koble. Et plattform for å koble ungdom med arbeid.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
