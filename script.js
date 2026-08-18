@@ -211,12 +211,6 @@ function hideAllViews() {
 function showView(viewElement) {
     hideAllViews();
     viewElement.classList.remove('hidden');
-
-    if (viewElement === elLandingSection) {
-        elMainNav.classList.add('hidden');
-    } else {
-        elMainNav.classList.remove('hidden');
-    }
 }
 
 function showHomeView() {
@@ -305,13 +299,17 @@ elJobPostForm.addEventListener('submit', async (e) => {
     }
 
     const title = document.getElementById('job-title').value;
-    const description = document.getElementById('job-description').value;
+    const rawDescription = document.getElementById('job-description').value;
+    const time = document.getElementById('job-time').value;
+
+    // Combine the time and the description into one string so we don't need a DB migration
+    const description = `Når: ${time}\n\n${rawDescription}`;
 
     if (title.length < 5) {
         showToast("Tittelen må være minst 5 tegn lang.", "error");
         return;
     }
-    if (description.length < 10) {
+    if (rawDescription.length < 10) {
         showToast("Beskrivelsen må være minst 10 tegn.", "error");
         return;
     }
