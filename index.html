@@ -54,10 +54,16 @@
 
         <!-- View 2: Employer View (Post a Job) -->
         <section id="employer-view" class="view hidden">
-            <h2>Legg ut en småjobb</h2>
-            <p>Fyll ut skjemaet under for å nå ut til arbeidsvillig ungdom i ditt nærområde.</p>
+            <div class="employer-tabs">
+                <button id="tab-post-job" class="btn-text active-tab">Legg ut oppdrag</button>
+                <button id="tab-my-jobs" class="btn-text">Mine publiserte oppdrag</button>
+            </div>
 
-            <form id="job-post-form" class="form-container">
+            <div id="employer-post-section">
+                <h2>Legg ut en småjobb</h2>
+                <p>Fyll ut skjemaet under for å nå ut til arbeidsvillig ungdom i ditt nærområde.</p>
+
+                <form id="job-post-form" class="form-container">
                 <div class="form-group">
                     <label for="job-title">Tittel på jobben</label>
                     <input type="text" id="job-title" name="job-title" required placeholder="F.eks. Plenklipping og hagearbeid">
@@ -95,9 +101,20 @@
                     <textarea id="job-description" name="job-description" rows="4" required placeholder="Beskriv hva som skal gjøres, når det passer, osv."></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Publiser jobb</button>
-                <p id="post-success-msg" class="success-message hidden">Jobben er publisert!</p>
-            </form>
+                    <button type="submit" class="btn btn-primary">Publiser jobb</button>
+                </form>
+            </div>
+
+            <div id="employer-manage-section" class="hidden">
+                <h2>Mine publiserte oppdrag</h2>
+                <p>Her er en oversikt over jobbene du har lagt ut fra denne enheten.</p>
+                <div id="my-jobs-list" class="job-board">
+                    <!-- My jobs will be injected here -->
+                </div>
+                <div id="no-my-jobs-msg" class="hidden">
+                    <p>Du har ikke lagt ut noen jobber enda.</p>
+                </div>
+            </div>
         </section>
 
         <!-- View 3: Youth View (Browse Jobs) -->
@@ -105,15 +122,22 @@
             <h2>Tilgjengelige jobber</h2>
 
             <div class="filter-container">
-                <label for="filter-category">Filtrer etter kategori:</label>
-                <select id="filter-category">
-                    <option value="Alle">Alle kategorier</option>
-                    <option value="Gårdsarbeid">Gårdsarbeid</option>
-                    <option value="Vedlikehold">Vedlikehold</option>
-                    <option value="Hushjelp">Hushjelp</option>
-                    <option value="Russedugnad">Russedugnad</option>
-                    <option value="Annet">Annet</option>
+                <div class="search-group">
+                    <label for="search-input" class="sr-only">Søk i oppdrag:</label>
+                    <input type="text" id="search-input" placeholder="Søk etter tittel eller beskrivelse...">
+                </div>
+
+                <div class="category-group">
+                    <label for="filter-category">Kategori:</label>
+                    <select id="filter-category">
+                        <option value="Alle">Alle kategorier</option>
+                        <option value="Gårdsarbeid">Gårdsarbeid</option>
+                        <option value="Vedlikehold">Vedlikehold</option>
+                        <option value="Hushjelp">Hushjelp</option>
+                        <option value="Russedugnad">Russedugnad</option>
+                        <option value="Annet">Annet</option>
                 </select>
+            </div>
             </div>
 
             <!-- Job cards will be dynamically injected here by JS -->
@@ -132,14 +156,19 @@
             </div>
 
             <div id="no-jobs-msg" class="hidden">
-                <p>Ingen jobber funnet i denne kategorien akkurat nå.</p>
+                <p>Ingen jobber funnet. Prøv et annet søk eller kategori.</p>
             </div>
         </section>
     </main>
 
+    <!-- Global Toast Notification -->
+    <div id="toast-notification" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
     <footer>
         <div class="container">
-            <p>&copy; 2023 Koble. Et plattform for å koble ungdom med arbeid.</p>
+            <p>&copy; 2023 Koble. En plattform for å koble ungdom med arbeid.</p>
         </div>
     </footer>
 
