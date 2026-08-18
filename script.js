@@ -1,280 +1,391 @@
-/**
- * Koble - Main Application Logic
- *
- * This file handles the Single Page Application (SPA) routing,
- * local storage management, and DOM manipulation for both
- * the Employer (posting jobs) and Youth (browsing jobs) views.
- */
+// --- Supabase Setup ---
+const SUPABASE_URL = 'https://ogpmuicqbcfyxznxjkto.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_yBZlKvvzPzBHkQGntQErjQ_uhSC8bKl';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- 1. DOM Elements ---
-// We grab references to all the HTML elements we need to interact with.
-// Prefixing with 'el' helps us remember these are DOM elements.
-const elLandingView = document.getElementById('landing-view');
-const elEmployerView = document.getElementById('employer-view');
-const elYouthView = document.getElementById('youth-view');
+// --- Auth State ---
+let currentUser = null;
+
+// Auth Elements
+const authModal = document.getElementById('auth-modal');
+const closeAuthBtn = document.getElementById('close-auth-modal-btn');
+const authForm = document.getElementById('auth-form');
+const authTitle = document.getElementById('auth-title');
+const authSubtitle = document.getElementById('auth-subtitle');
+const authSubmitBtn = document.getElementById('auth-submit-btn');
+const toggleAuthBtn = document.getElementById('toggle-auth-mode-btn');
+const authEmail = document.getElementById('auth-email');
+const authPassword = document.getElementById('auth-password');
+const authError = document.getElementById('auth-error');
+
+const navLoginBtn = document.getElementById('nav-login-btn');
+const navUserInfo = document.getElementById('nav-user-info');
+const navUserEmail = document.getElementById('nav-user-email');
+const navLogoutBtn = document.getElementById('nav-logout-btn');
+
+let isLoginMode = true;
+
+// --- Global Constants & Elements ---
+// Views
+const elLandingSection = document.getElementById('landing-view');
+const elEmployerSection = document.getElementById('employer-view');
+const elYouthSection = document.getElementById('youth-view');
 const elMainNav = document.getElementById('main-nav');
 
-const btnEmployerRole = document.getElementById('employer-role-btn');
-const btnYouthRole = document.getElementById('youth-role-btn');
-const btnNavHome = document.getElementById('nav-home-btn');
+// Navigation Buttons
+const elNavHomeBtn = document.getElementById('nav-home-btn');
+const elYouthRoleBtn = document.getElementById('youth-role-btn');
+const elEmployerRoleBtn = document.getElementById('employer-role-btn');
 
-// --- 2. State & Routing (SPA Logic) ---
-// A Single Page Application works by hiding and showing sections of the page
-// rather than loading completely new HTML files. This makes it fast.
+// Employer Tabs & Sections
+const elTabPostJob = document.getElementById('tab-post-job');
+const elTabMyJobs = document.getElementById('tab-my-jobs');
+const elPostSection = document.getElementById('employer-post-section');
+const elManageSection = document.getElementById('employer-manage-section');
+const elMyJobsList = document.getElementById('my-jobs-list');
+const elNoMyJobsMsg = document.getElementById('no-my-jobs-msg');
 
-/**
- * Hides all main views.
- * We use the '.hidden' utility class defined in our CSS (`display: none`).
- */
-function hideAllViews() {
-    elLandingView.classList.add('hidden');
-    elEmployerView.classList.add('hidden');
-    elYouthView.classList.add('hidden');
-}
+// Youth View Elements
+const elJobBoard = document.getElementById('job-board');
+const elFilterCategory = document.getElementById('filter-category');
+const elSearchInput = document.getElementById('search-input');
+const elNoJobsMsg = document.getElementById('no-jobs-msg');
 
-/**
- * Shows the Landing / Home view.
- */
-function showHomeView() {
-    hideAllViews();
-    elLandingView.classList.remove('hidden');
-    elMainNav.classList.add('hidden'); // Hide the home button when already home
-}
-
-/**
- * Shows the Employer view (where they can post jobs).
- */
-function showEmployerView() {
-    hideAllViews();
-    elEmployerView.classList.remove('hidden');
-    elMainNav.classList.remove('hidden'); // Show navigation to get back home
-}
-
-/**
- * Shows the Youth view (where they can browse jobs).
- */
-function showYouthView() {
-    hideAllViews();
-    elYouthView.classList.remove('hidden');
-    elMainNav.classList.remove('hidden'); // Show navigation to get back home
-
-    // Every time we show the youth view, we should re-render the jobs
-    // to ensure they are up to date.
-    renderJobs();
-}
-
-// Attach Event Listeners for Navigation
-btnNavHome.addEventListener('click', showHomeView);
-btnEmployerRole.addEventListener('click', showEmployerView);
-btnYouthRole.addEventListener('click', showYouthView);
-
-
-// --- 3. Local Storage Management ---
-// Since we don't have a backend database for the MVP, we use the browser's
-// built-in `localStorage`. It saves data as strings. We must convert our
-// JavaScript Arrays to JSON strings when saving, and parse them back when reading.
-
-const STORAGE_KEY = 'koble_jobs';
-
-/**
- * Fetches all jobs from localStorage.
- * @returns {Array} An array of job objects.
- */
-function getJobs() {
-    const jobsJSON = localStorage.getItem(STORAGE_KEY);
-    // If there are no jobs yet, return an empty array
-    if (!jobsJSON) {
-        return [];
-    }
-    // Convert the string back into a usable JavaScript array of objects
-    return JSON.parse(jobsJSON);
-}
-
-/**
- * Saves the current array of jobs back to localStorage.
- * @param {Array} jobs - The array of job objects to save.
- */
-function saveJobs(jobs) {
-    const jobsJSON = JSON.stringify(jobs);
-    localStorage.setItem(STORAGE_KEY, jobsJSON);
-}
-
-// --- Next Steps will be added here (Employer & Youth Logic) ---
-
-// --- Toast Notification Logic ---
+// Toast Notification
 const elToastNotification = document.getElementById('toast-notification');
 const elToastMessage = document.getElementById('toast-message');
 let toastTimeout;
 
-/**
- * Displays a global toast notification.
- * @param {string} message - The text to display.
- * @param {string} type - 'success' or 'error'.
- */
-function showToast(message, type = 'success') {
-    // Clear any existing timeout so we don't hide prematurely if clicked rapidly
-    if (toastTimeout) clearTimeout(toastTimeout);
 
-    // Set message and styling
-    elToastMessage.textContent = message;
-    if (type === 'error') {
-        elToastNotification.classList.add('toast-error');
-    } else {
-        elToastNotification.classList.remove('toast-error');
-    }
-
-    // Show the toast
-    elToastNotification.classList.remove('hidden');
-
-    // Hide after 3.5 seconds
-    toastTimeout = setTimeout(() => {
-        elToastNotification.classList.add('hidden');
-    }, 3500);
+// --- Auth Logic ---
+function openAuthModal() {
+    authModal.classList.remove('hidden');
+    resetAuthForm();
 }
 
-// --- 4. Employer Features (Posting Jobs) ---
+function closeAuthModal() {
+    authModal.classList.add('hidden');
+}
+
+function resetAuthForm() {
+    authForm.reset();
+    authError.classList.add('hidden');
+    authError.textContent = '';
+    isLoginMode = true;
+    updateAuthUI();
+}
+
+function updateAuthUI() {
+    if (isLoginMode) {
+        authTitle.textContent = 'Logg inn';
+        authSubtitle.textContent = 'Logg inn for å administrere dine oppdrag.';
+        authSubmitBtn.textContent = 'Logg inn';
+        toggleAuthBtn.textContent = 'Registrer deg';
+        toggleAuthBtn.parentElement.childNodes[0].textContent = 'Har du ikke en konto? ';
+    } else {
+        authTitle.textContent = 'Registrer deg';
+        authSubtitle.textContent = 'Opprett en konto for å legge ut oppdrag.';
+        authSubmitBtn.textContent = 'Registrer konto';
+        toggleAuthBtn.textContent = 'Logg inn';
+        toggleAuthBtn.parentElement.childNodes[0].textContent = 'Har du allerede en konto? ';
+    }
+}
+
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    updateAuthUI();
+    authError.classList.add('hidden');
+}
+
+async function handleAuthSubmit(e) {
+    e.preventDefault();
+    const email = authEmail.value;
+    const password = authPassword.value;
+
+    authError.classList.add('hidden');
+    authSubmitBtn.disabled = true;
+    authSubmitBtn.textContent = 'Laster...';
+
+    try {
+        if (isLoginMode) {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+            if (error) throw error;
+        } else {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+            });
+            if (error) throw error;
+            if (data.user && data.user.identities && data.user.identities.length === 0) {
+                 showToast('Kontoen finnes allerede. Prøv å logge inn.', 'error');
+                 toggleAuthMode();
+                 return;
+            }
+            showToast('Konto opprettet! Du er nå logget inn.', 'success');
+        }
+        closeAuthModal();
+    } catch (error) {
+        authError.textContent = error.message.includes('Invalid login') ? 'Feil e-post eller passord.' : 'En feil oppstod. Prøv igjen.';
+        authError.classList.remove('hidden');
+    } finally {
+        authSubmitBtn.disabled = false;
+        updateAuthUI();
+    }
+}
+
+async function handleLogout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        console.error('Logout error:', error);
+        showToast('Feil ved utlogging', 'error');
+    }
+}
+
+function updateNavForUser(user) {
+    currentUser = user;
+    if (user) {
+        navLoginBtn.classList.add('hidden');
+        navUserInfo.classList.remove('hidden');
+        navUserEmail.textContent = user.email;
+    } else {
+        navLoginBtn.classList.remove('hidden');
+        navUserInfo.classList.add('hidden');
+        navUserEmail.textContent = '';
+
+        // If they are on employer view but logged out, send to home
+        if (!elEmployerSection.classList.contains('hidden')) {
+            showHomeView();
+        }
+    }
+}
+
+// Listen for Auth changes
+supabase.auth.onAuthStateChange((event, session) => {
+    updateNavForUser(session?.user || null);
+    if (event === 'SIGNED_IN') {
+        showView(elEmployerSection);
+        renderMyJobs();
+    }
+});
+
+// Event Listeners for Auth
+navLoginBtn.addEventListener('click', openAuthModal);
+closeAuthBtn.addEventListener('click', closeAuthModal);
+toggleAuthBtn.addEventListener('click', toggleAuthMode);
+authForm.addEventListener('submit', handleAuthSubmit);
+navLogoutBtn.addEventListener('click', handleLogout);
+
+authModal.addEventListener('click', (e) => {
+    if (e.target === authModal) {
+        closeAuthModal();
+    }
+});
+
+// --- Navigation & View Logic ---
+function hideAllViews() {
+    elLandingSection.classList.add('hidden');
+    elEmployerSection.classList.add('hidden');
+    elYouthSection.classList.add('hidden');
+}
+
+function showView(viewElement) {
+    hideAllViews();
+    viewElement.classList.remove('hidden');
+
+    if (viewElement === elLandingSection) {
+        elMainNav.classList.add('hidden');
+    } else {
+        elMainNav.classList.remove('hidden');
+    }
+}
+
+function showHomeView() {
+    showView(elLandingSection);
+}
+
+elNavHomeBtn.addEventListener('click', showHomeView);
+
+elYouthRoleBtn.addEventListener('click', () => {
+    showView(elYouthSection);
+    renderJobs();
+});
+
+elEmployerRoleBtn.addEventListener('click', () => {
+    if (currentUser) {
+        showView(elEmployerSection);
+        renderMyJobs();
+    } else {
+        openAuthModal();
+    }
+});
+
+// --- Employer Tabs Logic ---
+function switchEmployerTab(activeTabBtn, activeSection) {
+    elTabPostJob.classList.remove('active-tab');
+    elTabMyJobs.classList.remove('active-tab');
+
+    elPostSection.classList.add('hidden');
+    elManageSection.classList.add('hidden');
+
+    activeTabBtn.classList.add('active-tab');
+    activeSection.classList.remove('hidden');
+}
+
+elTabPostJob.addEventListener('click', () => switchEmployerTab(elTabPostJob, elPostSection));
+elTabMyJobs.addEventListener('click', () => {
+    switchEmployerTab(elTabMyJobs, elManageSection);
+    renderMyJobs();
+});
+
+
+// --- Toast Notification Logic ---
+function showToast(message, type = 'success') {
+    elToastMessage.textContent = message;
+
+    elToastNotification.classList.remove('toast-success', 'toast-error');
+    elToastNotification.classList.add(type === 'success' ? 'toast-success' : 'toast-error');
+
+    elToastNotification.classList.remove('hidden');
+    elToastNotification.classList.add('show');
+
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        elToastNotification.classList.remove('show');
+        setTimeout(() => {
+            elToastNotification.classList.add('hidden');
+        }, 300);
+    }, 3000);
+}
+
+
+// --- Database Operations ---
+async function getJobs() {
+    const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching jobs:', error);
+        showToast('Kunne ikke hente oppdrag.', 'error');
+        return [];
+    }
+    return data || [];
+}
 
 const elJobPostForm = document.getElementById('job-post-form');
-const elTabPostJob = document.getElementById('tab-post-job');
-const elTabMyJobs = document.getElementById('tab-my-jobs');
-const elEmployerPostSection = document.getElementById('employer-post-section');
-const elEmployerManageSection = document.getElementById('employer-manage-section');
-const elMyJobsList = document.getElementById('my-jobs-list');
-const elNoMyJobsMsg = document.getElementById('no-my-jobs-msg');
 
-const MY_JOBS_STORAGE_KEY = 'koble_my_job_ids';
+elJobPostForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-/**
- * Gets the array of job IDs created by this device.
- */
-function getMyJobIds() {
-    const idsJSON = localStorage.getItem(MY_JOBS_STORAGE_KEY);
-    return idsJSON ? JSON.parse(idsJSON) : [];
-}
+    if (!currentUser) {
+        showToast('Du må være logget inn for å publisere oppdrag.', 'error');
+        return;
+    }
 
-/**
- * Saves the array of job IDs created by this device.
- */
-function saveMyJobIds(ids) {
-    localStorage.setItem(MY_JOBS_STORAGE_KEY, JSON.stringify(ids));
-}
-
-// --- Employer Tab Switching Logic ---
-
-elTabPostJob.addEventListener('click', () => {
-    elTabPostJob.classList.add('active-tab');
-    elTabMyJobs.classList.remove('active-tab');
-    elEmployerPostSection.classList.remove('hidden');
-    elEmployerManageSection.classList.add('hidden');
-});
-
-elTabMyJobs.addEventListener('click', () => {
-    elTabMyJobs.classList.add('active-tab');
-    elTabPostJob.classList.remove('active-tab');
-    elEmployerManageSection.classList.remove('hidden');
-    elEmployerPostSection.classList.add('hidden');
-    renderMyJobs(); // Refresh the list when opening the tab
-});
-
-
-/**
- * Handles the submission of the job posting form.
- * We prevent the default form submission to handle it via JavaScript.
- */
-function handleJobSubmission(event) {
-    // Prevent the browser from refreshing the page (default form behavior)
-    event.preventDefault();
-
-    // 1. Gather data from the form fields
     const title = document.getElementById('job-title').value;
+    const description = document.getElementById('job-description').value;
+
+    if (title.length < 5) {
+        showToast("Tittelen må være minst 5 tegn lang.", "error");
+        return;
+    }
+    if (description.length < 10) {
+        showToast("Beskrivelsen må være minst 10 tegn.", "error");
+        return;
+    }
+
+    const submitBtn = elJobPostForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Publiserer...';
+
     const category = document.getElementById('job-category').value;
     const location = document.getElementById('job-location').value;
     const pay = document.getElementById('job-pay').value;
-    const email = document.getElementById('job-email').value;
-    const description = document.getElementById('job-description').value;
+    const email = currentUser.email;
 
-    // --- Validation Logic ---
-    // Make sure the description is at least 10 characters long
-    if (description.length < 10) {
-        showToast("Beskrivelsen må være på minst 10 tegn.", "error");
-        return; // Stop execution, don't save
-    }
-
-    // 2. Create a Job Object
-    // We add a unique ID (using timestamp) so we can potentially delete/edit later
     const newJob = {
-        id: Date.now().toString(),
-        title: title,
-        category: category,
-        location: location,
-        pay: pay,
-        email: email,
-        description: description,
-        datePosted: new Date().toLocaleDateString('no-NO')
+        title,
+        category,
+        location,
+        pay,
+        email,
+        description,
+        user_id: currentUser.id
     };
 
-    // 3. Save to global jobs list
-    const currentJobs = getJobs();
-    currentJobs.push(newJob);
-    saveJobs(currentJobs);
+    try {
+        const { error } = await supabase
+            .from('jobs')
+            .insert([newJob]);
 
-    // 4. Save ID to my personal jobs list
-    const myJobIds = getMyJobIds();
-    myJobIds.push(newJob.id);
-    saveMyJobIds(myJobIds);
+        if (error) throw error;
 
-    // 5. Reset the form and show toast success message
-    elJobPostForm.reset();
-    showToast("Jobben er publisert!", "success");
-}
+        elJobPostForm.reset();
+        showToast('Oppdraget ble publisert!', 'success');
 
-// Listen for the 'submit' event on the form
-elJobPostForm.addEventListener('submit', handleJobSubmission);
+        switchEmployerTab(elTabMyJobs, elManageSection);
+        renderMyJobs();
+    } catch (error) {
+        console.error('Error saving job:', error);
+        showToast('Feil ved lagring av oppdrag.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Publiser jobb';
+    }
+});
 
 
-/**
- * Renders the jobs created by the current user in the Employer "Manage" tab.
- */
-function renderMyJobs() {
-    const allJobs = getJobs();
-    const myJobIds = getMyJobIds();
+async function renderMyJobs() {
+    if (!currentUser) return;
 
-    // Filter the global jobs list down to just the ones this user created
-    const myJobs = allJobs.filter(job => myJobIds.includes(job.id));
+    const { data: myJobs, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching my jobs:', error);
+        return;
+    }
 
     elMyJobsList.innerHTML = '';
 
-    if (myJobs.length === 0) {
+    if (!myJobs || myJobs.length === 0) {
         elNoMyJobsMsg.classList.remove('hidden');
         return;
     } else {
         elNoMyJobsMsg.classList.add('hidden');
     }
 
-    // Reverse to show newest first
-    myJobs.reverse().forEach(job => {
+    myJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
 
-        // Determine badge class
         let badgeClass = 'badge-annet';
         if (job.category === 'Gårdsarbeid') badgeClass = 'badge-gardsarbeid';
         else if (job.category === 'Vedlikehold') badgeClass = 'badge-vedlikehold';
         else if (job.category === 'Hushjelp') badgeClass = 'badge-hushjelp';
         else if (job.category === 'Russedugnad') badgeClass = 'badge-russedugnad';
 
+        const d = new Date(job.created_at);
+        const formattedDate = d.toLocaleDateString('no-NO');
+
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}</h3>
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
-            <p class="date"><em>Lagt ut: ${job.datePosted}</em></p>
+            <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
             <button class="btn btn-danger delete-btn" data-id="${job.id}">Slett oppdrag</button>
         `;
 
         elMyJobsList.appendChild(article);
     });
 
-    // Attach event listeners to all newly created delete buttons
     const deleteButtons = document.querySelectorAll('.delete-btn');
     deleteButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -284,26 +395,23 @@ function renderMyJobs() {
     });
 }
 
-/**
- * Deletes a job from both the global list and the user's personal list.
- * @param {string} jobId - The ID of the job to delete.
- */
-function deleteJob(jobId) {
-    // 1. Remove from global jobs
-    let allJobs = getJobs();
-    allJobs = allJobs.filter(job => job.id !== jobId);
-    saveJobs(allJobs);
+async function deleteJob(jobId) {
+    if (confirm('Er du sikker på at du vil slette dette oppdraget?')) {
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .delete()
+                .eq('id', jobId);
 
-    // 2. Remove from my local IDs
-    let myJobIds = getMyJobIds();
-    myJobIds = myJobIds.filter(id => id !== jobId);
-    saveMyJobIds(myJobIds);
+            if (error) throw error;
 
-    // 3. Provide feedback and refresh the view
-    showToast("Oppdraget ble slettet.", "success");
-    renderMyJobs();
-
-    // Note: If we had a backend, we'd make an API DELETE request here instead.
+            showToast('Oppdraget ble slettet', 'success');
+            renderMyJobs();
+        } catch (error) {
+            console.error('Error deleting job:', error);
+            showToast('Kunne ikke slette oppdraget.', 'error');
+        }
+    }
 }
 
 // --- Application Modal Logic ---
@@ -314,40 +422,31 @@ const elCopyEmailBtn = document.getElementById('copy-email-btn');
 
 let currentEmailToCopy = '';
 
-/**
- * Opens the application modal and sets the email.
- */
 function openApplicationModal(email) {
     currentEmailToCopy = email;
     elModalEmailDisplay.textContent = email;
     elApplicationModal.classList.remove('hidden');
 }
 
-/**
- * Closes the application modal.
- */
 function closeApplicationModal() {
     elApplicationModal.classList.add('hidden');
     currentEmailToCopy = '';
 }
 
-// Close via button
 elCloseModalBtn.addEventListener('click', closeApplicationModal);
 
-// Close via clicking outside the modal content (on the overlay)
 elApplicationModal.addEventListener('click', (e) => {
     if (e.target === elApplicationModal) {
         closeApplicationModal();
     }
 });
 
-// Copy Email Logic
 elCopyEmailBtn.addEventListener('click', () => {
     if (!currentEmailToCopy) return;
 
     navigator.clipboard.writeText(currentEmailToCopy).then(() => {
         showToast("E-postadresse kopiert!", "success");
-        closeApplicationModal(); // Optionally close it after copying
+        closeApplicationModal();
     }).catch(err => {
         console.error("Kunne ikke kopiere tekst: ", err);
         showToast("Kunne ikke kopiere. Prøv å markere teksten manuelt.", "error");
@@ -355,78 +454,55 @@ elCopyEmailBtn.addEventListener('click', () => {
 });
 
 
-// --- 5. Youth Features (Browsing, Searching & Filtering Jobs) ---
-
-const elJobBoard = document.getElementById('job-board');
-const elFilterCategory = document.getElementById('filter-category');
-const elSearchInput = document.getElementById('search-input');
-const elNoJobsMsg = document.getElementById('no-jobs-msg');
-
-/**
- * Renders the jobs to the DOM.
- * It filters the jobs if a specific category is selected AND by text search.
- */
-function renderJobs() {
-    // 1. Get current jobs and selected filter/search values
-    const jobs = getJobs();
+// --- Youth Features (Browsing, Searching & Filtering Jobs) ---
+async function renderJobs() {
+    const jobs = await getJobs();
     const selectedFilter = elFilterCategory.value;
-    // Convert search query to lowercase for case-insensitive matching
     const searchQuery = elSearchInput.value.toLowerCase().trim();
 
-    // 2. Clear the current board
     elJobBoard.innerHTML = '';
 
-    // 3. Filter the jobs based on the dropdown AND search input
     const filteredJobs = jobs.filter(job => {
-        // Category Check
         const matchesCategory = selectedFilter === 'Alle' || job.category === selectedFilter;
-
-        // Search Check (look in title or description)
         const matchesSearch = job.title.toLowerCase().includes(searchQuery) ||
                               job.description.toLowerCase().includes(searchQuery);
 
         return matchesCategory && matchesSearch;
     });
 
-    // 4. Handle Empty State
     if (filteredJobs.length === 0) {
         elNoJobsMsg.classList.remove('hidden');
-        return; // Stop execution here since there's nothing to render
+        return;
     } else {
         elNoJobsMsg.classList.add('hidden');
     }
 
-    // 5. Build and inject the HTML for each job
-    // We reverse the array so the newest jobs (added last) appear first.
-    filteredJobs.reverse().forEach(job => {
-        // Create the container for the job card
+    filteredJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
 
-        // Determine badge class based on category
         let badgeClass = 'badge-annet';
         if (job.category === 'Gårdsarbeid') badgeClass = 'badge-gardsarbeid';
         else if (job.category === 'Vedlikehold') badgeClass = 'badge-vedlikehold';
         else if (job.category === 'Hushjelp') badgeClass = 'badge-hushjelp';
         else if (job.category === 'Russedugnad') badgeClass = 'badge-russedugnad';
 
-        // Build the inner HTML of the card
-        // Note: Instead of an anchor tag with mailto:, we use a button with a data attribute.
+        const d = new Date(job.created_at);
+        const formattedDate = d.toLocaleDateString('no-NO');
+
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}</h3>
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
-            <p class="date"><em>Lagt ut: ${job.datePosted}</em></p>
+            <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
             <p class="description">${escapeHTML(job.description)}</p>
             <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}">Søk nå</button>
         `;
 
-        // Append the newly created article to the job board
         elJobBoard.appendChild(article);
     });
 
-    // 6. Attach event listeners to all the "Søk nå" buttons we just created
     const applyButtons = document.querySelectorAll('.apply-btn');
     applyButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -436,11 +512,6 @@ function renderJobs() {
     });
 }
 
-/**
- * Utility function to prevent XSS (Cross-Site Scripting) attacks.
- * Since we are taking user input and rendering it as HTML, we MUST escape
- * characters like < and > so they are treated as text, not executable code.
- */
 function escapeHTML(str) {
     if (!str) return '';
     return str.replace(/[&<>'"]/g,
@@ -454,12 +525,9 @@ function escapeHTML(str) {
     );
 }
 
-// Re-render the jobs whenever the filter dropdown OR search input changes
 elFilterCategory.addEventListener('change', renderJobs);
-// 'input' event triggers every time a key is pressed or text is pasted
 elSearchInput.addEventListener('input', renderJobs);
 
-// Event listeners for Empty State Reset Buttons
 const btnResetFilters = document.getElementById('btn-reset-filters');
 if (btnResetFilters) {
     btnResetFilters.addEventListener('click', () => {
@@ -472,10 +540,14 @@ if (btnResetFilters) {
 const btnCreateFirstJob = document.getElementById('btn-create-first-job');
 if (btnCreateFirstJob) {
     btnCreateFirstJob.addEventListener('click', () => {
-        // Switch to the Post Job tab
         document.getElementById('tab-post-job').click();
     });
 }
 
-// Initialize: Show the home view on first load
+// Check initial session
+supabase.auth.getSession().then(({ data: { session } }) => {
+    updateNavForUser(session?.user || null);
+});
+
+// Initialize
 showHomeView();

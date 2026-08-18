@@ -16,6 +16,11 @@
             <h1>Koble</h1>
             <nav id="main-nav" class="hidden">
                 <button id="nav-home-btn" class="btn-text">Hjem</button>
+                <button id="nav-login-btn" class="btn-secondary btn-sm" style="margin-left: 1rem;">Logg inn</button>
+                <div id="nav-user-info" class="hidden" style="display: flex; align-items: center; gap: 1rem; margin-left: 1rem;">
+                    <span id="nav-user-email" style="font-size: 0.9rem; color: var(--text-muted);"></span>
+                    <button id="nav-logout-btn" class="btn-text">Logg ut</button>
+                </div>
             </nav>
         </div>
     </header>
@@ -95,10 +100,6 @@
                     <input type="text" id="job-pay" name="job-pay" placeholder="F.eks. 200 kr/timen eller avtales">
                 </div>
 
-                <div class="form-group">
-                    <label for="job-email">Din e-postadresse</label>
-                    <input type="email" id="job-email" name="job-email" required placeholder="ola.nordmann@epost.no">
-                </div>
 
                 <div class="form-group">
                     <label for="job-description">Beskrivelse</label>
@@ -158,6 +159,33 @@
         </section>
     </main>
 
+
+    <!-- Authentication Modal -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="close-auth-modal-btn" class="modal-close">&times;</button>
+            <h2 id="auth-title">Logg inn</h2>
+            <p id="auth-subtitle">Logg inn for å administrere dine oppdrag.</p>
+
+            <form id="auth-form" class="form-container">
+                <div class="form-group">
+                    <label for="auth-email">E-postadresse</label>
+                    <input type="email" id="auth-email" required placeholder="ola.nordmann@epost.no">
+                </div>
+                <div class="form-group">
+                    <label for="auth-password">Passord</label>
+                    <input type="password" id="auth-password" required placeholder="Min. 6 tegn">
+                </div>
+                <button type="submit" id="auth-submit-btn" class="btn btn-primary">Logg inn</button>
+                <div id="auth-error" class="auth-error hidden"></div>
+            </form>
+
+            <div class="auth-toggle">
+                <p>Har du ikke en konto? <button id="toggle-auth-mode-btn" class="btn-text" type="button">Registrer deg</button></p>
+            </div>
+        </div>
+    </div>
+
     <!-- Application Modal (Replaces mailto:) -->
     <div id="application-modal" class="modal-overlay hidden">
         <div class="modal-content">
@@ -195,6 +223,7 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>
