@@ -13,8 +13,8 @@
 <body>
     <header>
         <div class="container header-content">
-            <h1>Koble</h1>
-            <nav id="main-nav" class="hidden">
+            <h1 id="logo-title">Koble</h1>
+            <nav id="main-nav">
                 <button id="nav-home-btn" class="btn-text">Hjem</button>
                 <button id="nav-login-btn" class="btn-secondary btn-sm" style="margin-left: 1rem;">Logg inn</button>
                 <div id="nav-user-info" class="hidden" >
@@ -93,6 +93,11 @@
                 <div class="form-group">
                     <label for="job-location">Sted</label>
                     <input type="text" id="job-location" name="job-location" required placeholder="F.eks. Oslo, Frogner">
+                </div>
+
+                <div class="form-group">
+                    <label for="job-time">Når?</label>
+                    <input type="text" id="job-time" name="job-time" required placeholder="F.eks. Neste fredag, Snarest, Kl 14:00">
                 </div>
 
                 <div class="form-group">

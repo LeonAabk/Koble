@@ -37,6 +37,7 @@ const elMainNav = document.getElementById('main-nav');
 
 // Navigation Buttons
 const elNavHomeBtn = document.getElementById('nav-home-btn');
+const elLogoTitle = document.getElementById('logo-title');
 const elYouthRoleBtn = document.getElementById('youth-role-btn');
 const elEmployerRoleBtn = document.getElementById('employer-role-btn');
 
@@ -131,7 +132,13 @@ async function handleAuthSubmit(e) {
         }
         closeAuthModal();
     } catch (error) {
-        authError.textContent = error.message.includes('Invalid login') ? 'Feil e-post eller passord.' : 'En feil oppstod. Prøv igjen.';
+        if (error.message.includes('Invalid login')) {
+            authError.textContent = 'Feil e-post eller passord.';
+        } else if (error.message.includes('rate limit')) {
+            authError.textContent = 'For mange forsøk. Vennligst vent litt og prøv igjen.';
+        } else {
+            authError.textContent = 'En feil oppstod. Prøv igjen.';
+        }
         authError.classList.remove('hidden');
     } finally {
         authSubmitBtn.disabled = false;
@@ -204,12 +211,6 @@ function hideAllViews() {
 function showView(viewElement) {
     hideAllViews();
     viewElement.classList.remove('hidden');
-
-    if (viewElement === elLandingSection) {
-        elMainNav.classList.add('hidden');
-    } else {
-        elMainNav.classList.remove('hidden');
-    }
 }
 
 function showHomeView() {
@@ -217,6 +218,7 @@ function showHomeView() {
 }
 
 elNavHomeBtn.addEventListener('click', showHomeView);
+elLogoTitle.addEventListener('click', showHomeView);
 
 elYouthRoleBtn.addEventListener('click', () => {
     showView(elYouthSection);
@@ -297,13 +299,17 @@ elJobPostForm.addEventListener('submit', async (e) => {
     }
 
     const title = document.getElementById('job-title').value;
-    const description = document.getElementById('job-description').value;
+    const rawDescription = document.getElementById('job-description').value;
+    const time = document.getElementById('job-time').value;
+
+    // Combine the time and the description into one string so we don't need a DB migration
+    const description = `Når: ${time}\n\n${rawDescription}`;
 
     if (title.length < 5) {
         showToast("Tittelen må være minst 5 tegn lang.", "error");
         return;
     }
-    if (description.length < 10) {
+    if (rawDescription.length < 10) {
         showToast("Beskrivelsen må være minst 10 tegn.", "error");
         return;
     }
