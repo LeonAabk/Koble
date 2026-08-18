@@ -52,6 +52,7 @@ const elNoMyJobsMsg = document.getElementById('no-my-jobs-msg');
 // Youth View Elements
 const elJobBoard = document.getElementById('job-board');
 const elFilterCategory = document.getElementById('filter-category');
+const elFilterLocation = document.getElementById('filter-location');
 const elSearchInput = document.getElementById('search-input');
 const elNoJobsMsg = document.getElementById('no-jobs-msg');
 
@@ -404,8 +405,11 @@ async function renderMyJobs() {
         const d = new Date(job.created_at);
         const formattedDate = d.toLocaleDateString('no-NO');
 
+        // Check if job is less than 24 hours old
+        const isNew = (new Date() - d) < (24 * 60 * 60 * 1000);
+
         article.innerHTML = `
-            <h3>${escapeHTML(job.title)}</h3>
+            <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
@@ -513,16 +517,18 @@ elCopyTemplateBtn.addEventListener('click', () => {
 async function renderJobs() {
     const jobs = await getJobs();
     const selectedFilter = elFilterCategory.value;
+    const selectedLocation = elFilterLocation.value;
     const searchQuery = elSearchInput.value.toLowerCase().trim();
 
     elJobBoard.innerHTML = '';
 
     const filteredJobs = jobs.filter(job => {
         const matchesCategory = selectedFilter === 'Alle' || job.category === selectedFilter;
+        const matchesLocation = selectedLocation === 'Alle' || job.location === selectedLocation;
         const matchesSearch = job.title.toLowerCase().includes(searchQuery) ||
                               job.description.toLowerCase().includes(searchQuery);
 
-        return matchesCategory && matchesSearch;
+        return matchesCategory && matchesLocation && matchesSearch;
     });
 
     if (filteredJobs.length === 0) {
@@ -552,8 +558,11 @@ async function renderJobs() {
         const d = new Date(job.created_at);
         const formattedDate = d.toLocaleDateString('no-NO');
 
+        // Check if job is less than 24 hours old
+        const isNew = (new Date() - d) < (24 * 60 * 60 * 1000);
+
         article.innerHTML = `
-            <h3>${escapeHTML(job.title)}</h3>
+            <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
@@ -590,6 +599,7 @@ function escapeHTML(str) {
 }
 
 elFilterCategory.addEventListener('change', renderJobs);
+elFilterLocation.addEventListener('change', renderJobs);
 elSearchInput.addEventListener('input', renderJobs);
 
 const btnResetFilters = document.getElementById('btn-reset-filters');
@@ -597,6 +607,7 @@ if (btnResetFilters) {
     btnResetFilters.addEventListener('click', () => {
         elSearchInput.value = '';
         elFilterCategory.value = 'Alle';
+        elFilterLocation.value = 'Alle';
         renderJobs();
     });
 }

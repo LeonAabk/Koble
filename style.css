@@ -183,6 +183,26 @@ footer {
     .role-buttons {
         flex-direction: column;
     }
+
+    header .container {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    #main-nav {
+        display: flex;
+        flex-direction: row; /* Keep elements inline */
+        gap: var(--spacing-sm);
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        flex-wrap: wrap; /* allow wrap if too small */
+    }
+
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
 /* Forms */
@@ -363,7 +383,7 @@ textarea:focus {
     align-items: flex-end;
 }
 
-.search-group, .category-group {
+.search-group, .category-group, .location-group {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -609,4 +629,17 @@ textarea:focus {
 .badge-group-friendly::before {
     content: "👥";
     font-size: 0.8rem;
+}
+
+/* New Job Badge */
+.badge-new {
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: 600;
+    margin-left: 0.5rem;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+    border-radius: var(--border-radius);
+    display: inline-block;
+    vertical-align: middle;
 }

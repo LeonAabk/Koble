@@ -91,8 +91,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="job-location">Sted</label>
-                    <input type="text" id="job-location" name="job-location" required placeholder="F.eks. Oslo, Frogner">
+                    <label for="job-location">Sted (Kommune)</label>
+                    <select id="job-location" name="job-location" required>
+                        <option value="Hamar">Hamar</option>
+                        <option value="Stange">Stange</option>
+                        <option value="Ringsaker">Ringsaker</option>
+                        <option value="Løten">Løten</option>
+                        <option value="Annet">Annet / Utenfor området</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -167,8 +173,20 @@
                         <option value="Hushjelp">Hushjelp</option>
                         <option value="Russedugnad / Gruppearbeid">Russedugnad / Gruppearbeid</option>
                         <option value="Annet">Annet</option>
-                </select>
-            </div>
+                    </select>
+                </div>
+
+                <div class="location-group">
+                    <label for="filter-location">Sted:</label>
+                    <select id="filter-location">
+                        <option value="Alle">Alle steder</option>
+                        <option value="Hamar">Hamar</option>
+                        <option value="Stange">Stange</option>
+                        <option value="Ringsaker">Ringsaker</option>
+                        <option value="Løten">Løten</option>
+                        <option value="Annet">Annet</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Job cards will be dynamically injected here by JS -->
