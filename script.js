@@ -131,7 +131,13 @@ async function handleAuthSubmit(e) {
         }
         closeAuthModal();
     } catch (error) {
-        authError.textContent = error.message.includes('Invalid login') ? 'Feil e-post eller passord.' : 'En feil oppstod. Prøv igjen.';
+        if (error.message.includes('Invalid login')) {
+            authError.textContent = 'Feil e-post eller passord.';
+        } else if (error.message.includes('rate limit')) {
+            authError.textContent = 'For mange forsøk. Vennligst vent litt og prøv igjen.';
+        } else {
+            authError.textContent = 'En feil oppstod. Prøv igjen.';
+        }
         authError.classList.remove('hidden');
     } finally {
         authSubmitBtn.disabled = false;
