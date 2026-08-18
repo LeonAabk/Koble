@@ -299,6 +299,55 @@ function deleteJob(jobId) {
     // Note: If we had a backend, we'd make an API DELETE request here instead.
 }
 
+// --- Application Modal Logic ---
+const elApplicationModal = document.getElementById('application-modal');
+const elCloseModalBtn = document.getElementById('close-modal-btn');
+const elModalEmailDisplay = document.getElementById('modal-email-display');
+const elCopyEmailBtn = document.getElementById('copy-email-btn');
+
+let currentEmailToCopy = '';
+
+/**
+ * Opens the application modal and sets the email.
+ */
+function openApplicationModal(email) {
+    currentEmailToCopy = email;
+    elModalEmailDisplay.textContent = email;
+    elApplicationModal.classList.remove('hidden');
+}
+
+/**
+ * Closes the application modal.
+ */
+function closeApplicationModal() {
+    elApplicationModal.classList.add('hidden');
+    currentEmailToCopy = '';
+}
+
+// Close via button
+elCloseModalBtn.addEventListener('click', closeApplicationModal);
+
+// Close via clicking outside the modal content (on the overlay)
+elApplicationModal.addEventListener('click', (e) => {
+    if (e.target === elApplicationModal) {
+        closeApplicationModal();
+    }
+});
+
+// Copy Email Logic
+elCopyEmailBtn.addEventListener('click', () => {
+    if (!currentEmailToCopy) return;
+
+    navigator.clipboard.writeText(currentEmailToCopy).then(() => {
+        showToast("E-postadresse kopiert!", "success");
+        closeApplicationModal(); // Optionally close it after copying
+    }).catch(err => {
+        console.error("Kunne ikke kopiere tekst: ", err);
+        showToast("Kunne ikke kopiere. Prøv å markere teksten manuelt.", "error");
+    });
+});
+
+
 // --- 5. Youth Features (Browsing, Searching & Filtering Jobs) ---
 
 const elJobBoard = document.getElementById('job-board');
@@ -347,12 +396,8 @@ function renderJobs() {
         const article = document.createElement('article');
         article.classList.add('job-card');
 
-        // Construct the mailto link dynamically
-        const subject = encodeURIComponent(`Søknad på jobb: ${job.title}`);
-        const body = encodeURIComponent(`Hei!\n\nJeg er interessert i jobben "${job.title}".\n\nMed vennlig hilsen,\n[Ditt Navn]`);
-        const mailtoLink = `mailto:${job.email}?subject=${subject}&body=${body}`;
-
         // Build the inner HTML of the card
+        // Note: Instead of an anchor tag with mailto:, we use a button with a data attribute.
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}</h3>
             <span class="badge">${escapeHTML(job.category)}</span>
@@ -360,11 +405,20 @@ function renderJobs() {
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><em>Lagt ut: ${job.datePosted}</em></p>
             <p class="description">${escapeHTML(job.description)}</p>
-            <a href="${mailtoLink}" class="btn btn-primary">Søk nå (E-post)</a>
+            <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}">Søk nå</button>
         `;
 
         // Append the newly created article to the job board
         elJobBoard.appendChild(article);
+    });
+
+    // 6. Attach event listeners to all the "Søk nå" buttons we just created
+    const applyButtons = document.querySelectorAll('.apply-btn');
+    applyButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const email = e.target.getAttribute('data-email');
+            openApplicationModal(email);
+        });
     });
 }
 
