@@ -595,3 +595,18 @@ textarea:focus {
 #logo-title:hover {
     opacity: 0.8;
 }
+
+/* Group Friendly Badge */
+.badge-group-friendly {
+    background-color: #dbeafe; /* Light blue */
+    color: #1e40af; /* Dark blue text */
+    border: 1px solid #bfdbfe;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.badge-group-friendly::before {
+    content: "👥";
+    font-size: 0.8rem;
+}

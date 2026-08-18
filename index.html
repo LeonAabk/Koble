@@ -85,7 +85,7 @@
                         <option value="Gårdsarbeid">Gårdsarbeid</option>
                         <option value="Vedlikehold">Vedlikehold</option>
                         <option value="Hushjelp">Hushjelp</option>
-                        <option value="Russedugnad">Russedugnad</option>
+                        <option value="Russedugnad / Gruppearbeid">Russedugnad / Gruppearbeid</option>
                         <option value="Annet">Annet</option>
                     </select>
                 </div>
@@ -109,6 +109,11 @@
                 <div class="form-group">
                     <label for="job-description">Beskrivelse</label>
                     <textarea id="job-description" name="job-description" rows="4" required placeholder="Beskriv hva som skal gjøres, når det passer, osv."></textarea>
+                </div>
+
+                <div class="form-group" style="flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.5rem; margin-top: 0.5rem;">
+                    <input type="checkbox" id="job-group-friendly" style="width: auto;">
+                    <label for="job-group-friendly" style="margin-bottom: 0; font-weight: normal; font-size: 0.9rem;">Passer for grupper/russ</label>
                 </div>
 
                     <button type="submit" class="btn btn-primary">Publiser jobb</button>
@@ -160,7 +165,7 @@
                         <option value="Gårdsarbeid">Gårdsarbeid</option>
                         <option value="Vedlikehold">Vedlikehold</option>
                         <option value="Hushjelp">Hushjelp</option>
-                        <option value="Russedugnad">Russedugnad</option>
+                        <option value="Russedugnad / Gruppearbeid">Russedugnad / Gruppearbeid</option>
                         <option value="Annet">Annet</option>
                 </select>
             </div>
@@ -216,11 +221,20 @@
                 <p><strong>E-postadresse:</strong></p>
                 <div class="copy-group">
                     <span id="modal-email-display" class="email-display"></span>
-                    <button id="copy-email-btn" class="btn btn-secondary btn-sm">Kopier</button>
+                    <button id="copy-email-btn" class="btn btn-secondary btn-sm">Kopier E-post</button>
                 </div>
             </div>
 
-            <div class="tips-box">
+            <div class="template-box" style="margin-top: 1.5rem; background: #f8f9fa; padding: 1rem; border-radius: 4px; border: 1px solid var(--border-color);">
+                <h4>Generer e-postmal</h4>
+                <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">Søker du på vegne av en gruppe eller russebuss? (Valgfritt)</p>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <input type="text" id="applicant-group-name" placeholder="F.eks. Team 2026">
+                </div>
+                <button id="copy-template-btn" class="btn btn-secondary btn-sm">Kopier Ferdig Mal</button>
+            </div>
+
+            <div class="tips-box" style="margin-top: 1.5rem;">
                 <h4>Tips til e-posten:</h4>
                 <ul>
                     <li>Nevn hvilket oppdrag du søker på i emnefeltet.</li>
