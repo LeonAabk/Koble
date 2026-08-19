@@ -14,8 +14,6 @@ const authTitle = document.getElementById('auth-title');
 const authSubtitle = document.getElementById('auth-subtitle');
 const authSubmitBtn = document.getElementById('auth-submit-btn');
 const toggleAuthBtn = document.getElementById('toggle-auth-mode-btn');
-const authNameGroup = document.getElementById('auth-name-group');
-const authName = document.getElementById('auth-name');
 const authEmail = document.getElementById('auth-email');
 const authPassword = document.getElementById('auth-password');
 const authError = document.getElementById('auth-error');
@@ -33,16 +31,12 @@ const elLandingSection = document.getElementById('landing-view');
 const elEmployerSection = document.getElementById('employer-view');
 const elYouthSection = document.getElementById('youth-view');
 const elProfileSection = document.getElementById('profile-view');
-const elAdminSection = document.getElementById('admin-view');
 const elProfileEmailDisplay = document.getElementById('profile-email-display');
-const elProfileNameInput = document.getElementById('profile-name-input');
-const elProfileSaveBtn = document.getElementById('profile-save-btn');
 const elProfileLogoutBtn = document.getElementById('profile-logout-btn');
 const elMainNav = document.getElementById('main-nav');
 
 // Navigation Buttons
 const elNavHomeBtn = document.getElementById('nav-home-btn');
-const elNavAdminBtn = document.getElementById('nav-admin-btn');
 const elLogoTitle = document.getElementById('logo-title');
 const elYouthRoleBtn = document.getElementById('youth-role-btn');
 const elEmployerRoleBtn = document.getElementById('employer-role-btn');
@@ -94,16 +88,12 @@ function updateAuthUI() {
         authSubmitBtn.textContent = 'Logg inn';
         toggleAuthBtn.textContent = 'Registrer deg';
         toggleAuthBtn.parentElement.childNodes[0].textContent = 'Har du ikke en konto? ';
-        if (authNameGroup) authNameGroup.classList.add('hidden');
-        if (authName) authName.required = false;
     } else {
         authTitle.textContent = 'Registrer deg';
         authSubtitle.textContent = 'Opprett en konto for å legge ut oppdrag.';
         authSubmitBtn.textContent = 'Registrer konto';
         toggleAuthBtn.textContent = 'Logg inn';
         toggleAuthBtn.parentElement.childNodes[0].textContent = 'Har du allerede en konto? ';
-        if (authNameGroup) authNameGroup.classList.remove('hidden');
-        if (authName) authName.required = true;
     }
 }
 
@@ -117,7 +107,6 @@ async function handleAuthSubmit(e) {
     e.preventDefault();
     const email = authEmail.value;
     const password = authPassword.value;
-    const displayName = authName.value;
 
     authError.classList.add('hidden');
     authSubmitBtn.disabled = true;
@@ -134,11 +123,6 @@ async function handleAuthSubmit(e) {
             const { data, error } = await supabaseClient.auth.signUp({
                 email,
                 password,
-                options: {
-                    data: {
-                        display_name: displayName
-                    }
-                }
             });
             if (error) throw error;
             if (data.user && data.user.identities && data.user.identities.length === 0) {
@@ -149,6 +133,8 @@ async function handleAuthSubmit(e) {
             showToast('Konto opprettet! Du er nå logget inn.', 'success');
         }
         closeAuthModal();
+        showView(elEmployerSection);
+        renderMyJobs();
     } catch (error) {
         if (error.message.includes('Invalid login')) {
             authError.textContent = 'Feil e-post eller passord.';
@@ -178,16 +164,10 @@ function updateNavForUser(user) {
         navLoginBtn.classList.add('hidden');
         navUserInfo.classList.remove('hidden');
         navUserEmail.textContent = user.email;
-        if (user.email === 'admin@koble.no') {
-            elNavAdminBtn.classList.remove('hidden');
-        } else {
-            elNavAdminBtn.classList.add('hidden');
-        }
     } else {
         navLoginBtn.classList.remove('hidden');
         navUserInfo.classList.add('hidden');
         navUserEmail.textContent = '';
-        elNavAdminBtn.classList.add('hidden');
 
         // If they are on employer view but logged out, send to home
         if (!elEmployerSection.classList.contains('hidden') || !elProfileSection.classList.contains('hidden')) {
@@ -199,18 +179,6 @@ function updateNavForUser(user) {
 // Listen for Auth changes
 supabaseClient.auth.onAuthStateChange((event, session) => {
     updateNavForUser(session?.user || null);
-    if (event === 'SIGNED_IN') {
-        if (window.location.hash === '#admin') {
-            handleRouting();
-        } else {
-            showView(elEmployerSection);
-            renderMyJobs();
-        }
-    } else if (event === 'SIGNED_OUT') {
-        if (window.location.hash === '#admin') {
-            handleRouting();
-        }
-    }
 });
 
 // Event Listeners for Auth
@@ -222,38 +190,7 @@ authForm.addEventListener('submit', handleAuthSubmit);
 navProfileBtn.addEventListener('click', () => {
     showView(elProfileSection);
     elProfileEmailDisplay.textContent = currentUser.email;
-    if (elProfileNameInput) elProfileNameInput.value = currentUser.user_metadata?.display_name || '';
 });
-
-if (elProfileSaveBtn) {
-    elProfileSaveBtn.addEventListener('click', async () => {
-        const newName = elProfileNameInput.value.trim();
-        if (!newName) {
-            showToast('Visningsnavn kan ikke være tomt', 'error');
-            return;
-        }
-
-        elProfileSaveBtn.disabled = true;
-        elProfileSaveBtn.textContent = 'Lagrer...';
-
-        try {
-            const { data, error } = await supabaseClient.auth.updateUser({
-                data: { display_name: newName }
-            });
-
-            if (error) throw error;
-
-            currentUser = data.user;
-            showToast('Profil oppdatert!', 'success');
-        } catch (error) {
-            console.error('Error updating profile:', error);
-            showToast('Kunne ikke oppdatere profilen', 'error');
-        } finally {
-            elProfileSaveBtn.disabled = false;
-            elProfileSaveBtn.textContent = 'Lagre endringer';
-        }
-    });
-}
 
 elProfileLogoutBtn.addEventListener('click', handleLogout);
 
@@ -269,7 +206,6 @@ function hideAllViews() {
     elEmployerSection.classList.add('hidden');
     elYouthSection.classList.add('hidden');
     elProfileSection.classList.add('hidden');
-    elAdminSection.classList.add('hidden');
 }
 
 function showView(viewElement) {
@@ -288,13 +224,6 @@ elYouthRoleBtn.addEventListener('click', () => {
     showView(elYouthSection);
     renderJobs();
 });
-
-if (elNavAdminBtn) {
-    elNavAdminBtn.addEventListener('click', () => {
-        window.location.hash = '#admin';
-        handleRouting(); // Ensure routing happens even if hash was already #admin
-    });
-}
 
 elEmployerRoleBtn.addEventListener('click', () => {
     if (currentUser) {
@@ -414,10 +343,6 @@ elJobPostForm.addEventListener('submit', async (e) => {
         description = "[GROUP_FRIENDLY]" + description;
     }
 
-    // Add employer name tag
-    const employerName = currentUser.user_metadata?.display_name || 'Ukjent arbeidsgiver';
-    description = `[EMPLOYER_NAME]${employerName}\n\n${description}`;
-
     if (title.length < 5) {
         showToast("Tittelen må være minst 5 tegn lang.", "error");
         return;
@@ -534,8 +459,6 @@ async function renderMyJobs() {
         elNoMyJobsMsg.classList.add('hidden');
     }
 
-    const fragment = document.createDocumentFragment();
-
     myJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -548,13 +471,6 @@ async function renderMyJobs() {
 
         // Check for the group-friendly tag and remove it from the display string
         let displayDescription = job.description;
-        let employerName = 'Ukjent arbeidsgiver';
-        if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
-            const parts = displayDescription.split("\n\n");
-            employerName = parts[0].replace("[EMPLOYER_NAME]", "");
-            displayDescription = parts.slice(1).join("\n\n");
-        }
-
         let isGroupFriendly = false;
         if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
             isGroupFriendly = true;
@@ -584,10 +500,8 @@ async function renderMyJobs() {
             </div>
         `;
 
-        fragment.appendChild(article);
+        elMyJobsList.appendChild(article);
     });
-
-    elMyJobsList.appendChild(fragment);
 
     const deleteButtons = document.querySelectorAll('.delete-btn');
     deleteButtons.forEach(btn => {
@@ -616,13 +530,6 @@ function editJob(job) {
     document.getElementById('job-pay').value = job.pay || '';
 
     let displayDescription = job.description;
-    let employerName = 'Ukjent arbeidsgiver';
-    if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
-        const parts = displayDescription.split("\n\n");
-        employerName = parts[0].replace("[EMPLOYER_NAME]", "");
-        displayDescription = parts.slice(1).join("\n\n");
-    }
-
     let isGroupFriendly = false;
     if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
         isGroupFriendly = true;
@@ -693,21 +600,17 @@ async function deleteJob(jobId) {
 const elApplicationModal = document.getElementById('application-modal');
 const elCloseModalBtn = document.getElementById('close-modal-btn');
 const elModalEmailDisplay = document.getElementById('modal-email-display');
-const elModalEmployerNameDisplay = document.getElementById('modal-employer-name-display');
 const elCopyEmailBtn = document.getElementById('copy-email-btn');
 const elApplicantGroupName = document.getElementById('applicant-group-name');
 const elCopyTemplateBtn = document.getElementById('copy-template-btn');
 
 let currentEmailToCopy = '';
 let currentJobTitleForTemplate = '';
-let currentEmployerNameForTemplate = '';
 
-function openApplicationModal(email, jobTitle, employerName) {
+function openApplicationModal(email, jobTitle) {
     currentEmailToCopy = email;
     currentJobTitleForTemplate = jobTitle;
-    currentEmployerNameForTemplate = employerName;
     elModalEmailDisplay.textContent = email;
-    elModalEmployerNameDisplay.textContent = employerName;
     elApplicantGroupName.value = ''; // Reset the input
     elApplicationModal.classList.remove('hidden');
 }
@@ -716,7 +619,6 @@ function closeApplicationModal() {
     elApplicationModal.classList.add('hidden');
     currentEmailToCopy = '';
     currentJobTitleForTemplate = '';
-    currentEmployerNameForTemplate = '';
 }
 
 elCloseModalBtn.addEventListener('click', closeApplicationModal);
@@ -744,16 +646,10 @@ elCopyTemplateBtn.addEventListener('click', () => {
     const groupName = elApplicantGroupName.value.trim();
     let template = "";
 
-    const greeting = currentEmployerNameForTemplate && currentEmployerNameForTemplate !== 'Ukjent arbeidsgiver'
-        ? `Hei ${currentEmployerNameForTemplate}!\n\n`
-        : `Hei!\n\n`;
-
-    const youthName = currentUser?.user_metadata?.display_name || '[DITT NAVN]';
-
     if (groupName) {
-        template = `${greeting}Vi er ${groupName}, og vi vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nVi er en arbeidsvillig gjeng som gjerne tar i et tak. Vi har mulighet til å stille med [ANTALL] personer og kan jobbe [LEGG INN NÅR DERE KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n${groupName}`;
+        template = `Hei!\n\nVi er ${groupName}, og vi vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nVi er en arbeidsvillig gjeng som gjerne tar i et tak. Vi har mulighet til å stille med [ANTALL] personer og kan jobbe [LEGG INN NÅR DERE KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n${groupName}`;
     } else {
-        template = `${greeting}Jeg vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nJeg er en arbeidsvillig og ansvarsfull person som gjerne vil hjelpe til med dette. Jeg har mulighet til å jobbe [LEGG INN NÅR DU KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n${youthName}`;
+        template = `Hei!\n\nJeg vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nJeg er en arbeidsvillig og ansvarsfull person som gjerne vil hjelpe til med dette. Jeg har mulighet til å jobbe [LEGG INN NÅR DU KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n[DITT NAVN]`;
     }
 
     navigator.clipboard.writeText(template).then(() => {
@@ -801,8 +697,6 @@ async function renderJobs() {
         elNoJobsMsg.classList.add('hidden');
     }
 
-    const fragment = document.createDocumentFragment();
-
     filteredJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -814,13 +708,6 @@ async function renderJobs() {
         else if (job.category === 'Russedugnad / Gruppearbeid') badgeClass = 'badge-russedugnad';
 
         let displayDescription = job.description;
-        let employerName = 'Ukjent arbeidsgiver';
-        if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
-            const parts = displayDescription.split("\n\n");
-            employerName = parts[0].replace("[EMPLOYER_NAME]", "");
-            displayDescription = parts.slice(1).join("\n\n");
-        }
-
         let isGroupFriendly = false;
         if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
             isGroupFriendly = true;
@@ -841,32 +728,18 @@ async function renderJobs() {
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
             <p class="description">${escapeHTML(displayDescription)}</p>
-<div style="display: flex; gap: 0.5rem; align-items: center;">
-    <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}">Søk nå</button>
-    ${(currentUser && currentUser.email === 'admin@koble.no') ? `<button class="btn btn-danger btn-sm feed-admin-delete-btn" data-id="${job.id}">Slett oppdrag</button>` : ''}
-</div>
+            <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}">Søk nå</button>
         `;
 
-        fragment.appendChild(article);
+        elJobBoard.appendChild(article);
     });
-
-    elJobBoard.appendChild(fragment);
 
     const applyButtons = document.querySelectorAll('.apply-btn');
     applyButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const email = e.target.getAttribute('data-email');
             const title = e.target.getAttribute('data-title');
-            const employer = e.target.getAttribute('data-employer');
-            openApplicationModal(email, title, employer);
-        });
-    });
-
-    const feedAdminDeleteButtons = document.querySelectorAll('.feed-admin-delete-btn');
-    feedAdminDeleteButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            deleteAdminJob(jobId);
+            openApplicationModal(email, title);
         });
     });
 }
@@ -911,31 +784,6 @@ if (btnCreateFirstJob) {
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
     updateNavForUser(session?.user || null);
 });
-
-// Hash routing
-function handleRouting() {
-    if (window.location.hash === '#admin') {
-        showView(elAdminSection);
-        const adminLoginSection = document.getElementById('admin-login-section');
-        const adminDashboardSection = document.getElementById('admin-dashboard-section');
-
-        // Ensure only the admin account can access the dashboard
-        if (currentUser && currentUser.email === 'admin@koble.no') {
-            adminLoginSection.classList.add('hidden');
-            adminDashboardSection.classList.remove('hidden');
-            if (typeof renderAdminJobs === 'function') {
-                renderAdminJobs();
-            }
-        } else {
-            adminLoginSection.classList.remove('hidden');
-            adminDashboardSection.classList.add('hidden');
-        }
-    } else {
-        showHomeView();
-    }
-}
-
-window.addEventListener('hashchange', handleRouting);
 
 // Initialize
 handleRouting();
