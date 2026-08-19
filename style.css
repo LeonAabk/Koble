@@ -326,6 +326,7 @@ textarea:focus {
     margin-top: var(--spacing-md);
     margin-bottom: var(--spacing-md);
     color: var(--text-light);
+    white-space: pre-wrap; /* Respects newline characters \n from description string */
 }
 
 /* --- Landing Page Specific Styles --- */
@@ -687,4 +688,62 @@ textarea:focus {
     100% {
         background-color: hsl(200, 20%, 95%);
     }
+}
+
+/* --- Admin Dashboard Styles --- */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: var(--spacing-md);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    text-align: left;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+.admin-table thead {
+    background-color: var(--bg-color);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.admin-table th,
+.admin-table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-table th {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.admin-table tbody tr:hover {
+    background-color: var(--bg-color);
+}
+
+.admin-table .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+}
+
+#admin-login-section {
+    max-width: 400px;
+    margin: 0 auto;
+    padding-top: var(--spacing-lg);
+}
+
+#admin-login-section h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+#admin-login-section p {
+    text-align: center;
+    color: var(--text-light);
+    margin-bottom: var(--spacing-md);
 }

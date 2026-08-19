@@ -20,6 +20,7 @@
                 <div id="nav-user-info" class="hidden" >
                     <span id="nav-user-email" style="font-size: 0.9rem; color: var(--text-light);"></span>
                     <button id="nav-profile-btn" class="btn-text">Min Profil</button>
+                    <button id="nav-admin-btn" class="btn-text hidden">Admin Panel</button>
                 </div>
             </nav>
         </div>
@@ -217,6 +218,47 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <p>Ingen jobber funnet. Prøv et annet søk eller en annen kategori.</p>
                 <button id="btn-reset-filters" class="btn btn-secondary">Nullstill filtre</button>
+            </div>
+        </section>
+        <!-- View 5: Admin View -->
+        <section id="admin-view" class="view hidden">
+            <div id="admin-login-section">
+                <h2>Admin Login</h2>
+                <p>Logg inn for å få tilgang til moderasjonspanelet.</p>
+                <form id="admin-auth-form" class="form-container">
+                    <div class="form-group">
+                        <label for="admin-auth-email">E-postadresse</label>
+                        <input type="email" id="admin-auth-email" required placeholder="admin@koble.no">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-auth-password">Passord</label>
+                        <input type="password" id="admin-auth-password" required placeholder="Min. 6 tegn">
+                    </div>
+                    <button type="submit" id="admin-auth-submit-btn" class="btn btn-primary">Logg inn</button>
+                    <div id="admin-auth-error" class="auth-error error-text hidden"></div>
+                </form>
+            </div>
+
+            <div id="admin-dashboard-section" class="hidden">
+                <h2>Moderasjonspanel</h2>
+                <p>Oversikt over alle aktive oppdrag. Du kan slette oppdrag som bryter med retningslinjene.</p>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Tittel</th>
+                                <th>Arbeidsgiver (E-post)</th>
+                                <th>Sted</th>
+                                <th>Dato</th>
+                                <th>Handling</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-jobs-table-body">
+                            <!-- Jobs will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
     </main>

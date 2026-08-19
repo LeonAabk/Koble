@@ -33,6 +33,7 @@ const elLandingSection = document.getElementById('landing-view');
 const elEmployerSection = document.getElementById('employer-view');
 const elYouthSection = document.getElementById('youth-view');
 const elProfileSection = document.getElementById('profile-view');
+const elAdminSection = document.getElementById('admin-view');
 const elProfileEmailDisplay = document.getElementById('profile-email-display');
 const elProfileNameInput = document.getElementById('profile-name-input');
 const elProfileSaveBtn = document.getElementById('profile-save-btn');
@@ -41,6 +42,7 @@ const elMainNav = document.getElementById('main-nav');
 
 // Navigation Buttons
 const elNavHomeBtn = document.getElementById('nav-home-btn');
+const elNavAdminBtn = document.getElementById('nav-admin-btn');
 const elLogoTitle = document.getElementById('logo-title');
 const elYouthRoleBtn = document.getElementById('youth-role-btn');
 const elEmployerRoleBtn = document.getElementById('employer-role-btn');
@@ -176,10 +178,16 @@ function updateNavForUser(user) {
         navLoginBtn.classList.add('hidden');
         navUserInfo.classList.remove('hidden');
         navUserEmail.textContent = user.email;
+        if (user.email === 'admin@koble.no') {
+            elNavAdminBtn.classList.remove('hidden');
+        } else {
+            elNavAdminBtn.classList.add('hidden');
+        }
     } else {
         navLoginBtn.classList.remove('hidden');
         navUserInfo.classList.add('hidden');
         navUserEmail.textContent = '';
+        elNavAdminBtn.classList.add('hidden');
 
         // If they are on employer view but logged out, send to home
         if (!elEmployerSection.classList.contains('hidden') || !elProfileSection.classList.contains('hidden')) {
@@ -192,8 +200,16 @@ function updateNavForUser(user) {
 supabaseClient.auth.onAuthStateChange((event, session) => {
     updateNavForUser(session?.user || null);
     if (event === 'SIGNED_IN') {
-        showView(elEmployerSection);
-        renderMyJobs();
+        if (window.location.hash === '#admin') {
+            handleRouting();
+        } else {
+            showView(elEmployerSection);
+            renderMyJobs();
+        }
+    } else if (event === 'SIGNED_OUT') {
+        if (window.location.hash === '#admin') {
+            handleRouting();
+        }
     }
 });
 
@@ -253,6 +269,7 @@ function hideAllViews() {
     elEmployerSection.classList.add('hidden');
     elYouthSection.classList.add('hidden');
     elProfileSection.classList.add('hidden');
+    elAdminSection.classList.add('hidden');
 }
 
 function showView(viewElement) {
@@ -271,6 +288,13 @@ elYouthRoleBtn.addEventListener('click', () => {
     showView(elYouthSection);
     renderJobs();
 });
+
+if (elNavAdminBtn) {
+    elNavAdminBtn.addEventListener('click', () => {
+        window.location.hash = '#admin';
+        handleRouting(); // Ensure routing happens even if hash was already #admin
+    });
+}
 
 elEmployerRoleBtn.addEventListener('click', () => {
     if (currentUser) {
@@ -504,6 +528,8 @@ async function renderMyJobs() {
         elNoMyJobsMsg.classList.add('hidden');
     }
 
+    const fragment = document.createDocumentFragment();
+
     myJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -547,8 +573,10 @@ async function renderMyJobs() {
             </div>
         `;
 
-        elMyJobsList.appendChild(article);
+        fragment.appendChild(article);
     });
+
+    elMyJobsList.appendChild(fragment);
 
     const deleteButtons = document.querySelectorAll('.delete-btn');
     deleteButtons.forEach(btn => {
@@ -762,6 +790,8 @@ async function renderJobs() {
         elNoJobsMsg.classList.add('hidden');
     }
 
+    const fragment = document.createDocumentFragment();
+
     filteredJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -800,11 +830,16 @@ async function renderJobs() {
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
             <p class="description">${escapeHTML(displayDescription)}</p>
-            <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}">Søk nå</button>
+<div style="display: flex; gap: 0.5rem; align-items: center;">
+    <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}">Søk nå</button>
+    ${(currentUser && currentUser.email === 'admin@koble.no') ? `<button class="btn btn-danger btn-sm feed-admin-delete-btn" data-id="${job.id}">Slett oppdrag</button>` : ''}
+</div>
         `;
 
-        elJobBoard.appendChild(article);
+        fragment.appendChild(article);
     });
+
+    elJobBoard.appendChild(fragment);
 
     const applyButtons = document.querySelectorAll('.apply-btn');
     applyButtons.forEach(btn => {
@@ -813,6 +848,14 @@ async function renderJobs() {
             const title = e.target.getAttribute('data-title');
             const employer = e.target.getAttribute('data-employer');
             openApplicationModal(email, title, employer);
+        });
+    });
+
+    const feedAdminDeleteButtons = document.querySelectorAll('.feed-admin-delete-btn');
+    feedAdminDeleteButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const jobId = e.target.getAttribute('data-id');
+            deleteAdminJob(jobId);
         });
     });
 }
@@ -858,5 +901,143 @@ supabaseClient.auth.getSession().then(({ data: { session } }) => {
     updateNavForUser(session?.user || null);
 });
 
+// Hash routing
+function handleRouting() {
+    if (window.location.hash === '#admin') {
+        showView(elAdminSection);
+        const adminLoginSection = document.getElementById('admin-login-section');
+        const adminDashboardSection = document.getElementById('admin-dashboard-section');
+
+        // Ensure only the admin account can access the dashboard
+        if (currentUser && currentUser.email === 'admin@koble.no') {
+            adminLoginSection.classList.add('hidden');
+            adminDashboardSection.classList.remove('hidden');
+            if (typeof renderAdminJobs === 'function') {
+                renderAdminJobs();
+            }
+        } else {
+            adminLoginSection.classList.remove('hidden');
+            adminDashboardSection.classList.add('hidden');
+        }
+    } else {
+        showHomeView();
+    }
+}
+
+window.addEventListener('hashchange', handleRouting);
+
 // Initialize
-showHomeView();
+handleRouting();
+
+// --- Admin Authentication Logic ---
+const adminAuthForm = document.getElementById('admin-auth-form');
+const adminAuthEmail = document.getElementById('admin-auth-email');
+const adminAuthPassword = document.getElementById('admin-auth-password');
+const adminAuthSubmitBtn = document.getElementById('admin-auth-submit-btn');
+const adminAuthError = document.getElementById('admin-auth-error');
+
+if (adminAuthForm) {
+    adminAuthForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        adminAuthError.classList.add('hidden');
+        adminAuthSubmitBtn.disabled = true;
+        adminAuthSubmitBtn.textContent = 'Logger inn...';
+
+        try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: adminAuthEmail.value,
+                password: adminAuthPassword.value
+            });
+
+            if (error) throw error;
+
+            // Login successful
+            adminAuthForm.reset();
+            handleRouting(); // Will route to dashboard since currentUser will be populated by onAuthStateChange or session check
+        } catch (error) {
+            console.error('Admin login error:', error);
+            adminAuthError.textContent = 'Feil e-post eller passord.';
+            adminAuthError.classList.remove('hidden');
+        } finally {
+            adminAuthSubmitBtn.disabled = false;
+            adminAuthSubmitBtn.textContent = 'Logg inn';
+        }
+    });
+}
+
+// --- Admin Moderation Dashboard ---
+async function renderAdminJobs() {
+    const adminTableBody = document.getElementById('admin-jobs-table-body');
+    if (!adminTableBody) return;
+
+    adminTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Laster oppdrag...</td></tr>';
+
+    const jobs = await getJobs();
+
+    adminTableBody.innerHTML = '';
+
+    if (jobs.length === 0) {
+        adminTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Ingen aktive oppdrag funnet.</td></tr>';
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    jobs.forEach(job => {
+        const tr = document.createElement('tr');
+        const d = new Date(job.created_at);
+        const formattedDate = d.toLocaleDateString('no-NO');
+
+        tr.innerHTML = `
+            <td>${escapeHTML(job.title)}</td>
+            <td>${escapeHTML(job.email)}</td>
+            <td>${escapeHTML(job.location)}</td>
+            <td>${formattedDate}</td>
+            <td>
+                <button class="btn btn-danger btn-sm admin-delete-btn" data-id="${job.id}">Slett</button>
+            </td>
+        `;
+        fragment.appendChild(tr);
+    });
+
+    adminTableBody.appendChild(fragment);
+
+    const deleteButtons = adminTableBody.querySelectorAll('.admin-delete-btn');
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const jobId = e.target.getAttribute('data-id');
+            deleteAdminJob(jobId);
+        });
+    });
+}
+
+async function deleteAdminJob(jobId) {
+    if (!currentUser) {
+        showToast('Du må være logget inn for å slette oppdrag.', 'error');
+        return;
+    }
+
+    if (confirm('ADVARSEL: Er du sikker på at du vil permanent slette dette oppdraget som administrator?')) {
+        try {
+            // Deliberately omitting the user_id check to allow admin deletion
+            const { error } = await supabaseClient
+                .from('jobs')
+                .delete()
+                .eq('id', jobId);
+
+            if (error) throw error;
+
+            showToast('Oppdraget ble slettet', 'success');
+            renderAdminJobs(); // Refresh table
+
+            // If they are deleting from the public feed, refresh that too
+            if (!elYouthSection.classList.contains('hidden')) {
+                renderJobs();
+            }
+        } catch (error) {
+            console.error('Error deleting job as admin:', error);
+            showToast('Kunne ikke slette oppdraget.', 'error');
+        }
+    }
+}
