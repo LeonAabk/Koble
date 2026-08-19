@@ -20,7 +20,6 @@
                 <div id="nav-user-info" class="hidden" >
                     <span id="nav-user-email" style="font-size: 0.9rem; color: var(--text-light);"></span>
                     <button id="nav-profile-btn" class="btn-text">Min Profil</button>
-                    <button id="nav-admin-btn" class="btn-text hidden">Admin Panel</button>
                 </div>
             </nav>
         </div>
@@ -154,13 +153,6 @@
                     <label>E-postadresse</label>
                     <p id="profile-email-display" style="font-weight: 600; padding: 0.5rem 0;"></p>
                 </div>
-                <div class="form-group">
-                    <label for="profile-name-input">Visningsnavn (vises for andre brukere)</label>
-                    <input type="text" id="profile-name-input" placeholder="F.eks. Ola Nordmann eller Johansens Gård">
-                </div>
-                <div class="form-group" style="margin-top: 1rem;">
-                    <button id="profile-save-btn" class="btn btn-primary">Lagre endringer</button>
-                </div>
                 <div class="form-group" style="margin-top: 2rem;">
                     <button id="profile-logout-btn" class="btn btn-danger">Logg ut</button>
                 </div>
@@ -220,47 +212,6 @@
                 <button id="btn-reset-filters" class="btn btn-secondary">Nullstill filtre</button>
             </div>
         </section>
-        <!-- View 5: Admin View -->
-        <section id="admin-view" class="view hidden">
-            <div id="admin-login-section">
-                <h2>Admin Login</h2>
-                <p>Logg inn for å få tilgang til moderasjonspanelet.</p>
-                <form id="admin-auth-form" class="form-container">
-                    <div class="form-group">
-                        <label for="admin-auth-email">E-postadresse</label>
-                        <input type="email" id="admin-auth-email" required placeholder="admin@koble.no">
-                    </div>
-                    <div class="form-group">
-                        <label for="admin-auth-password">Passord</label>
-                        <input type="password" id="admin-auth-password" required placeholder="Min. 6 tegn">
-                    </div>
-                    <button type="submit" id="admin-auth-submit-btn" class="btn btn-primary">Logg inn</button>
-                    <div id="admin-auth-error" class="auth-error error-text hidden"></div>
-                </form>
-            </div>
-
-            <div id="admin-dashboard-section" class="hidden">
-                <h2>Moderasjonspanel</h2>
-                <p>Oversikt over alle aktive oppdrag. Du kan slette oppdrag som bryter med retningslinjene.</p>
-
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Tittel</th>
-                                <th>Arbeidsgiver (E-post)</th>
-                                <th>Sted</th>
-                                <th>Dato</th>
-                                <th>Handling</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-jobs-table-body">
-                            <!-- Jobs will be injected here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
     </main>
 
 
@@ -272,11 +223,6 @@
             <p id="auth-subtitle">Logg inn for å administrere dine oppdrag.</p>
 
             <form id="auth-form" class="form-container">
-                <div class="form-group hidden" id="auth-name-group">
-                    <label for="auth-name">Visningsnavn</label>
-                    <input type="text" id="auth-name" placeholder="F.eks. Ola Nordmann">
-                    <small style="color: var(--text-light); margin-top: 0.25rem;">Dette navnet vil vises for andre på plattformen.</small>
-                </div>
                 <div class="form-group">
                     <label for="auth-email">E-postadresse</label>
                     <input type="email" id="auth-email" required placeholder="ola.nordmann@epost.no">
@@ -303,8 +249,7 @@
             <p>For å søke på dette oppdraget, send en e-post til arbeidsgiveren med en kort presentasjon av deg selv.</p>
 
             <div class="contact-info-box">
-                <p><strong>Arbeidsgiver:</strong> <span id="modal-employer-name-display"></span></p>
-                <p style="margin-top: 0.5rem;"><strong>E-postadresse:</strong></p>
+                <p><strong>E-postadresse:</strong></p>
                 <div class="copy-group">
                     <span id="modal-email-display" class="email-display"></span>
                     <button id="copy-email-btn" class="btn btn-secondary btn-sm">Kopier E-post</button>
