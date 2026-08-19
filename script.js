@@ -430,12 +430,18 @@ async function renderMyJobs() {
 }
 
 async function deleteJob(jobId) {
+    if (!currentUser) {
+        showToast('Du må være logget inn for å slette oppdrag.', 'error');
+        return;
+    }
+
     if (confirm('Er du sikker på at du vil slette dette oppdraget?')) {
         try {
             const { error } = await supabaseClient
                 .from('jobs')
                 .delete()
-                .eq('id', jobId);
+                .eq('id', jobId)
+                .eq('user_id', currentUser.id);
 
             if (error) throw error;
 

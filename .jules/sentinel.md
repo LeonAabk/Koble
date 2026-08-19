@@ -1,0 +1,4 @@
+## 2024-05-28 - Missing Ownership Checks (IDOR Risk)
+**Vulnerability:** The `deleteJob` function in `script.js` relied solely on the `jobId` from the DOM element's data attribute, without passing the active user's ID (`currentUser.id`) to the Supabase client query.
+**Learning:** While Row Level Security (RLS) is the primary defense layer in Supabase, relying solely on backend RLS from the frontend creates a single point of failure. If RLS is misconfigured or bypassed, any logged-in user could manipulate the client to send a delete request for *any* `jobId`.
+**Prevention:** Defense in Depth: Always include explicit ownership checks on the client side before triggering mutable operations (e.g., adding `.eq('user_id', currentUser.id)` to queries). This ensures the client enforces authorization alongside the backend.
