@@ -274,11 +274,17 @@ function showToast(message, type = 'success') {
 
 
 // --- Database Operations ---
-async function getJobs() {
-    const { data, error } = await supabaseClient
+async function getJobs(onlyApproved = true) {
+    let query = supabaseClient
         .from('jobs')
         .select('*')
         .order('created_at', { ascending: false });
+
+    if (onlyApproved) {
+        query = query.eq('is_approved', true);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Error fetching jobs:', error);
@@ -378,7 +384,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
                 .from('jobs')
                 .insert([jobData]);
             if (error) throw error;
-            showToast('Oppdraget ble publisert!', 'success');
+            showToast('Takk! Oppdraget ditt er sendt inn og venter på godkjenning fra en administrator før det blir synlig for andre.', 'success');
         }
 
         resetJobForm();
@@ -477,8 +483,13 @@ async function renderMyJobs() {
         // Check if job is less than 24 hours old
         const isNew = (new Date() - d) < (24 * 60 * 60 * 1000);
 
+        const approvalBadge = job.is_approved
+            ? '<span class="badge badge-status-active">✅ Aktiv</span>'
+            : '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>';
+
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
+            ${approvalBadge}
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
@@ -775,4 +786,155 @@ supabaseClient.auth.getSession().then(({ data: { session } }) => {
 });
 
 // Initialize
-showHomeView();
+handleRouting();
+
+// --- Admin Authentication Logic ---
+const adminAuthForm = document.getElementById('admin-auth-form');
+const adminAuthEmail = document.getElementById('admin-auth-email');
+const adminAuthPassword = document.getElementById('admin-auth-password');
+const adminAuthSubmitBtn = document.getElementById('admin-auth-submit-btn');
+const adminAuthError = document.getElementById('admin-auth-error');
+
+if (adminAuthForm) {
+    adminAuthForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        adminAuthError.classList.add('hidden');
+        adminAuthSubmitBtn.disabled = true;
+        adminAuthSubmitBtn.textContent = 'Logger inn...';
+
+        try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: adminAuthEmail.value,
+                password: adminAuthPassword.value
+            });
+
+            if (error) throw error;
+
+            // Login successful
+            adminAuthForm.reset();
+            handleRouting(); // Will route to dashboard since currentUser will be populated by onAuthStateChange or session check
+        } catch (error) {
+            console.error('Admin login error:', error);
+            adminAuthError.textContent = 'Feil e-post eller passord.';
+            adminAuthError.classList.remove('hidden');
+        } finally {
+            adminAuthSubmitBtn.disabled = false;
+            adminAuthSubmitBtn.textContent = 'Logg inn';
+        }
+    });
+}
+
+// --- Admin Moderation Dashboard ---
+async function renderAdminJobs() {
+    const adminTableBody = document.getElementById('admin-jobs-table-body');
+    if (!adminTableBody) return;
+
+    adminTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Laster oppdrag...</td></tr>';
+
+    const jobs = await getJobs(false); // Fetch ALL jobs for admin, regardless of approval status
+
+    adminTableBody.innerHTML = '';
+
+    if (jobs.length === 0) {
+        adminTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Ingen oppdrag funnet.</td></tr>';
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    jobs.forEach(job => {
+        const tr = document.createElement('tr');
+        const d = new Date(job.created_at);
+        const formattedDate = d.toLocaleDateString('no-NO');
+        const statusText = job.is_approved ? 'Godkjent' : 'Venter';
+        const statusColor = job.is_approved ? 'var(--success-color)' : '#d97706'; // warning orange
+
+        tr.innerHTML = `
+            <td>${escapeHTML(job.title)}</td>
+            <td>${escapeHTML(job.email)}</td>
+            <td>${escapeHTML(job.location)}</td>
+            <td>${formattedDate}</td>
+            <td style="color: ${statusColor}; font-weight: bold;">${statusText}</td>
+            <td style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                ${!job.is_approved ? `<button class="btn btn-secondary btn-sm admin-approve-btn" data-id="${job.id}">Godkjenn</button>` : ''}
+                <button class="btn btn-danger btn-sm admin-delete-btn" data-id="${job.id}">Slett</button>
+            </td>
+        `;
+        fragment.appendChild(tr);
+    });
+
+    adminTableBody.appendChild(fragment);
+
+    const deleteButtons = adminTableBody.querySelectorAll('.admin-delete-btn');
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const jobId = e.target.getAttribute('data-id');
+            deleteAdminJob(jobId);
+        });
+    });
+
+    const approveButtons = adminTableBody.querySelectorAll('.admin-approve-btn');
+    approveButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const jobId = e.target.getAttribute('data-id');
+            approveAdminJob(jobId);
+        });
+    });
+}
+
+async function deleteAdminJob(jobId) {
+    if (!currentUser) {
+        showToast('Du må være logget inn for å slette oppdrag.', 'error');
+        return;
+    }
+
+    if (confirm('ADVARSEL: Er du sikker på at du vil permanent slette dette oppdraget som administrator?')) {
+        try {
+            // Deliberately omitting the user_id check to allow admin deletion
+            const { error } = await supabaseClient
+                .from('jobs')
+                .delete()
+                .eq('id', jobId);
+
+            if (error) throw error;
+
+            showToast('Oppdraget ble slettet', 'success');
+            renderAdminJobs(); // Refresh table
+
+            // If they are deleting from the public feed, refresh that too
+            if (!elYouthSection.classList.contains('hidden')) {
+                renderJobs();
+            }
+        } catch (error) {
+            console.error('Error deleting job as admin:', error);
+            showToast('Kunne ikke slette oppdraget.', 'error');
+        }
+    }
+}
+
+async function approveAdminJob(jobId) {
+    if (!currentUser) {
+        showToast('Du må være logget inn for å godkjenne oppdrag.', 'error');
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('jobs')
+            .update({ is_approved: true })
+            .eq('id', jobId)
+            .select();
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            throw new Error("Godkjenning ble avvist av databasen (sannsynligvis manglende RLS-policy for admin).");
+        }
+
+        showToast('Oppdraget ble godkjent og er nå offentlig.', 'success');
+        renderAdminJobs(); // Refresh table
+    } catch (error) {
+        console.error('Error approving job as admin:', error);
+        showToast('Kunne ikke godkjenne oppdraget.', 'error');
+    }
+}
