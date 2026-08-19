@@ -14,3 +14,6 @@ When binding navigation buttons that update `window.location.hash`, explicitly c
 
 ### 2024-08-19 - Conditional UI Buttons & Permissions
 When rendering UI elements conditionally based on permissions (e.g. inline admin delete buttons), ensure you correctly handle both the presence of the `currentUser` object *and* its properties. Do not assume `currentUser` is always defined; failing to check `if (currentUser)` before checking `currentUser.email` will crash the application for unauthenticated users.
+
+### 2024-08-19 - Moderation Queues and User Feedback
+When implementing moderation queues (`is_approved` flags) that delay content publication, always provide explicit feedback to the creator immediately upon submission, and reflect that pending status clearly in their personal management dashboard. Failing to do so causes confusion and duplicate submissions.

@@ -410,7 +410,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
                 .from('jobs')
                 .insert([jobData]);
             if (error) throw error;
-            showToast('Oppdraget ble publisert!', 'success');
+            showToast('Takk! Oppdraget ditt er sendt inn og venter på godkjenning fra en administrator før det blir synlig for andre.', 'success');
         }
 
         resetJobForm();
@@ -511,8 +511,13 @@ async function renderMyJobs() {
         // Check if job is less than 24 hours old
         const isNew = (new Date() - d) < (24 * 60 * 60 * 1000);
 
+        const approvalBadge = job.is_approved
+            ? '<span class="badge badge-status-active">✅ Aktiv</span>'
+            : '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>';
+
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
+            ${approvalBadge}
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>

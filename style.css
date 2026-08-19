@@ -747,3 +747,16 @@ textarea:focus {
     color: var(--text-light);
     margin-bottom: var(--spacing-md);
 }
+
+/* --- Employer Approval Status Badges --- */
+.badge-status-active {
+    background-color: var(--cat-gardsarbeid-bg); /* Reuse the subtle green */
+    color: var(--cat-gardsarbeid-text);
+    border: 1px solid #b7e1cd;
+}
+
+.badge-status-pending {
+    background-color: #fef3c7; /* Muted yellow/amber */
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
