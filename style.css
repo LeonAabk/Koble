@@ -326,6 +326,7 @@ textarea:focus {
     margin-top: var(--spacing-md);
     margin-bottom: var(--spacing-md);
     color: var(--text-light);
+    white-space: pre-wrap; /* Respects newline characters \n from description string */
 }
 
 /* --- Landing Page Specific Styles --- */
