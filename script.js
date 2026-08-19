@@ -857,10 +857,24 @@ function escapeHTML(str) {
     );
 }
 
+// --- Utility Functions ---
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 elFilterCategory.addEventListener('change', renderJobs);
 elFilterLocation.addEventListener('change', renderJobs);
 elFilterSort.addEventListener('change', renderJobs);
-elSearchInput.addEventListener('input', renderJobs);
+// ⚡ Bolt: Apply debounce to search input to prevent unnecessary API calls and database hits on every keystroke
+elSearchInput.addEventListener('input', debounce(renderJobs, 300));
 
 const btnResetFilters = document.getElementById('btn-reset-filters');
 if (btnResetFilters) {
