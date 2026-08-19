@@ -31,6 +31,9 @@ const elLandingSection = document.getElementById('landing-view');
 const elEmployerSection = document.getElementById('employer-view');
 const elYouthSection = document.getElementById('youth-view');
 const elProfileSection = document.getElementById('profile-view');
+const elAdminSection = document.getElementById('admin-view');
+const elAdminLoginSection = document.getElementById('admin-login-section');
+const elAdminDashboardSection = document.getElementById('admin-dashboard-section');
 const elProfileEmailDisplay = document.getElementById('profile-email-display');
 const elProfileLogoutBtn = document.getElementById('profile-logout-btn');
 const elMainNav = document.getElementById('main-nav');
@@ -174,6 +177,10 @@ function updateNavForUser(user) {
             showHomeView();
         }
     }
+
+    if (window.location.hash === '#admin') {
+        handleRouting();
+    }
 }
 
 // Listen for Auth changes
@@ -206,12 +213,34 @@ function hideAllViews() {
     elEmployerSection.classList.add('hidden');
     elYouthSection.classList.add('hidden');
     elProfileSection.classList.add('hidden');
+    elAdminSection.classList.add('hidden');
 }
 
 function showView(viewElement) {
     hideAllViews();
     viewElement.classList.remove('hidden');
 }
+
+function handleRouting() {
+    if (window.location.hash === '#admin') {
+        showView(elAdminSection);
+        if (currentUser && currentUser.email === 'admin@koble.no') {
+            elAdminLoginSection.classList.add('hidden');
+            elAdminDashboardSection.classList.remove('hidden');
+            renderAdminJobs();
+        } else {
+            elAdminDashboardSection.classList.add('hidden');
+            elAdminLoginSection.classList.remove('hidden');
+        }
+    } else {
+        // default to landing view
+        if (!elAdminSection.classList.contains('hidden')) {
+             showHomeView();
+        }
+    }
+}
+
+window.addEventListener('hashchange', handleRouting);
 
 function showHomeView() {
     showView(elLandingSection);
@@ -332,6 +361,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
     }
 
     const title = document.getElementById('job-title').value;
+    const employerName = document.getElementById('job-employer-name').value;
     const rawDescription = document.getElementById('job-description').value;
     const time = document.getElementById('job-time').value;
     const isGroupFriendly = document.getElementById('job-group-friendly').checked;
@@ -339,6 +369,9 @@ elJobPostForm.addEventListener('submit', async (e) => {
     // Combine the time, the description, and the group-friendly tag into one string
     // This allows us to handle the logic without a DB migration
     let description = `Når: ${time}\n\n${rawDescription}`;
+    if (employerName) {
+        description = `[EMPLOYER_NAME]${employerName}\n\n` + description;
+    }
     if (isGroupFriendly) {
         description = "[GROUP_FRIENDLY]" + description;
     }
@@ -477,6 +510,15 @@ async function renderMyJobs() {
             displayDescription = displayDescription.replace("[GROUP_FRIENDLY]", "");
         }
 
+        let employerName = '';
+        if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
+            const parts = displayDescription.split("\n\n");
+            if (parts.length > 0) {
+                 employerName = parts[0].replace("[EMPLOYER_NAME]", "");
+                 displayDescription = parts.slice(1).join("\n\n");
+            }
+        }
+
         const d = new Date(job.created_at);
         const formattedDate = d.toLocaleDateString('no-NO');
 
@@ -492,6 +534,7 @@ async function renderMyJobs() {
             ${approvalBadge}
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
+            ${employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(employerName)}</p>` : ''}
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
@@ -536,6 +579,16 @@ function editJob(job) {
         displayDescription = displayDescription.replace("[GROUP_FRIENDLY]", "");
     }
     document.getElementById('job-group-friendly').checked = isGroupFriendly;
+
+    let employerName = '';
+    if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
+        const parts = displayDescription.split("\n\n");
+        if (parts.length > 0) {
+             employerName = parts[0].replace("[EMPLOYER_NAME]", "");
+             displayDescription = parts.slice(1).join("\n\n");
+        }
+    }
+    document.getElementById('job-employer-name').value = employerName;
 
     // Extract time from the description if it starts with "Når: "
     let time = '';
@@ -600,6 +653,7 @@ async function deleteJob(jobId) {
 const elApplicationModal = document.getElementById('application-modal');
 const elCloseModalBtn = document.getElementById('close-modal-btn');
 const elModalEmailDisplay = document.getElementById('modal-email-display');
+const elModalEmployerDisplay = document.getElementById('modal-employer-display');
 const elCopyEmailBtn = document.getElementById('copy-email-btn');
 const elApplicantGroupName = document.getElementById('applicant-group-name');
 const elCopyTemplateBtn = document.getElementById('copy-template-btn');
@@ -607,10 +661,13 @@ const elCopyTemplateBtn = document.getElementById('copy-template-btn');
 let currentEmailToCopy = '';
 let currentJobTitleForTemplate = '';
 
-function openApplicationModal(email, jobTitle) {
+function openApplicationModal(email, jobTitle, employerName) {
     currentEmailToCopy = email;
     currentJobTitleForTemplate = jobTitle;
     elModalEmailDisplay.textContent = email;
+    if (elModalEmployerDisplay) {
+        elModalEmployerDisplay.textContent = employerName || 'Ukjent';
+    }
     elApplicantGroupName.value = ''; // Reset the input
     elApplicationModal.classList.remove('hidden');
 }
@@ -666,7 +723,8 @@ async function renderJobs() {
     renderSkeletons(elJobBoard, 4);
     elNoJobsMsg.classList.add('hidden');
 
-    const jobs = await getJobs();
+    const isAdmin = currentUser && currentUser.email === 'admin@koble.no';
+    const jobs = await getJobs(!isAdmin); // Fetch all if admin, else only approved
     const selectedFilter = elFilterCategory.value;
     const selectedLocation = elFilterLocation.value;
     const searchQuery = elSearchInput.value.toLowerCase().trim();
@@ -714,21 +772,44 @@ async function renderJobs() {
             displayDescription = displayDescription.replace("[GROUP_FRIENDLY]", "");
         }
 
+        let employerName = '';
+        if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
+            const parts = displayDescription.split("\n\n");
+            if (parts.length > 0) {
+                 employerName = parts[0].replace("[EMPLOYER_NAME]", "");
+                 displayDescription = parts.slice(1).join("\n\n");
+            }
+        }
+
         const d = new Date(job.created_at);
         const formattedDate = d.toLocaleDateString('no-NO');
 
         // Check if job is less than 24 hours old
         const isNew = (new Date() - d) < (24 * 60 * 60 * 1000);
 
+        let adminActions = '';
+        if (isAdmin) {
+            adminActions = `
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <span style="font-weight: 600; font-size: 0.9rem; margin-right: auto; align-self: center;">Admin:</span>
+                    ${!job.is_approved ? `<button class="btn btn-secondary btn-sm admin-approve-btn" data-id="${job.id}">Godkjenn</button>` : ''}
+                    <button class="btn btn-danger btn-sm admin-delete-btn" data-id="${job.id}">Slett</button>
+                </div>
+            `;
+        }
+
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
+            ${isAdmin && !job.is_approved ? '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>' : ''}
             <span class="badge ${badgeClass}">${escapeHTML(job.category)}</span>
             ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
+            ${employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(employerName)}</p>` : ''}
             <p class="location"><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
             <p class="description">${escapeHTML(displayDescription)}</p>
-            <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}">Søk nå</button>
+            <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}">Søk nå</button>
+            ${adminActions}
         `;
 
         elJobBoard.appendChild(article);
@@ -739,9 +820,28 @@ async function renderJobs() {
         btn.addEventListener('click', (e) => {
             const email = e.target.getAttribute('data-email');
             const title = e.target.getAttribute('data-title');
-            openApplicationModal(email, title);
+            const employer = e.target.getAttribute('data-employer');
+            openApplicationModal(email, title, employer);
         });
     });
+
+    if (isAdmin) {
+        const deleteButtons = elJobBoard.querySelectorAll('.admin-delete-btn');
+        deleteButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const jobId = e.target.getAttribute('data-id');
+                deleteAdminJob(jobId);
+            });
+        });
+
+        const approveButtons = elJobBoard.querySelectorAll('.admin-approve-btn');
+        approveButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const jobId = e.target.getAttribute('data-id');
+                approveAdminJob(jobId);
+            });
+        });
+    }
 }
 
 function escapeHTML(str) {
