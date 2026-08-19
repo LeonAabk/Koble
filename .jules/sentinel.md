@@ -11,3 +11,6 @@ When creating authenticated admin routes in vanilla SPA applications lacking rob
 
 ### 2024-08-19 - Navigation Event Handlers in Hash Routing
 When binding navigation buttons that update `window.location.hash`, explicitly call the view update function (e.g. `handleRouting()`) inside the click listener. Relying exclusively on the `hashchange` event listener can lead to dead clicks if the user is already on the target hash but the DOM state has been manually manipulated (e.g. via internal 'back' buttons).
+
+### 2024-08-19 - Conditional UI Buttons & Permissions
+When rendering UI elements conditionally based on permissions (e.g. inline admin delete buttons), ensure you correctly handle both the presence of the `currentUser` object *and* its properties. Do not assume `currentUser` is always defined; failing to check `if (currentUser)` before checking `currentUser.email` will crash the application for unauthenticated users.
