@@ -455,6 +455,8 @@ async function renderMyJobs() {
         elNoMyJobsMsg.classList.add('hidden');
     }
 
+    const fragment = document.createDocumentFragment();
+
     myJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -491,8 +493,10 @@ async function renderMyJobs() {
             </div>
         `;
 
-        elMyJobsList.appendChild(article);
+        fragment.appendChild(article);
     });
+
+    elMyJobsList.appendChild(fragment);
 
     const deleteButtons = document.querySelectorAll('.delete-btn');
     deleteButtons.forEach(btn => {
@@ -688,6 +692,8 @@ async function renderJobs() {
         elNoJobsMsg.classList.add('hidden');
     }
 
+    const fragment = document.createDocumentFragment();
+
     filteredJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -722,8 +728,10 @@ async function renderJobs() {
             <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}">Søk nå</button>
         `;
 
-        elJobBoard.appendChild(article);
+        fragment.appendChild(article);
     });
+
+    elJobBoard.appendChild(fragment);
 
     const applyButtons = document.querySelectorAll('.apply-btn');
     applyButtons.forEach(btn => {
