@@ -76,6 +76,7 @@
                 <div class="form-group">
                     <label for="job-title">Tittel på jobben</label>
                     <input type="text" id="job-title" name="job-title" required placeholder="F.eks. Plenklipping og hagearbeid">
+                    <div id="job-title-error" class="error-text">Tittelen må være minst 5 tegn lang.</div>
                 </div>
 
                 <div class="form-group">
@@ -115,6 +116,7 @@
                 <div class="form-group">
                     <label for="job-description">Beskrivelse</label>
                     <textarea id="job-description" name="job-description" rows="4" required placeholder="Beskriv hva som skal gjøres, når det passer, osv."></textarea>
+                    <div id="job-description-error" class="error-text">Beskrivelsen må være minst 10 tegn.</div>
                 </div>
 
                 <div class="form-group" style="flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.5rem; margin-top: 0.5rem;">
@@ -122,7 +124,10 @@
                     <label for="job-group-friendly" style="margin-bottom: 0; font-weight: normal; font-size: 0.9rem;">Passer for grupper/russ</label>
                 </div>
 
-                    <button type="submit" class="btn btn-primary">Publiser jobb</button>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" id="btn-submit-job" class="btn btn-primary">Publiser jobb</button>
+                        <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden">Avbryt</button>
+                    </div>
                 </form>
             </div>
 
@@ -185,6 +190,14 @@
                         <option value="Ringsaker">Ringsaker</option>
                         <option value="Løten">Løten</option>
                         <option value="Annet">Annet</option>
+                    </select>
+                </div>
+
+                <div class="sort-group">
+                    <label for="filter-sort">Sorter etter:</label>
+                    <select id="filter-sort">
+                        <option value="newest">Nyeste først</option>
+                        <option value="oldest">Eldste først</option>
                     </select>
                 </div>
             </div>
