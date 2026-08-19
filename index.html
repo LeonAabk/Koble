@@ -212,6 +212,47 @@
                 <button id="btn-reset-filters" class="btn btn-secondary">Nullstill filtre</button>
             </div>
         </section>
+        <!-- View 5: Admin View -->
+        <section id="admin-view" class="view hidden">
+            <div id="admin-login-section">
+                <h2>Admin Login</h2>
+                <p>Logg inn for å få tilgang til moderasjonspanelet.</p>
+                <form id="admin-auth-form" class="form-container">
+                    <div class="form-group">
+                        <label for="admin-auth-email">E-postadresse</label>
+                        <input type="email" id="admin-auth-email" required placeholder="admin@koble.no">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-auth-password">Passord</label>
+                        <input type="password" id="admin-auth-password" required placeholder="Min. 6 tegn">
+                    </div>
+                    <button type="submit" id="admin-auth-submit-btn" class="btn btn-primary">Logg inn</button>
+                    <div id="admin-auth-error" class="auth-error error-text hidden"></div>
+                </form>
+            </div>
+
+            <div id="admin-dashboard-section" class="hidden">
+                <h2>Moderasjonspanel</h2>
+                <p>Oversikt over alle aktive oppdrag. Du kan slette oppdrag som bryter med retningslinjene.</p>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Tittel</th>
+                                <th>Arbeidsgiver (E-post)</th>
+                                <th>Sted</th>
+                                <th>Dato</th>
+                                <th>Handling</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-jobs-table-body">
+                            <!-- Jobs will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
 
 
