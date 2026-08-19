@@ -38,6 +38,7 @@ const elMainNav = document.getElementById('main-nav');
 
 // Navigation Buttons
 const elNavHomeBtn = document.getElementById('nav-home-btn');
+const elNavAdminBtn = document.getElementById('nav-admin-btn');
 const elLogoTitle = document.getElementById('logo-title');
 const elYouthRoleBtn = document.getElementById('youth-role-btn');
 const elEmployerRoleBtn = document.getElementById('employer-role-btn');
@@ -163,10 +164,16 @@ function updateNavForUser(user) {
         navLoginBtn.classList.add('hidden');
         navUserInfo.classList.remove('hidden');
         navUserEmail.textContent = user.email;
+        if (user.email === 'admin@koble.no') {
+            elNavAdminBtn.classList.remove('hidden');
+        } else {
+            elNavAdminBtn.classList.add('hidden');
+        }
     } else {
         navLoginBtn.classList.remove('hidden');
         navUserInfo.classList.add('hidden');
         navUserEmail.textContent = '';
+        elNavAdminBtn.classList.add('hidden');
 
         // If they are on employer view but logged out, send to home
         if (!elEmployerSection.classList.contains('hidden') || !elProfileSection.classList.contains('hidden')) {
@@ -236,6 +243,13 @@ elYouthRoleBtn.addEventListener('click', () => {
     showView(elYouthSection);
     renderJobs();
 });
+
+if (elNavAdminBtn) {
+    elNavAdminBtn.addEventListener('click', () => {
+        window.location.hash = '#admin';
+        handleRouting(); // Ensure routing happens even if hash was already #admin
+    });
+}
 
 elEmployerRoleBtn.addEventListener('click', () => {
     if (currentUser) {
@@ -735,7 +749,10 @@ async function renderJobs() {
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
             <p class="description">${escapeHTML(displayDescription)}</p>
-            <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}">Søk nå</button>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}">Søk nå</button>
+                ${(currentUser && currentUser.email === 'admin@koble.no') ? `<button class="btn btn-danger btn-sm feed-admin-delete-btn" data-id="${job.id}">Slett oppdrag</button>` : ''}
+            </div>
         `;
 
         fragment.appendChild(article);
@@ -749,6 +766,14 @@ async function renderJobs() {
             const email = e.target.getAttribute('data-email');
             const title = e.target.getAttribute('data-title');
             openApplicationModal(email, title);
+        });
+    });
+
+    const feedAdminDeleteButtons = document.querySelectorAll('.feed-admin-delete-btn');
+    feedAdminDeleteButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const jobId = e.target.getAttribute('data-id');
+            deleteAdminJob(jobId);
         });
     });
 }
@@ -923,6 +948,11 @@ async function deleteAdminJob(jobId) {
 
             showToast('Oppdraget ble slettet', 'success');
             renderAdminJobs(); // Refresh table
+
+            // If they are deleting from the public feed, refresh that too
+            if (!elYouthSection.classList.contains('hidden')) {
+                renderJobs();
+            }
         } catch (error) {
             console.error('Error deleting job as admin:', error);
             showToast('Kunne ikke slette oppdraget.', 'error');
