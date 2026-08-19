@@ -74,6 +74,11 @@
 
                 <form id="job-post-form" class="form-container">
                 <div class="form-group">
+                    <label for="job-employer-name">Ditt navn / Bedriftsnavn</label>
+                    <input type="text" id="job-employer-name" name="job-employer-name" required placeholder="Ola Nordmann / Ola's Gård">
+                </div>
+
+                <div class="form-group">
                     <label for="job-title">Tittel på jobben</label>
                     <input type="text" id="job-title" name="job-title" required placeholder="F.eks. Plenklipping og hagearbeid">
                     <div id="job-title-error" class="error-text">Tittelen må være minst 5 tegn lang.</div>
@@ -291,7 +296,8 @@
             <p>For å søke på dette oppdraget, send en e-post til arbeidsgiveren med en kort presentasjon av deg selv.</p>
 
             <div class="contact-info-box">
-                <p><strong>E-postadresse:</strong></p>
+                <p><strong>Arbeidsgiver:</strong> <span id="modal-employer-display"></span></p>
+                <p style="margin-top: 0.5rem;"><strong>E-postadresse:</strong></p>
                 <div class="copy-group">
                     <span id="modal-email-display" class="email-display"></span>
                     <button id="copy-email-btn" class="btn btn-secondary btn-sm">Kopier E-post</button>
