@@ -14,6 +14,8 @@ const authTitle = document.getElementById('auth-title');
 const authSubtitle = document.getElementById('auth-subtitle');
 const authSubmitBtn = document.getElementById('auth-submit-btn');
 const toggleAuthBtn = document.getElementById('toggle-auth-mode-btn');
+const authNameGroup = document.getElementById('auth-name-group');
+const authName = document.getElementById('auth-name');
 const authEmail = document.getElementById('auth-email');
 const authPassword = document.getElementById('auth-password');
 const authError = document.getElementById('auth-error');
@@ -33,6 +35,8 @@ const elYouthSection = document.getElementById('youth-view');
 const elProfileSection = document.getElementById('profile-view');
 const elAdminSection = document.getElementById('admin-view');
 const elProfileEmailDisplay = document.getElementById('profile-email-display');
+const elProfileNameInput = document.getElementById('profile-name-input');
+const elProfileSaveBtn = document.getElementById('profile-save-btn');
 const elProfileLogoutBtn = document.getElementById('profile-logout-btn');
 const elMainNav = document.getElementById('main-nav');
 
@@ -90,12 +94,16 @@ function updateAuthUI() {
         authSubmitBtn.textContent = 'Logg inn';
         toggleAuthBtn.textContent = 'Registrer deg';
         toggleAuthBtn.parentElement.childNodes[0].textContent = 'Har du ikke en konto? ';
+        if (authNameGroup) authNameGroup.classList.add('hidden');
+        if (authName) authName.required = false;
     } else {
         authTitle.textContent = 'Registrer deg';
         authSubtitle.textContent = 'Opprett en konto for å legge ut oppdrag.';
         authSubmitBtn.textContent = 'Registrer konto';
         toggleAuthBtn.textContent = 'Logg inn';
         toggleAuthBtn.parentElement.childNodes[0].textContent = 'Har du allerede en konto? ';
+        if (authNameGroup) authNameGroup.classList.remove('hidden');
+        if (authName) authName.required = true;
     }
 }
 
@@ -109,6 +117,7 @@ async function handleAuthSubmit(e) {
     e.preventDefault();
     const email = authEmail.value;
     const password = authPassword.value;
+    const displayName = authName.value;
 
     authError.classList.add('hidden');
     authSubmitBtn.disabled = true;
@@ -125,6 +134,11 @@ async function handleAuthSubmit(e) {
             const { data, error } = await supabaseClient.auth.signUp({
                 email,
                 password,
+                options: {
+                    data: {
+                        display_name: displayName
+                    }
+                }
             });
             if (error) throw error;
             if (data.user && data.user.identities && data.user.identities.length === 0) {
@@ -208,7 +222,38 @@ authForm.addEventListener('submit', handleAuthSubmit);
 navProfileBtn.addEventListener('click', () => {
     showView(elProfileSection);
     elProfileEmailDisplay.textContent = currentUser.email;
+    if (elProfileNameInput) elProfileNameInput.value = currentUser.user_metadata?.display_name || '';
 });
+
+if (elProfileSaveBtn) {
+    elProfileSaveBtn.addEventListener('click', async () => {
+        const newName = elProfileNameInput.value.trim();
+        if (!newName) {
+            showToast('Visningsnavn kan ikke være tomt', 'error');
+            return;
+        }
+
+        elProfileSaveBtn.disabled = true;
+        elProfileSaveBtn.textContent = 'Lagrer...';
+
+        try {
+            const { data, error } = await supabaseClient.auth.updateUser({
+                data: { display_name: newName }
+            });
+
+            if (error) throw error;
+
+            currentUser = data.user;
+            showToast('Profil oppdatert!', 'success');
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            showToast('Kunne ikke oppdatere profilen', 'error');
+        } finally {
+            elProfileSaveBtn.disabled = false;
+            elProfileSaveBtn.textContent = 'Lagre endringer';
+        }
+    });
+}
 
 elProfileLogoutBtn.addEventListener('click', handleLogout);
 
@@ -363,6 +408,10 @@ elJobPostForm.addEventListener('submit', async (e) => {
         description = "[GROUP_FRIENDLY]" + description;
     }
 
+    // Add employer name tag
+    const employerName = currentUser.user_metadata?.display_name || 'Ukjent arbeidsgiver';
+    description = `[EMPLOYER_NAME]${employerName}\n\n${description}`;
+
     if (title.length < 5) {
         showToast("Tittelen må være minst 5 tegn lang.", "error");
         return;
@@ -493,6 +542,13 @@ async function renderMyJobs() {
 
         // Check for the group-friendly tag and remove it from the display string
         let displayDescription = job.description;
+        let employerName = 'Ukjent arbeidsgiver';
+        if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
+            const parts = displayDescription.split("\n\n");
+            employerName = parts[0].replace("[EMPLOYER_NAME]", "");
+            displayDescription = parts.slice(1).join("\n\n");
+        }
+
         let isGroupFriendly = false;
         if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
             isGroupFriendly = true;
@@ -549,6 +605,13 @@ function editJob(job) {
     document.getElementById('job-pay').value = job.pay || '';
 
     let displayDescription = job.description;
+    let employerName = 'Ukjent arbeidsgiver';
+    if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
+        const parts = displayDescription.split("\n\n");
+        employerName = parts[0].replace("[EMPLOYER_NAME]", "");
+        displayDescription = parts.slice(1).join("\n\n");
+    }
+
     let isGroupFriendly = false;
     if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
         isGroupFriendly = true;
@@ -619,17 +682,21 @@ async function deleteJob(jobId) {
 const elApplicationModal = document.getElementById('application-modal');
 const elCloseModalBtn = document.getElementById('close-modal-btn');
 const elModalEmailDisplay = document.getElementById('modal-email-display');
+const elModalEmployerNameDisplay = document.getElementById('modal-employer-name-display');
 const elCopyEmailBtn = document.getElementById('copy-email-btn');
 const elApplicantGroupName = document.getElementById('applicant-group-name');
 const elCopyTemplateBtn = document.getElementById('copy-template-btn');
 
 let currentEmailToCopy = '';
 let currentJobTitleForTemplate = '';
+let currentEmployerNameForTemplate = '';
 
-function openApplicationModal(email, jobTitle) {
+function openApplicationModal(email, jobTitle, employerName) {
     currentEmailToCopy = email;
     currentJobTitleForTemplate = jobTitle;
+    currentEmployerNameForTemplate = employerName;
     elModalEmailDisplay.textContent = email;
+    elModalEmployerNameDisplay.textContent = employerName;
     elApplicantGroupName.value = ''; // Reset the input
     elApplicationModal.classList.remove('hidden');
 }
@@ -638,6 +705,7 @@ function closeApplicationModal() {
     elApplicationModal.classList.add('hidden');
     currentEmailToCopy = '';
     currentJobTitleForTemplate = '';
+    currentEmployerNameForTemplate = '';
 }
 
 elCloseModalBtn.addEventListener('click', closeApplicationModal);
@@ -665,10 +733,16 @@ elCopyTemplateBtn.addEventListener('click', () => {
     const groupName = elApplicantGroupName.value.trim();
     let template = "";
 
+    const greeting = currentEmployerNameForTemplate && currentEmployerNameForTemplate !== 'Ukjent arbeidsgiver'
+        ? `Hei ${currentEmployerNameForTemplate}!\n\n`
+        : `Hei!\n\n`;
+
+    const youthName = currentUser?.user_metadata?.display_name || '[DITT NAVN]';
+
     if (groupName) {
-        template = `Hei!\n\nVi er ${groupName}, og vi vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nVi er en arbeidsvillig gjeng som gjerne tar i et tak. Vi har mulighet til å stille med [ANTALL] personer og kan jobbe [LEGG INN NÅR DERE KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n${groupName}`;
+        template = `${greeting}Vi er ${groupName}, og vi vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nVi er en arbeidsvillig gjeng som gjerne tar i et tak. Vi har mulighet til å stille med [ANTALL] personer og kan jobbe [LEGG INN NÅR DERE KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n${groupName}`;
     } else {
-        template = `Hei!\n\nJeg vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nJeg er en arbeidsvillig og ansvarsfull person som gjerne vil hjelpe til med dette. Jeg har mulighet til å jobbe [LEGG INN NÅR DU KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n[DITT NAVN]`;
+        template = `${greeting}Jeg vil gjerne søke på oppdraget "${currentJobTitleForTemplate}".\n\nJeg er en arbeidsvillig og ansvarsfull person som gjerne vil hjelpe til med dette. Jeg har mulighet til å jobbe [LEGG INN NÅR DU KAN].\n\nHåper å høre fra deg!\n\nMed vennlig hilsen,\n${youthName}`;
     }
 
     navigator.clipboard.writeText(template).then(() => {
@@ -729,6 +803,13 @@ async function renderJobs() {
         else if (job.category === 'Russedugnad / Gruppearbeid') badgeClass = 'badge-russedugnad';
 
         let displayDescription = job.description;
+        let employerName = 'Ukjent arbeidsgiver';
+        if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
+            const parts = displayDescription.split("\n\n");
+            employerName = parts[0].replace("[EMPLOYER_NAME]", "");
+            displayDescription = parts.slice(1).join("\n\n");
+        }
+
         let isGroupFriendly = false;
         if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
             isGroupFriendly = true;
@@ -749,10 +830,10 @@ async function renderJobs() {
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><em>Lagt ut: ${formattedDate}</em></p>
             <p class="description">${escapeHTML(displayDescription)}</p>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}">Søk nå</button>
-                ${(currentUser && currentUser.email === 'admin@koble.no') ? `<button class="btn btn-danger btn-sm feed-admin-delete-btn" data-id="${job.id}">Slett oppdrag</button>` : ''}
-            </div>
+<div style="display: flex; gap: 0.5rem; align-items: center;">
+    <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}">Søk nå</button>
+    ${(currentUser && currentUser.email === 'admin@koble.no') ? `<button class="btn btn-danger btn-sm feed-admin-delete-btn" data-id="${job.id}">Slett oppdrag</button>` : ''}
+</div>
         `;
 
         fragment.appendChild(article);
@@ -765,7 +846,8 @@ async function renderJobs() {
         btn.addEventListener('click', (e) => {
             const email = e.target.getAttribute('data-email');
             const title = e.target.getAttribute('data-title');
-            openApplicationModal(email, title);
+            const employer = e.target.getAttribute('data-employer');
+            openApplicationModal(email, title, employer);
         });
     });
 
