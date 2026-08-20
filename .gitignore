@@ -1,0 +1,7 @@
+node_modules/
+calculator-pdf-polish.png
+pdf_verify.spec.js
+playwright-report/
+test-results/
+package.json
+package-lock.json
