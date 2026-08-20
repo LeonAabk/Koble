@@ -47,6 +47,8 @@ const calcTotal = document.getElementById('calc-total');
 const agreementSummary = document.getElementById('agreement-summary');
 const signatureCanvas = document.getElementById('signature-canvas');
 const clearSignatureBtn = document.getElementById('clear-signature-btn');
+const downloadPdfBtn = document.getElementById('download-pdf-btn');
+const pdfExportArea = document.getElementById('pdf-export-area');
 
 // Navigation Buttons
 const elNavHomeBtn = document.getElementById('nav-home-btn');
@@ -288,6 +290,26 @@ if (ctx) {
     }
 }
 
+// PDF Export Logic
+if (downloadPdfBtn && pdfExportArea) {
+    downloadPdfBtn.addEventListener('click', () => {
+        // Use html2pdf with professional formatting options
+        const opt = {
+            margin:       1,
+            filename:     'Dugnadsavtale_Koble.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Ensure html2pdf is loaded from the CDN before invoking
+        if (window.html2pdf) {
+             html2pdf().set(opt).from(pdfExportArea).save();
+        } else {
+             console.error('html2pdf library is not loaded.');
+        }
+    });
+}
 
 // Event Listeners for Auth
 navLoginBtn.addEventListener('click', openAuthModal);
