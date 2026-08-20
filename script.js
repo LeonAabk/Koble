@@ -617,6 +617,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
 
     try {
         if (editingJobId) {
+            jobData.is_approved = false; // Always return to pending on update
             const { data, error } = await supabaseClient
                 .from('jobs')
                 .update(jobData)
@@ -719,43 +720,45 @@ async function renderMyJobs() {
         else if (job.category === 'Hushjelp') { badgeClass = 'badge-hushjelp'; catIcon = 'home'; }
         else if (job.category === 'Russedugnad / Gruppearbeid') { badgeClass = 'badge-russedugnad'; catIcon = 'users'; }
 
-        // Check for the group-friendly tag and remove it from the display string
-        let displayDescription = job.description;
-        let isGroupFriendly = false;
-        if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
-            isGroupFriendly = true;
-            displayDescription = displayDescription.replace("[GROUP_FRIENDLY]", "");
-        }
-
-        let employerName = '';
-        if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
-            const parts = displayDescription.split("\n\n");
-            if (parts.length > 0) {
-                 employerName = parts[0].replace("[EMPLOYER_NAME]", "");
-                 displayDescription = parts.slice(1).join("\n\n");
-            }
-        }
+        const parsed = parseJobDescription(job.description);
 
         const d = new Date(job.created_at);
         const formattedDate = d.toLocaleDateString('no-NO');
-
-        // Check if job is less than 24 hours old
         const isNew = (new Date() - d) < (24 * 60 * 60 * 1000);
 
-        const approvalBadge = job.is_approved
-            ? '<span class="badge badge-status-active">✅ Aktiv</span>'
-            : '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>';
+        let approvalBadge = '';
+        if (job.is_approved) {
+            approvalBadge = '<span class="badge badge-status-active">✅ Aktiv</span>';
+        } else if (parsed.statusRejected) {
+            approvalBadge = '<span class="badge" style="background-color: var(--text-muted); color: white;">Avvist av administrator</span>';
+        } else {
+            approvalBadge = '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>';
+        }
+
+        let feedbackBox = '';
+        if (parsed.statusRejected && parsed.rejectionReason) {
+            feedbackBox = `
+                <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 1rem; margin-top: 0.5rem; margin-bottom: 0.5rem; border-radius: 4px;">
+                    <p style="margin: 0; color: #991b1b; font-weight: 500;">Årsak til avslag: ${escapeHTML(parsed.rejectionReason)}</p>
+                </div>
+            `;
+        }
+
+        let editButtonLabel = parsed.statusRejected ? "Endre og send inn på nytt" : "Rediger";
 
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
             ${approvalBadge}
-            <span class="badge ${badgeClass}"><i data-lucide="${catIcon}" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.category)}</span>
-            ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
-            ${employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(employerName)}</p>` : ''}
+            ${feedbackBox}
+            <div style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                <span class="badge ${badgeClass}"><i data-lucide="${catIcon}" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.category)}</span>
+                ${parsed.isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
+            </div>
+            ${parsed.employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(parsed.employerName)}</p>` : ''}
             <p class="location"><i data-lucide="map-pin" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             <p class="date"><i data-lucide="calendar" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><em>Lagt ut: ${formattedDate}</em></p>
             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                <button class="btn btn-secondary edit-btn" data-id="${job.id}">Rediger</button>
+                <button class="btn btn-secondary edit-btn" data-id="${job.id}">${editButtonLabel}</button>
                 <button class="btn btn-danger delete-btn" data-id="${job.id}">Slett oppdrag</button>
             </div>
         `;
@@ -793,41 +796,12 @@ function editJob(job) {
     document.getElementById('job-location').value = job.location;
     document.getElementById('job-pay').value = job.pay || '';
 
-    let displayDescription = job.description;
-    let isGroupFriendly = false;
-    if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
-        isGroupFriendly = true;
-        displayDescription = displayDescription.replace("[GROUP_FRIENDLY]", "");
-    }
-    document.getElementById('job-group-friendly').checked = isGroupFriendly;
+    const parsed = parseJobDescription(job.description);
 
-    let employerName = '';
-    if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
-        const parts = displayDescription.split("\n\n");
-        if (parts.length > 0) {
-             employerName = parts[0].replace("[EMPLOYER_NAME]", "");
-             displayDescription = parts.slice(1).join("\n\n");
-        }
-    }
-    document.getElementById('job-employer-name').value = employerName;
-
-    // Extract time from the description if it starts with "Når: "
-    let time = '';
-    let rawDescription = displayDescription;
-    if (displayDescription.startsWith("Når: ")) {
-        const parts = displayDescription.split("\n\n");
-        if (parts.length > 1) {
-            time = parts[0].replace("Når: ", "");
-            rawDescription = parts.slice(1).join("\n\n");
-        } else {
-            // fallback if format is slightly off
-            time = displayDescription.replace("Når: ", "");
-            rawDescription = '';
-        }
-    }
-
-    document.getElementById('job-time').value = time;
-    document.getElementById('job-description').value = rawDescription;
+    document.getElementById('job-group-friendly').checked = parsed.isGroupFriendly;
+    document.getElementById('job-employer-name').value = parsed.employerName;
+    document.getElementById('job-time').value = parsed.time;
+    document.getElementById('job-description').value = parsed.rawDescription;
 
     // Trigger validation logic off initial load so it doesn't show errors immediately when editing
     elJobTitleInput.classList.remove('input-error');
@@ -991,21 +965,13 @@ async function renderJobs() {
         else if (job.category === 'Hushjelp') { badgeClass = 'badge-hushjelp'; catIcon = 'home'; }
         else if (job.category === 'Russedugnad / Gruppearbeid') { badgeClass = 'badge-russedugnad'; catIcon = 'users'; }
 
-        let displayDescription = job.description;
-        let isGroupFriendly = false;
-        if (displayDescription.startsWith("[GROUP_FRIENDLY]")) {
-            isGroupFriendly = true;
-            displayDescription = displayDescription.replace("[GROUP_FRIENDLY]", "");
+        const parsed = parseJobDescription(job.description);
+        let displayDescription = parsed.rawDescription;
+        if (parsed.time) {
+             displayDescription = `Når: ${parsed.time}\n\n${displayDescription}`;
         }
-
-        let employerName = '';
-        if (displayDescription.startsWith("[EMPLOYER_NAME]")) {
-            const parts = displayDescription.split("\n\n");
-            if (parts.length > 0) {
-                 employerName = parts[0].replace("[EMPLOYER_NAME]", "");
-                 displayDescription = parts.slice(1).join("\n\n");
-            }
-        }
+        let isGroupFriendly = parsed.isGroupFriendly;
+        let employerName = parsed.employerName;
 
         const d = new Date(job.created_at);
         const formattedDate = d.toLocaleDateString('no-NO');
@@ -1015,10 +981,15 @@ async function renderJobs() {
 
         let adminActions = '';
         if (isAdmin) {
+            let isRejected = false;
+            if (job.description && job.description.includes("[STATUS:REJECTED]")) {
+                isRejected = true;
+            }
             adminActions = `
                 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem; flex-wrap: wrap;">
                     <span style="font-weight: 600; font-size: 0.9rem; margin-right: auto; align-self: center;">Admin:</span>
                     ${!job.is_approved ? `<button class="btn btn-secondary btn-sm admin-approve-btn" data-id="${job.id}">Godkjenn</button>` : ''}
+                    ${!isRejected ? `<button class="btn btn-danger btn-sm admin-reject-btn" data-id="${job.id}">Avvis</button>` : ''}
                     <button class="btn btn-danger btn-sm admin-delete-btn" data-id="${job.id}">Slett</button>
                 </div>
             `;
@@ -1067,6 +1038,15 @@ async function renderJobs() {
                 approveAdminJob(jobId);
             });
         });
+
+        const rejectButtons = elJobBoard.querySelectorAll('.admin-reject-btn');
+        rejectButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const jobId = e.target.getAttribute('data-id');
+                const job = filteredJobs.find(j => j.id === jobId);
+                if (job) rejectAdminJob(jobId, job.description);
+            });
+        });
     }
 
     if (window.lucide) {
@@ -1088,6 +1068,57 @@ function escapeHTML(str) {
 }
 
 // --- Utility Functions ---
+
+function parseJobDescription(rawString) {
+    let result = {
+        isGroupFriendly: false,
+        employerName: '',
+        statusRejected: false,
+        rejectionReason: '',
+        time: '',
+        rawDescription: rawString || ''
+    };
+
+    if (!result.rawDescription) return result;
+
+    if (result.rawDescription.includes("[STATUS:REJECTED]")) {
+        result.statusRejected = true;
+        result.rawDescription = result.rawDescription.replace("[STATUS:REJECTED]\n\n", "").replace("[STATUS:REJECTED]", "");
+    }
+
+    const reasonMatch = result.rawDescription.match(/\[REASON:(.*?)\](?:\n\n)?/);
+    if (reasonMatch) {
+        result.rejectionReason = reasonMatch[1];
+        result.rawDescription = result.rawDescription.replace(reasonMatch[0], "");
+    }
+
+    if (result.rawDescription.includes("[GROUP_FRIENDLY]")) {
+        result.isGroupFriendly = true;
+        result.rawDescription = result.rawDescription.replace("[GROUP_FRIENDLY]", "");
+    }
+
+    if (result.rawDescription.startsWith("[EMPLOYER_NAME]")) {
+        const parts = result.rawDescription.split("\n\n");
+        if (parts.length > 0) {
+            result.employerName = parts[0].replace("[EMPLOYER_NAME]", "");
+            result.rawDescription = parts.slice(1).join("\n\n");
+        }
+    }
+
+    if (result.rawDescription.startsWith("Når: ")) {
+        const parts = result.rawDescription.split("\n\n");
+        if (parts.length > 1) {
+            result.time = parts[0].replace("Når: ", "");
+            result.rawDescription = parts.slice(1).join("\n\n");
+        } else {
+            result.time = result.rawDescription.replace("Når: ", "");
+            result.rawDescription = '';
+        }
+    }
+
+    return result;
+}
+
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -1194,14 +1225,28 @@ async function renderAdminJobs() {
         const statusText = job.is_approved ? 'Godkjent' : 'Venter';
         const statusColor = job.is_approved ? 'var(--success-color)' : '#d97706'; // warning orange
 
+        let isRejected = false;
+        if (job.description && job.description.includes("[STATUS:REJECTED]")) {
+            isRejected = true;
+        }
+
+        let finalStatusText = statusText;
+        let finalStatusColor = statusColor;
+
+        if (isRejected) {
+            finalStatusText = 'Avvist';
+            finalStatusColor = 'var(--text-muted)';
+        }
+
         tr.innerHTML = `
             <td>${escapeHTML(job.title)}</td>
             <td>${escapeHTML(job.email)}</td>
             <td>${escapeHTML(job.location)}</td>
             <td>${formattedDate}</td>
-            <td style="color: ${statusColor}; font-weight: bold;">${statusText}</td>
+            <td style="color: ${finalStatusColor}; font-weight: bold;">${finalStatusText}</td>
             <td style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 ${!job.is_approved ? `<button class="btn btn-secondary btn-sm admin-approve-btn" data-id="${job.id}">Godkjenn</button>` : ''}
+                ${!isRejected ? `<button class="btn btn-danger btn-sm admin-reject-btn" data-id="${job.id}" data-desc="${escapeHTML(job.description)}">Avvis</button>` : ''}
                 <button class="btn btn-danger btn-sm admin-delete-btn" data-id="${job.id}">Slett</button>
             </td>
         `;
@@ -1223,6 +1268,16 @@ async function renderAdminJobs() {
         btn.addEventListener('click', (e) => {
             const jobId = e.target.getAttribute('data-id');
             approveAdminJob(jobId);
+        });
+    });
+
+    const rejectButtons = adminTableBody.querySelectorAll('.admin-reject-btn');
+    rejectButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const jobId = e.target.getAttribute('data-id');
+            // use unescapeHTML to get original description back if it has quotes, though simpler to just get from job object.
+            const job = jobs.find(j => j.id === jobId);
+            if (job) rejectAdminJob(jobId, job.description);
         });
     });
 
@@ -1288,5 +1343,46 @@ async function approveAdminJob(jobId) {
     } catch (error) {
         console.error('Error approving job as admin:', error);
         showToast('Kunne ikke godkjenne oppdraget.', 'error');
+    }
+}
+
+
+async function rejectAdminJob(jobId, currentDescription) {
+    if (!currentUser || currentUser.email !== 'admin@koble.no') {
+        showToast('Ingen tilgang', 'error');
+        return;
+    }
+
+    const reason = prompt("Vennligst oppgi en årsak for avvisning:");
+    if (reason === null) return; // User cancelled
+    if (reason.trim() === "") {
+        showToast("Årsak må fylles ut.", "error");
+        return;
+    }
+
+    const newDescription = `[STATUS:REJECTED]\n\n[REASON:${reason.trim()}]\n\n${currentDescription}`;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('jobs')
+            .update({ is_approved: false, description: newDescription })
+            .eq('id', jobId)
+            .select();
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            throw new Error("Avvisning ble avvist av databasen (sannsynligvis manglende RLS-policy for admin).");
+        }
+
+        showToast('Oppdraget ble avvist og sendt tilbake til bruker.', 'success');
+
+        if (!elAdminDashboardSection.classList.contains('hidden')) {
+            renderAdminJobs(); // Refresh table
+        } else if (!elYouthSection.classList.contains('hidden')) {
+            renderJobs();
+        }
+    } catch (error) {
+        console.error('Error rejecting job as admin:', error);
+        showToast('Kunne ikke avvise oppdraget.', 'error');
     }
 }

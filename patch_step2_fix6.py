@@ -1,0 +1,1 @@
+# Well, wait, I can just mock supabase response and see if the toast message says "Oppdraget ble oppdatert!". Wait, no, maybe the validation blocked it? Let's check test_flow_mock_submit log for form validation error maybe?
