@@ -32,14 +32,25 @@ const elEmployerSection = document.getElementById('employer-view');
 const elYouthSection = document.getElementById('youth-view');
 const elProfileSection = document.getElementById('profile-view');
 const elAdminSection = document.getElementById('admin-view');
+const elCalculatorSection = document.getElementById('calculator-view');
 const elAdminLoginSection = document.getElementById('admin-login-section');
 const elAdminDashboardSection = document.getElementById('admin-dashboard-section');
 const elProfileEmailDisplay = document.getElementById('profile-email-display');
 const elProfileLogoutBtn = document.getElementById('profile-logout-btn');
 const elMainNav = document.getElementById('main-nav');
 
+// Calculator Elements
+const calcPersons = document.getElementById('calc-persons');
+const calcHours = document.getElementById('calc-hours');
+const calcRate = document.getElementById('calc-rate');
+const calcTotal = document.getElementById('calc-total');
+const agreementSummary = document.getElementById('agreement-summary');
+const signatureCanvas = document.getElementById('signature-canvas');
+const clearSignatureBtn = document.getElementById('clear-signature-btn');
+
 // Navigation Buttons
 const elNavHomeBtn = document.getElementById('nav-home-btn');
+const navCalculatorBtn = document.getElementById('nav-calculator-btn');
 const elLogoTitle = document.getElementById('logo-title');
 const elYouthRoleBtn = document.getElementById('youth-role-btn');
 const elEmployerRoleBtn = document.getElementById('employer-role-btn');
@@ -188,6 +199,96 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     updateNavForUser(session?.user || null);
 });
 
+// --- Calculator Logic ---
+function updateCalculatorTotal() {
+    const persons = parseInt(calcPersons.value) || 0;
+    const hours = parseInt(calcHours.value) || 0;
+    const rate = parseInt(calcRate.value) || 0;
+
+    const total = persons * hours * rate;
+    calcTotal.textContent = total;
+
+    agreementSummary.textContent = `Avtale om dugnadsarbeid
+
+Det er avtalt at ${persons} person(er) skal utføre arbeid i ${hours} time(r) til en timepris på ${rate} NOK.
+
+Total kompensasjon for arbeidet er beregnet til ${total} NOK.`;
+}
+
+calcPersons.addEventListener('input', updateCalculatorTotal);
+calcHours.addEventListener('input', updateCalculatorTotal);
+calcRate.addEventListener('input', updateCalculatorTotal);
+
+// --- Canvas Drawing Logic ---
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+const ctx = signatureCanvas ? signatureCanvas.getContext('2d') : null;
+
+if (ctx) {
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000000';
+
+    function getCoordinates(e) {
+        const rect = signatureCanvas.getBoundingClientRect();
+        if (e.touches && e.touches.length > 0) {
+            return {
+                x: e.touches[0].clientX - rect.left,
+                y: e.touches[0].clientY - rect.top
+            };
+        }
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    function startDrawing(e) {
+        isDrawing = true;
+        const coords = getCoordinates(e);
+        lastX = coords.x;
+        lastY = coords.y;
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault(); // Prevent scrolling on touch
+
+        const coords = getCoordinates(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(coords.x, coords.y);
+        ctx.stroke();
+
+        lastX = coords.x;
+        lastY = coords.y;
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+    }
+
+    // Mouse events
+    signatureCanvas.addEventListener('mousedown', startDrawing);
+    signatureCanvas.addEventListener('mousemove', draw);
+    signatureCanvas.addEventListener('mouseup', stopDrawing);
+    signatureCanvas.addEventListener('mouseout', stopDrawing);
+
+    // Touch events
+    signatureCanvas.addEventListener('touchstart', startDrawing);
+    signatureCanvas.addEventListener('touchmove', draw, { passive: false });
+    signatureCanvas.addEventListener('touchend', stopDrawing);
+
+    // Clear canvas
+    if (clearSignatureBtn) {
+        clearSignatureBtn.addEventListener('click', () => {
+            ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+        });
+    }
+}
+
+
 // Event Listeners for Auth
 navLoginBtn.addEventListener('click', openAuthModal);
 closeAuthBtn.addEventListener('click', closeAuthModal);
@@ -214,6 +315,7 @@ function hideAllViews() {
     elYouthSection.classList.add('hidden');
     elProfileSection.classList.add('hidden');
     elAdminSection.classList.add('hidden');
+    elCalculatorSection.classList.add('hidden');
 }
 
 function showView(viewElement) {
@@ -248,6 +350,19 @@ function showHomeView() {
 
 elNavHomeBtn.addEventListener('click', showHomeView);
 elLogoTitle.addEventListener('click', showHomeView);
+
+navCalculatorBtn.addEventListener('click', () => {
+    window.location.hash = '';
+    showView(elCalculatorSection);
+    // Ensure canvas dimensions match its display size to prevent stretching
+    const canvas = document.getElementById('signature-canvas');
+    if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width > 0) {
+            canvas.width = rect.width;
+        }
+    }
+});
 
 elYouthRoleBtn.addEventListener('click', () => {
     showView(elYouthSection);
