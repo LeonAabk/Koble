@@ -462,7 +462,7 @@ navCalculatorBtn.addEventListener('click', () => {
 
 elYouthRoleBtn.addEventListener('click', () => {
     showView(elYouthSection);
-    renderJobs();
+    fetchAndRenderJobs();
 });
 
 elEmployerRoleBtn.addEventListener('click', () => {
@@ -709,6 +709,8 @@ async function renderMyJobs() {
         elNoMyJobsMsg.classList.add('hidden');
     }
 
+    const fragment = document.createDocumentFragment();
+
     myJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -763,8 +765,10 @@ async function renderMyJobs() {
             </div>
         `;
 
-        elMyJobsList.appendChild(article);
+        fragment.appendChild(article);
     });
+
+    elMyJobsList.appendChild(fragment);
 
     const deleteButtons = document.querySelectorAll('.delete-btn');
     deleteButtons.forEach(btn => {
@@ -918,19 +922,29 @@ elCopyTemplateBtn.addEventListener('click', () => {
 
 
 // --- Youth Features (Browsing, Searching & Filtering Jobs) ---
-async function renderJobs() {
+let currentLoadedJobs = null;
+
+async function fetchAndRenderJobs() {
     renderSkeletons(elJobBoard, 4);
     elNoJobsMsg.classList.add('hidden');
 
     const isAdmin = currentUser && currentUser.email === 'admin@koble.no';
-    const jobs = await getJobs(!isAdmin); // Fetch all if admin, else only approved
+    currentLoadedJobs = await getJobs(!isAdmin); // Fetch all if admin, else only approved
+
+    applyFiltersAndRenderJobs();
+}
+
+function applyFiltersAndRenderJobs() {
+    if (!currentLoadedJobs) return;
+
+    const isAdmin = currentUser && currentUser.email === 'admin@koble.no';
     const selectedFilter = elFilterCategory.value;
     const selectedLocation = elFilterLocation.value;
     const searchQuery = elSearchInput.value.toLowerCase().trim();
 
     elJobBoard.innerHTML = '';
 
-    const filteredJobs = jobs.filter(job => {
+    const filteredJobs = currentLoadedJobs.filter(job => {
         const matchesCategory = selectedFilter === 'Alle' || job.category === selectedFilter;
         const matchesLocation = selectedLocation === 'Alle' || job.location === selectedLocation;
         const matchesSearch = job.title.toLowerCase().includes(searchQuery) ||
@@ -953,6 +967,8 @@ async function renderJobs() {
     } else {
         elNoJobsMsg.classList.add('hidden');
     }
+
+    const fragment = document.createDocumentFragment();
 
     filteredJobs.forEach(job => {
         const article = document.createElement('article');
@@ -1009,8 +1025,10 @@ async function renderJobs() {
             ${adminActions}
         `;
 
-        elJobBoard.appendChild(article);
+        fragment.appendChild(article);
     });
+
+    elJobBoard.appendChild(fragment);
 
     const applyButtons = document.querySelectorAll('.apply-btn');
     applyButtons.forEach(btn => {
@@ -1131,11 +1149,11 @@ function debounce(func, wait) {
     };
 }
 
-elFilterCategory.addEventListener('change', renderJobs);
-elFilterLocation.addEventListener('change', renderJobs);
-elFilterSort.addEventListener('change', renderJobs);
+elFilterCategory.addEventListener('change', applyFiltersAndRenderJobs);
+elFilterLocation.addEventListener('change', applyFiltersAndRenderJobs);
+elFilterSort.addEventListener('change', applyFiltersAndRenderJobs);
 // ⚡ Bolt: Apply debounce to search input to prevent unnecessary API calls and database hits on every keystroke
-elSearchInput.addEventListener('input', debounce(renderJobs, 300));
+elSearchInput.addEventListener('input', debounce(applyFiltersAndRenderJobs, 300));
 
 const btnResetFilters = document.getElementById('btn-reset-filters');
 if (btnResetFilters) {
@@ -1144,7 +1162,7 @@ if (btnResetFilters) {
         elFilterCategory.value = 'Alle';
         elFilterLocation.value = 'Alle';
         elFilterSort.value = 'newest';
-        renderJobs();
+        applyFiltersAndRenderJobs();
     });
 }
 
@@ -1311,7 +1329,7 @@ async function deleteAdminJob(jobId) {
 
             // If they are deleting from the public feed, refresh that too
             if (!elYouthSection.classList.contains('hidden')) {
-                renderJobs();
+                fetchAndRenderJobs();
             }
         } catch (error) {
             console.error('Error deleting job as admin:', error);
@@ -1379,7 +1397,7 @@ async function rejectAdminJob(jobId, currentDescription) {
         if (!elAdminDashboardSection.classList.contains('hidden')) {
             renderAdminJobs(); // Refresh table
         } else if (!elYouthSection.classList.contains('hidden')) {
-            renderJobs();
+            fetchAndRenderJobs();
         }
     } catch (error) {
         console.error('Error rejecting job as admin:', error);
