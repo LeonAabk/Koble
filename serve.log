@@ -1,32 +1,45 @@
-npm warn exec The following package was not found and will be installed: serve@14.2.6
- INFO  Accepting connections at http://localhost:3000
- HTTP  8/19/2026 4:05:13 PM ::1 GET /
- HTTP  8/19/2026 4:05:13 PM ::1 Returned 200 in 360 ms
- HTTP  8/19/2026 4:05:14 PM ::1 GET /style.css
- HTTP  8/19/2026 4:05:14 PM ::1 GET /script.js
- HTTP  8/19/2026 4:05:14 PM ::1 Returned 200 in 5 ms
- HTTP  8/19/2026 4:05:14 PM ::1 Returned 200 in 6 ms
- HTTP  8/19/2026 4:05:17 PM ::1 GET /
- HTTP  8/19/2026 4:05:17 PM ::1 Returned 304 in 2 ms
- HTTP  8/19/2026 4:05:17 PM ::1 GET /style.css
- HTTP  8/19/2026 4:05:17 PM ::1 GET /script.js
- HTTP  8/19/2026 4:05:17 PM ::1 Returned 304 in 3 ms
- HTTP  8/19/2026 4:05:17 PM ::1 Returned 304 in 3 ms
- HTTP  8/19/2026 4:07:29 PM ::1 GET /
- HTTP  8/19/2026 4:07:29 PM ::1 Returned 200 in 2 ms
- HTTP  8/19/2026 4:07:29 PM ::1 GET /style.css
- HTTP  8/19/2026 4:07:29 PM ::1 GET /script.js
- HTTP  8/19/2026 4:07:29 PM ::1 Returned 200 in 5 ms
- HTTP  8/19/2026 4:07:29 PM ::1 Returned 200 in 5 ms
- HTTP  8/19/2026 4:10:18 PM ::1 GET /
- HTTP  8/19/2026 4:10:18 PM ::1 Returned 200 in 2 ms
- HTTP  8/19/2026 4:10:18 PM ::1 GET /style.css
- HTTP  8/19/2026 4:10:18 PM ::1 GET /script.js
- HTTP  8/19/2026 4:10:18 PM ::1 Returned 200 in 3 ms
- HTTP  8/19/2026 4:10:18 PM ::1 Returned 200 in 3 ms
- HTTP  8/19/2026 4:10:24 PM ::1 GET /
- HTTP  8/19/2026 4:10:24 PM ::1 Returned 304 in 1 ms
- HTTP  8/19/2026 4:10:24 PM ::1 GET /style.css
- HTTP  8/19/2026 4:10:24 PM ::1 GET /script.js
- HTTP  8/19/2026 4:10:24 PM ::1 Returned 304 in 1 ms
- HTTP  8/19/2026 4:10:24 PM ::1 Returned 304 in 1 ms
+127.0.0.1 - - [20/Aug/2026 14:14:19] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:14:19] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:14:19] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:15:23] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:15:23] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:15:23] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:15:55] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:15:55] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:15:55] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:16:50] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:16:50] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:16:50] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:18:23] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:18:23] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:18:23] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:19:08] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:19:08] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:19:08] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:19:45] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:19:45] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:19:45] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:21:11] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:21:11] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:21:11] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:21:49] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:21:49] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:21:49] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:22:59] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:22:59] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:22:59] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:23:52] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:23:52] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:23:52] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:24:25] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:24:25] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:24:25] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:24:59] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:24:59] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:24:59] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:26:01] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:26:01] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:26:01] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:26:40] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:26:40] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2026 14:26:40] "GET /script.js HTTP/1.1" 200 -
