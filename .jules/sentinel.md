@@ -14,3 +14,8 @@ When rendering UI elements conditionally based on permissions (e.g. inline admin
 
 ### 2024-08-19 - Moderation Queues and User Feedback
 When implementing moderation queues (`is_approved` flags) that delay content publication, always provide explicit feedback to the creator immediately upon submission, and reflect that pending status clearly in their personal management dashboard. Failing to do so causes confusion and duplicate submissions.
+
+### 2024-08-20 - Silent Failure Mitigation in Supabase Client
+**Vulnerability:** Supabase queries (e.g., updates, deletes) may fail silently if Row Level Security (RLS) blocks the operation or conditions are not met, returning no data but also no hard error, leading the frontend to incorrectly assume success.
+**Learning:** Checking `if (error) throw error;` is insufficient for mutation operations. The client must verify that the database actually modified rows, otherwise unauthorized attempts appear successful locally while silently failing on the backend.
+**Prevention:** Chain `.select()` to mutation queries and check `if (!data || data.length === 0)` to detect and handle silent RLS rejections, ensuring accurate UI feedback for authorization failures.
