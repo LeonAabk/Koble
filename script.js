@@ -40,13 +40,29 @@ const elProfileLogoutBtn = document.getElementById('profile-logout-btn');
 const elMainNav = document.getElementById('main-nav');
 
 // Calculator Elements
+const calcEmployer = document.getElementById('calc-employer');
+const calcWorker = document.getElementById('calc-worker');
+const calcTask = document.getElementById('calc-task');
 const calcPersons = document.getElementById('calc-persons');
 const calcHours = document.getElementById('calc-hours');
 const calcRate = document.getElementById('calc-rate');
 const calcTotal = document.getElementById('calc-total');
-const agreementSummary = document.getElementById('agreement-summary');
-const signatureCanvas = document.getElementById('signature-canvas');
-const clearSignatureBtn = document.getElementById('clear-signature-btn');
+
+// PDF Elements
+const pdfDate = document.getElementById('pdf-date');
+const pdfEmployer = document.getElementById('pdf-employer');
+const pdfWorker = document.getElementById('pdf-worker');
+const pdfTask = document.getElementById('pdf-task');
+const pdfPersons = document.getElementById('pdf-persons');
+const pdfHours = document.getElementById('pdf-hours');
+const pdfRate = document.getElementById('pdf-rate');
+const pdfTotal = document.getElementById('pdf-total');
+
+// Signature Elements
+const signatureCanvasEmployer = document.getElementById('signature-canvas-employer');
+const signatureCanvasWorker = document.getElementById('signature-canvas-worker');
+const clearSignatureEmployerBtn = document.getElementById('clear-signature-employer-btn');
+const clearSignatureWorkerBtn = document.getElementById('clear-signature-worker-btn');
 const downloadPdfBtn = document.getElementById('download-pdf-btn');
 const pdfExportArea = document.getElementById('pdf-export-area');
 
@@ -203,37 +219,56 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
 // --- Calculator Logic ---
 function updateCalculatorTotal() {
+    const employer = calcEmployer.value.trim() || '[Oppdragsgiver]';
+    const worker = calcWorker.value.trim() || '[Utførende part]';
+    const task = calcTask.value.trim() || '[Beskrivelse]';
     const persons = parseInt(calcPersons.value) || 0;
     const hours = parseInt(calcHours.value) || 0;
     const rate = parseInt(calcRate.value) || 0;
 
     const total = persons * hours * rate;
+
+    // Update live calculator total
     calcTotal.textContent = total;
 
-    agreementSummary.textContent = `Avtale om dugnadsarbeid
+    // Update PDF structured text
+    const today = new Date();
+    const dateString = today.toLocaleDateString('no-NO', { year: 'numeric', month: 'long', day: 'numeric' });
+    if (pdfDate) pdfDate.textContent = `Dato: ${dateString}`;
 
-Det er avtalt at ${persons} person(er) skal utføre arbeid i ${hours} time(r) til en timepris på ${rate} NOK.
+    if (pdfEmployer) pdfEmployer.textContent = employer;
+    if (pdfWorker) pdfWorker.textContent = worker;
+    if (pdfTask) pdfTask.textContent = task;
 
-Total kompensasjon for arbeidet er beregnet til ${total} NOK.`;
+    if (pdfPersons) pdfPersons.textContent = persons;
+    if (pdfHours) pdfHours.textContent = hours;
+    if (pdfRate) pdfRate.textContent = `${rate} NOK`;
+    if (pdfTotal) pdfTotal.textContent = `${total} NOK`;
 }
 
+calcEmployer.addEventListener('input', updateCalculatorTotal);
+calcWorker.addEventListener('input', updateCalculatorTotal);
+calcTask.addEventListener('input', updateCalculatorTotal);
 calcPersons.addEventListener('input', updateCalculatorTotal);
 calcHours.addEventListener('input', updateCalculatorTotal);
 calcRate.addEventListener('input', updateCalculatorTotal);
 
 // --- Canvas Drawing Logic ---
-let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
-const ctx = signatureCanvas ? signatureCanvas.getContext('2d') : null;
+function setupCanvas(canvas, clearBtn) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-if (ctx) {
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000000';
 
     function getCoordinates(e) {
-        const rect = signatureCanvas.getBoundingClientRect();
+        const rect = canvas.getBoundingClientRect();
         if (e.touches && e.touches.length > 0) {
             return {
                 x: e.touches[0].clientX - rect.left,
@@ -272,23 +307,26 @@ if (ctx) {
     }
 
     // Mouse events
-    signatureCanvas.addEventListener('mousedown', startDrawing);
-    signatureCanvas.addEventListener('mousemove', draw);
-    signatureCanvas.addEventListener('mouseup', stopDrawing);
-    signatureCanvas.addEventListener('mouseout', stopDrawing);
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
 
     // Touch events
-    signatureCanvas.addEventListener('touchstart', startDrawing);
-    signatureCanvas.addEventListener('touchmove', draw, { passive: false });
-    signatureCanvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
 
     // Clear canvas
-    if (clearSignatureBtn) {
-        clearSignatureBtn.addEventListener('click', () => {
-            ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
         });
     }
 }
+
+setupCanvas(signatureCanvasEmployer, clearSignatureEmployerBtn);
+setupCanvas(signatureCanvasWorker, clearSignatureWorkerBtn);
 
 // PDF Export Logic
 if (downloadPdfBtn && pdfExportArea) {
@@ -301,20 +339,26 @@ if (downloadPdfBtn && pdfExportArea) {
             html2canvas:  {
                 scale: 2,
                 onclone: function(clonedDoc) {
-                    // html2pdf / html2canvas has an issue with rendering drawn canvas elements natively
-                    // Workaround: convert the canvas to an image within the cloned document before rendering
-                    const originalCanvas = document.getElementById('signature-canvas');
-                    const clonedCanvas = clonedDoc.getElementById('signature-canvas');
+                    // Replace canvases with images to preserve drawings
+                    const replaceCanvas = (id) => {
+                        const originalCanvas = document.getElementById(id);
+                        const clonedCanvas = clonedDoc.getElementById(id);
+                        if (originalCanvas && clonedCanvas) {
+                            const img = clonedDoc.createElement('img');
+                            img.src = originalCanvas.toDataURL('image/png');
+                            img.width = originalCanvas.width;
+                            img.height = originalCanvas.height;
+                            img.style.border = '1px solid #ccc';
+                            clonedCanvas.parentNode.replaceChild(img, clonedCanvas);
+                        }
+                    };
 
-                    if (originalCanvas && clonedCanvas) {
-                        const img = clonedDoc.createElement('img');
-                        img.src = originalCanvas.toDataURL('image/png');
-                        img.width = originalCanvas.width;
-                        img.height = originalCanvas.height;
-                        img.style.border = '1px solid #ccc';
-                        img.style.borderRadius = 'var(--radius)';
-                        clonedCanvas.parentNode.replaceChild(img, clonedCanvas);
-                    }
+                    replaceCanvas('signature-canvas-employer');
+                    replaceCanvas('signature-canvas-worker');
+
+                    // Hide UI buttons from final PDF
+                    const btns = clonedDoc.querySelectorAll('.btn');
+                    btns.forEach(btn => btn.style.display = 'none');
                 }
             },
             jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -394,22 +438,26 @@ elLogoTitle.addEventListener('click', showHomeView);
 navCalculatorBtn.addEventListener('click', () => {
     window.location.hash = '';
     showView(elCalculatorSection);
-    // Ensure canvas dimensions match its display size to prevent stretching
-    const canvas = document.getElementById('signature-canvas');
-    if (canvas) {
-        const rect = canvas.getBoundingClientRect();
-        if (rect.width > 0) {
-            canvas.width = rect.width;
+    updateCalculatorTotal(); // initialize date and default text on load
 
-            // Re-apply context styles as setting width resets the context
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                ctx.lineWidth = 2;
-                ctx.lineCap = 'round';
-                ctx.strokeStyle = '#0f172a'; // slate-900
+    // Ensure canvas dimensions match its display size to prevent stretching
+    const canvases = [signatureCanvasEmployer, signatureCanvasWorker];
+    canvases.forEach(canvas => {
+        if (canvas) {
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width > 0) {
+                canvas.width = rect.width;
+
+                // Re-apply context styles as setting width resets the context
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.lineWidth = 2;
+                    ctx.lineCap = 'round';
+                    ctx.strokeStyle = '#000000';
+                }
             }
         }
-    }
+    });
 });
 
 elYouthRoleBtn.addEventListener('click', () => {
