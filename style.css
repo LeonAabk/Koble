@@ -136,7 +136,7 @@ footer {
 }
 
 .btn:active {
-    transform: translateY(0);
+    transform: translateY(0) scale(0.97);
     box-shadow: none;
 }
 
@@ -147,6 +147,7 @@ footer {
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 .btn-secondary {
@@ -156,6 +157,7 @@ footer {
 
 .btn-secondary:hover {
     background-color: var(--secondary-hover);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 .btn-text {
@@ -288,12 +290,12 @@ textarea:focus {
     border-radius: var(--border-radius);
     padding: var(--spacing-md);
     background-color: var(--card-bg);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .job-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
 }
 
 .job-card h3 {

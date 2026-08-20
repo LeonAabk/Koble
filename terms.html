@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brukervilkår og Personvern - Koble</title>
+    <!-- Import Inter Font for a clean, professional typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="terms.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <h1 id="logo-title">Koble</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="terms-container">
+            <div class="terms-header">
+                <h1>Brukervilkår og Personvern</h1>
+                <p>Sist oppdatert: <span id="current-date">Oktober 2023</span></p>
+            </div>
+
+            <section class="terms-section">
+                <h2>Brukervilkår</h2>
+                <p>Velkommen til Koble! Ved å bruke vår plattform aksepterer du følgende vilkår og betingelser.</p>
+
+                <h3>1. Formål</h3>
+                <p>Koble er en formidlingsplattform som har til hensikt å koble arbeidsvillig ungdom og russ med privatpersoner, bønder og bedrifter som trenger hjelp til småjobber og dugnad.</p>
+
+                <h3>2. Ansvarsfraskrivelse</h3>
+                <div class="disclaimer-box">
+                    <p>Viktig: Koble er kun et bindeledd for å koble oppdragsgivere med arbeidstakere. Vi tar ikke del i, og har ikke ansvar for, noen avtaler, utførelse av arbeid, økonomiske transaksjoner, eller innrapportering av skatt og avgifter.</p>
+                </div>
+                <p>Alt ansvar for lovligheten, kvaliteten, og sikkerheten ved arbeidet hviler utelukkende på partene som inngår en avtale (oppdragsgiver og arbeidstaker). Eventuell betaling gjøres direkte mellom partene utenfor vår plattform.</p>
+
+                <h3>3. Brukerens Ansvar</h3>
+                <ul>
+                    <li>Du er selv ansvarlig for informasjonen du legger ut på plattformen.</li>
+                    <li>Oppdragsgivere er ansvarlige for å sikre trygge arbeidsforhold og at avtalt godtgjørelse blir utbetalt.</li>
+                    <li>Ungdom/arbeidstakere er ansvarlige for å utføre avtalt arbeid til avtalt tid, og å avklare eventuelle skatteplikter.</li>
+                    <li>Brukerne forplikter seg til å ha en høflig og respektfull tone, og å ikke misbruke plattformen til ulovlige eller støtende formål.</li>
+                </ul>
+            </section>
+
+            <section class="terms-section">
+                <h2>Personvern</h2>
+                <p>Vi tar ditt personvern på alvor. Her beskriver vi hvordan vi samler inn og bruker din informasjon.</p>
+
+                <h3>1. Informasjon vi samler inn</h3>
+                <p>Vi samler inn e-postadresser, navn (for oppdragsgivere), oppdragets art, sted og tidspunkt når du registrerer deg eller legger ut en jobb på vår plattform. Vi bruker også informasjonskapsler for autentisering.</p>
+
+                <h3>2. Bruk av informasjonen</h3>
+                <p>Informasjonen brukes utelukkende for å muliggjøre driften av Koble – det vil si å la brukere legge ut og finne oppdrag, og å la arbeidstakere kontakte oppdragsgivere. Din e-post vil være synlig for de som ønsker å søke på ditt oppdrag.</p>
+
+                <h3>3. Deling av data</h3>
+                <p>Vi verken selger eller deler din personlige informasjon med tredjeparter, med unntak av det som kreves for å drive vår tjeneste (f.eks. vår databaseleverandør Supabase, for datalagring). </p>
+
+                <h3>4. Dine rettigheter</h3>
+                <p>Du har når som helst rett til å be om innsyn i, retting, eller sletting av dine personopplysninger. Du kan også slette dine egne annonser når du er logget inn. Kontakt oss dersom du ønsker å få slettet din konto.</p>
+            </section>
+
+            <div class="back-link-container">
+                <a href="index.html" class="btn btn-secondary">Tilbake til forsiden</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Koble. En plattform for å koble ungdom med arbeid.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Set the current date dynamically for the "Sist oppdatert" field
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('no-NO', options);
+    </script>
+</body>
+</html>

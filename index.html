@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="style.css">
     <script data-goatcounter="https://leonaabak.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <header>
@@ -18,6 +19,7 @@
             <h1 id="logo-title">Koble</h1>
             <nav id="main-nav">
                 <button id="nav-home-btn" class="btn-text">Hjem</button>
+                <a href="faq.html" class="btn-text" style="text-decoration: none;">FAQ</a>
                 <button id="nav-login-btn" class="btn-secondary btn-sm" style="margin-left: 1rem;">Logg inn</button>
                 <div id="nav-user-info" class="hidden" >
                     <span id="nav-user-email" style="font-size: 0.9rem; color: var(--text-light);"></span>
@@ -34,8 +36,8 @@
                 <h2>Velkommen til Koble</h2>
                 <p class="lead">Plattformen som kobler arbeidsvillig ungdom og russ med bønder, bedrifter og privatpersoner som trenger ekstra hender.</p>
                 <div class="role-buttons">
-                    <button id="youth-role-btn" class="btn btn-primary btn-lg">Finn oppdrag</button>
-                    <button id="employer-role-btn" class="btn btn-secondary btn-lg">Legg ut oppdrag</button>
+                    <button id="youth-role-btn" class="btn btn-primary btn-lg"><i data-lucide="search" style="width: 1.2rem; height: 1.2rem; vertical-align: middle; margin-right: 0.5rem;"></i>Finn oppdrag</button>
+                    <button id="employer-role-btn" class="btn btn-secondary btn-lg"><i data-lucide="plus-circle" style="width: 1.2rem; height: 1.2rem; vertical-align: middle; margin-right: 0.5rem;"></i>Legg ut oppdrag</button>
                 </div>
             </div>
 
@@ -145,8 +147,8 @@
                     <!-- My jobs will be injected here -->
                 </div>
                 <div id="no-my-jobs-msg" class="empty-state hidden">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                    <p>Du har ikke lagt ut noen jobber enda.</p>
+                    <i data-lucide="folder-open" style="width: 48px; height: 48px; color: #a0aec0; margin-bottom: 1rem;"></i>
+                    <p>Du har ikke lagt ut noen oppdrag ennå.</p>
                     <button id="btn-create-first-job" class="btn btn-primary">Legg ut ditt første oppdrag</button>
                 </div>
             </div>
@@ -214,8 +216,8 @@
             </div>
 
             <div id="no-jobs-msg" class="empty-state hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <p>Ingen jobber funnet. Prøv et annet søk eller en annen kategori.</p>
+                <i data-lucide="search-x" style="width: 48px; height: 48px; color: #a0aec0; margin-bottom: 1rem;"></i>
+                <p>Ingen oppdrag funnet i denne kategorien ennå.</p>
                 <button id="btn-reset-filters" class="btn btn-secondary">Nullstill filtre</button>
             </div>
         </section>
