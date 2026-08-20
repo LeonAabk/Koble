@@ -406,11 +406,16 @@ elJobPostForm.addEventListener('submit', async (e) => {
 
     try {
         if (editingJobId) {
-            const { error } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('jobs')
                 .update(jobData)
-                .eq('id', editingJobId);
+                .eq('id', editingJobId)
+                .eq('user_id', currentUser.id)
+                .select();
             if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error("Oppdatering ble avvist av databasen (sannsynligvis manglende rettigheter).");
+            }
             showToast('Oppdraget ble oppdatert!', 'success');
         } else {
             const { error } = await supabaseClient
@@ -632,13 +637,17 @@ async function deleteJob(jobId) {
 
     if (confirm('Er du sikker på at du vil slette dette oppdraget?')) {
         try {
-            const { error } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('jobs')
                 .delete()
                 .eq('id', jobId)
-                .eq('user_id', currentUser.id);
+                .eq('user_id', currentUser.id)
+                .select();
 
             if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error("Sletting ble avvist av databasen (sannsynligvis manglende rettigheter).");
+            }
 
             showToast('Oppdraget ble slettet', 'success');
             renderMyJobs();
@@ -998,20 +1007,24 @@ async function renderAdminJobs() {
 }
 
 async function deleteAdminJob(jobId) {
-    if (!currentUser) {
-        showToast('Du må være logget inn for å slette oppdrag.', 'error');
+    if (!currentUser || currentUser.email !== 'admin@koble.no') {
+        showToast('Ingen tilgang', 'error');
         return;
     }
 
     if (confirm('ADVARSEL: Er du sikker på at du vil permanent slette dette oppdraget som administrator?')) {
         try {
             // Deliberately omitting the user_id check to allow admin deletion
-            const { error } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('jobs')
                 .delete()
-                .eq('id', jobId);
+                .eq('id', jobId)
+                .select();
 
             if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error("Sletting ble avvist av databasen (sannsynligvis manglende RLS-policy for admin).");
+            }
 
             showToast('Oppdraget ble slettet', 'success');
             renderAdminJobs(); // Refresh table
@@ -1028,8 +1041,8 @@ async function deleteAdminJob(jobId) {
 }
 
 async function approveAdminJob(jobId) {
-    if (!currentUser) {
-        showToast('Du må være logget inn for å godkjenne oppdrag.', 'error');
+    if (!currentUser || currentUser.email !== 'admin@koble.no') {
+        showToast('Ingen tilgang', 'error');
         return;
     }
 
