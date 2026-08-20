@@ -298,7 +298,25 @@ if (downloadPdfBtn && pdfExportArea) {
             margin:       1,
             filename:     'Dugnadsavtale_Koble.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
+            html2canvas:  {
+                scale: 2,
+                onclone: function(clonedDoc) {
+                    // html2pdf / html2canvas has an issue with rendering drawn canvas elements natively
+                    // Workaround: convert the canvas to an image within the cloned document before rendering
+                    const originalCanvas = document.getElementById('signature-canvas');
+                    const clonedCanvas = clonedDoc.getElementById('signature-canvas');
+
+                    if (originalCanvas && clonedCanvas) {
+                        const img = clonedDoc.createElement('img');
+                        img.src = originalCanvas.toDataURL('image/png');
+                        img.width = originalCanvas.width;
+                        img.height = originalCanvas.height;
+                        img.style.border = '1px solid #ccc';
+                        img.style.borderRadius = 'var(--radius)';
+                        clonedCanvas.parentNode.replaceChild(img, clonedCanvas);
+                    }
+                }
+            },
             jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
 
@@ -382,6 +400,14 @@ navCalculatorBtn.addEventListener('click', () => {
         const rect = canvas.getBoundingClientRect();
         if (rect.width > 0) {
             canvas.width = rect.width;
+
+            // Re-apply context styles as setting width resets the context
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#0f172a'; // slate-900
+            }
         }
     }
 });
