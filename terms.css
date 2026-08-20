@@ -1,0 +1,89 @@
+/*
+ * terms.css
+ * Specific styling for the Terms and Privacy page to ensure high readability.
+ */
+
+.terms-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-lg) var(--spacing-md);
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.terms-header {
+    text-align: center;
+    margin-bottom: calc(var(--spacing-lg) * 1.5);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.terms-header h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+.terms-header p {
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+.terms-section {
+    margin-bottom: calc(var(--spacing-lg) * 1.5);
+}
+
+.terms-section h2 {
+    font-size: 1.75rem;
+    color: var(--text-color);
+    margin-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--spacing-sm);
+}
+
+.terms-section h3 {
+    font-size: 1.25rem;
+    color: var(--text-color);
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
+}
+
+.terms-section p, .terms-section li {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--text-color);
+    margin-bottom: var(--spacing-md);
+}
+
+.terms-section ul {
+    margin-left: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.terms-section li {
+    margin-bottom: var(--spacing-sm);
+}
+
+.disclaimer-box {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: var(--spacing-md);
+    margin: var(--spacing-lg) 0;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.disclaimer-box p {
+    margin-bottom: 0;
+    color: #856404;
+    font-weight: 600;
+}
+
+.back-link-container {
+    text-align: center;
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+}
