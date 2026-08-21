@@ -331,54 +331,82 @@ setupCanvas(signatureCanvasWorker, clearSignatureWorkerBtn);
 // PDF Export Logic
 if (downloadPdfBtn && pdfExportArea) {
     downloadPdfBtn.addEventListener('click', () => {
-        // Use html2pdf with professional formatting options
+        if (!window.html2pdf) {
+            console.error('html2pdf library is not loaded.');
+            return;
+        }
+
+        // 1. Clone the Content
+        const clonedContent = pdfExportArea.cloneNode(true);
+
+        // Replace canvases with images to preserve drawings
+        const replaceCanvas = (id) => {
+            const originalCanvas = document.getElementById(id);
+            const clonedCanvas = clonedContent.querySelector(`#${id}`);
+            if (originalCanvas && clonedCanvas) {
+                const img = document.createElement('img');
+                img.src = originalCanvas.toDataURL('image/png');
+                img.width = originalCanvas.width;
+                img.height = originalCanvas.height;
+                img.style.border = '1px solid #ccc';
+                img.style.display = 'block';
+                img.style.width = '100%';
+                clonedCanvas.parentNode.replaceChild(img, clonedCanvas);
+            }
+        };
+
+        replaceCanvas('signature-canvas-employer');
+        replaceCanvas('signature-canvas-worker');
+
+        // Hide UI buttons from final PDF
+        const btns = clonedContent.querySelectorAll('button');
+        btns.forEach(btn => btn.style.display = 'none');
+
+        // Remove box-shadow and border-radius from elements to strip web CSS
+        clonedContent.style.boxShadow = 'none';
+        clonedContent.style.borderRadius = '0';
+        clonedContent.style.margin = '0';
+        clonedContent.style.padding = '0';
+
+        const allElements = clonedContent.querySelectorAll('*');
+        allElements.forEach(el => {
+            el.style.boxShadow = 'none';
+            el.style.borderRadius = '0';
+        });
+
+        // 2. Create a Temporary Print Container
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.top = '-9999px';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '210mm';
+        tempContainer.style.background = 'white';
+        tempContainer.style.color = 'black';
+
+        // 3. Strip Web CSS
+        tempContainer.style.display = 'block';
+        tempContainer.style.padding = '20mm';
+        tempContainer.style.boxShadow = 'none';
+        tempContainer.style.borderRadius = '0';
+
+        tempContainer.appendChild(clonedContent);
+        document.body.appendChild(tempContainer);
+
         const opt = {
-            margin:       [15, 15, 15, 15],
-            filename:     'Dugnadsavtale_Koble.pdf',
+            margin:       0, // Handled by the container's padding instead
+            filename:     'Koble-Avtale.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
-            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] },
-            html2canvas:  {
-                scale: 2,
-                scrollY: 0,
-                onclone: function(clonedDoc) {
-                    // Replace canvases with images to preserve drawings
-                    const replaceCanvas = (id) => {
-                        const originalCanvas = document.getElementById(id);
-                        const clonedCanvas = clonedDoc.getElementById(id);
-                        if (originalCanvas && clonedCanvas) {
-                            const img = clonedDoc.createElement('img');
-                            img.src = originalCanvas.toDataURL('image/png');
-                            img.width = originalCanvas.width;
-                            img.height = originalCanvas.height;
-                            img.style.border = '1px solid #ccc';
-                            clonedCanvas.parentNode.replaceChild(img, clonedCanvas);
-                        }
-                    };
-
-                    replaceCanvas('signature-canvas-employer');
-                    replaceCanvas('signature-canvas-worker');
-
-                    // Hide UI buttons from final PDF
-                    const btns = clonedDoc.querySelectorAll('.btn');
-                    btns.forEach(btn => btn.style.display = 'none');
-
-                    // Reset margin and padding of export area to avoid inheriting large spacing
-                    const clonedExportArea = clonedDoc.getElementById('pdf-export-area');
-                    if (clonedExportArea) {
-                        clonedExportArea.style.margin = '0';
-                        clonedExportArea.style.padding = '0';
-                    }
-                }
-            },
+            html2canvas:  { scale: 2, useCORS: true, windowWidth: 794 }, // 794px is A4 width at 96 DPI
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Ensure html2pdf is loaded from the CDN before invoking
-        if (window.html2pdf) {
-             html2pdf().set(opt).from(pdfExportArea).save();
-        } else {
-             console.error('html2pdf library is not loaded.');
-        }
+        // 4 & 5. Generate & Clean Up
+        html2pdf().set(opt).from(tempContainer).save().then(() => {
+            tempContainer.remove();
+        }).catch(err => {
+            console.error('PDF Generation failed', err);
+            tempContainer.remove();
+        });
     });
 }
 
