@@ -58,11 +58,7 @@ const pdfHours = document.getElementById('pdf-hours');
 const pdfRate = document.getElementById('pdf-rate');
 const pdfTotal = document.getElementById('pdf-total');
 
-// Signature Elements
-const signatureCanvasEmployer = document.getElementById('signature-canvas-employer');
-const signatureCanvasWorker = document.getElementById('signature-canvas-worker');
-const clearSignatureEmployerBtn = document.getElementById('clear-signature-employer-btn');
-const clearSignatureWorkerBtn = document.getElementById('clear-signature-worker-btn');
+// PDF & Export Elements
 const downloadPdfBtn = document.getElementById('download-pdf-btn');
 const pdfExportArea = document.getElementById('pdf-export-area');
 
@@ -253,81 +249,6 @@ calcPersons.addEventListener('input', updateCalculatorTotal);
 calcHours.addEventListener('input', updateCalculatorTotal);
 calcRate.addEventListener('input', updateCalculatorTotal);
 
-// --- Canvas Drawing Logic ---
-function setupCanvas(canvas, clearBtn) {
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let isDrawing = false;
-    let lastX = 0;
-    let lastY = 0;
-
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000000';
-
-    function getCoordinates(e) {
-        const rect = canvas.getBoundingClientRect();
-        if (e.touches && e.touches.length > 0) {
-            return {
-                x: e.touches[0].clientX - rect.left,
-                y: e.touches[0].clientY - rect.top
-            };
-        }
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
-    }
-
-    function startDrawing(e) {
-        isDrawing = true;
-        const coords = getCoordinates(e);
-        lastX = coords.x;
-        lastY = coords.y;
-    }
-
-    function draw(e) {
-        if (!isDrawing) return;
-        e.preventDefault(); // Prevent scrolling on touch
-
-        const coords = getCoordinates(e);
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(coords.x, coords.y);
-        ctx.stroke();
-
-        lastX = coords.x;
-        lastY = coords.y;
-    }
-
-    function stopDrawing() {
-        isDrawing = false;
-    }
-
-    // Mouse events
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
-
-    // Touch events
-    canvas.addEventListener('touchstart', startDrawing);
-    canvas.addEventListener('touchmove', draw, { passive: false });
-    canvas.addEventListener('touchend', stopDrawing);
-
-    // Clear canvas
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        });
-    }
-}
-
-setupCanvas(signatureCanvasEmployer, clearSignatureEmployerBtn);
-setupCanvas(signatureCanvasWorker, clearSignatureWorkerBtn);
-
 // PDF Export Logic
 if (downloadPdfBtn && pdfExportArea) {
     downloadPdfBtn.addEventListener('click', () => {
@@ -338,25 +259,6 @@ if (downloadPdfBtn && pdfExportArea) {
 
         // 1. Clone the Content
         const clonedContent = pdfExportArea.cloneNode(true);
-
-        // Replace canvases with images to preserve drawings
-        const replaceCanvas = (id) => {
-            const originalCanvas = document.getElementById(id);
-            const clonedCanvas = clonedContent.querySelector(`#${id}`);
-            if (originalCanvas && clonedCanvas) {
-                const img = document.createElement('img');
-                img.src = originalCanvas.toDataURL('image/png');
-                img.width = originalCanvas.width;
-                img.height = originalCanvas.height;
-                img.style.border = '1px solid #ccc';
-                img.style.display = 'block';
-                img.style.width = '100%';
-                clonedCanvas.parentNode.replaceChild(img, clonedCanvas);
-            }
-        };
-
-        replaceCanvas('signature-canvas-employer');
-        replaceCanvas('signature-canvas-worker');
 
         // Hide UI buttons from final PDF
         const btns = clonedContent.querySelectorAll('button');
@@ -476,25 +378,6 @@ navCalculatorBtn.addEventListener('click', () => {
     window.location.hash = '';
     showView(elCalculatorSection);
     updateCalculatorTotal(); // initialize date and default text on load
-
-    // Ensure canvas dimensions match its display size to prevent stretching
-    const canvases = [signatureCanvasEmployer, signatureCanvasWorker];
-    canvases.forEach(canvas => {
-        if (canvas) {
-            const rect = canvas.getBoundingClientRect();
-            if (rect.width > 0) {
-                canvas.width = rect.width;
-
-                // Re-apply context styles as setting width resets the context
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                    ctx.lineWidth = 2;
-                    ctx.lineCap = 'round';
-                    ctx.strokeStyle = '#000000';
-                }
-            }
-        }
-    });
 });
 
 elYouthRoleBtn.addEventListener('click', () => {
