@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
 /*
  * CSS Variables for a clean, professional design system.
  * By using variables, we can easily maintain consistency and make sweeping
@@ -5,17 +7,21 @@
  */
 :root {
     /* Color Palette */
-    --primary-color: #0056b3;       /* Trustworthy blue */
-    --primary-hover: #004494;
+    --primary-color: #2563EB;       /* Electric blue */
+    --primary-hover: #1D4ED8;
     --secondary-color: #28a745;     /* Action-oriented green */
     --secondary-hover: #218838;
-    --text-color: #333333;          /* High contrast text */
+    --text-color: #1E293B;          /* Dark slate/charcoal */
     --text-light: #666666;
-    --bg-color: #f8f9fa;            /* Soft off-white background */
+    --bg-color: #F8FAFC;            /* Clean, soft off-white background */
     --card-bg: #ffffff;
-    --border-color: #dddddd;
+    --border-color: #E2E8F0;
     --error-color: #dc3545;
     --success-color: #28a745;
+
+    /* Shadows */
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 
     /* Category Colors */
     --cat-gardsarbeid-bg: #e6f4ea;
@@ -55,6 +61,7 @@ body {
 }
 
 h1, h2, h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
     margin-bottom: var(--spacing-md);
     color: var(--text-color);
 }
@@ -112,7 +119,7 @@ footer {
     background-color: var(--card-bg);
     padding: var(--spacing-lg);
     border-radius: var(--border-radius);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: var(--card-shadow);
     margin-bottom: var(--spacing-lg);
 }
 
@@ -290,12 +297,13 @@ textarea:focus {
     border-radius: var(--border-radius);
     padding: var(--spacing-md);
     background-color: var(--card-bg);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--card-shadow);
+    transition: all 0.2s ease;
 }
 
 .job-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow-hover);
 }
 
 .job-card h3 {
@@ -391,8 +399,8 @@ textarea:focus {
     flex: 1;
     min-width: 250px; /* Ensures cards stack nicely on very small screens */
     /* Add a subtle visual distinction so they look like 'examples' */
-    background-color: var(--bg-color);
-    border: 1px dashed var(--border-color);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
 }
 
 /* --- New Feature Styles (Search, Employer Tabs, Toast) --- */
