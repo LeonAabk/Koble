@@ -869,20 +869,23 @@ function applyFiltersAndRenderJobs() {
     elJobBoard.innerHTML = '';
 
     const filteredJobs = currentLoadedJobs.filter(job => {
-        const matchesCategory = selectedFilter === 'Alle' || job.category === selectedFilter;
-        const matchesLocation = selectedLocation === 'Alle' || job.location === selectedLocation;
-        const matchesSearch = job.title.toLowerCase().includes(searchQuery) ||
-                              job.description.toLowerCase().includes(searchQuery);
+        if (selectedFilter !== 'Alle' && job.category !== selectedFilter) return false;
+        if (selectedLocation !== 'Alle' && job.location !== selectedLocation) return false;
+        if (!searchQuery) return true;
 
-        return matchesCategory && matchesLocation && matchesSearch;
+        return job.title.toLowerCase().includes(searchQuery) ||
+               job.description.toLowerCase().includes(searchQuery);
     });
 
     // Sort logic
     const sortOrder = elFilterSort.value;
     filteredJobs.sort((a, b) => {
-        const dateA = new Date(a.created_at);
-        const dateB = new Date(b.created_at);
-        return sortOrder === 'oldest' ? dateA - dateB : dateB - dateA;
+        // ISO-8601 strings sort correctly lexicographically, avoiding expensive Date parsing overhead
+        if (sortOrder === 'oldest') {
+            return a.created_at < b.created_at ? -1 : (a.created_at > b.created_at ? 1 : 0);
+        } else {
+            return a.created_at > b.created_at ? -1 : (a.created_at < b.created_at ? 1 : 0);
+        }
     });
 
     if (filteredJobs.length === 0) {
