@@ -333,11 +333,13 @@ if (downloadPdfBtn && pdfExportArea) {
     downloadPdfBtn.addEventListener('click', () => {
         // Use html2pdf with professional formatting options
         const opt = {
-            margin:       1,
+            margin:       [15, 15, 15, 15],
             filename:     'Dugnadsavtale_Koble.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] },
             html2canvas:  {
                 scale: 2,
+                scrollY: 0,
                 onclone: function(clonedDoc) {
                     // Replace canvases with images to preserve drawings
                     const replaceCanvas = (id) => {
@@ -359,9 +361,16 @@ if (downloadPdfBtn && pdfExportArea) {
                     // Hide UI buttons from final PDF
                     const btns = clonedDoc.querySelectorAll('.btn');
                     btns.forEach(btn => btn.style.display = 'none');
+
+                    // Reset margin and padding of export area to avoid inheriting large spacing
+                    const clonedExportArea = clonedDoc.getElementById('pdf-export-area');
+                    if (clonedExportArea) {
+                        clonedExportArea.style.margin = '0';
+                        clonedExportArea.style.padding = '0';
+                    }
                 }
             },
-            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
         // Ensure html2pdf is loaded from the CDN before invoking
