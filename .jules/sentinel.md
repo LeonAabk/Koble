@@ -19,3 +19,25 @@ When implementing moderation queues (`is_approved` flags) that delay content pub
 **Vulnerability:** Supabase queries (e.g., updates, deletes) may fail silently if Row Level Security (RLS) blocks the operation or conditions are not met, returning no data but also no hard error, leading the frontend to incorrectly assume success.
 **Learning:** Checking `if (error) throw error;` is insufficient for mutation operations. The client must verify that the database actually modified rows, otherwise unauthorized attempts appear successful locally while silently failing on the backend.
 **Prevention:** Chain `.select()` to mutation queries and check `if (!data || data.length === 0)` to detect and handle silent RLS rejections, ensuring accurate UI feedback for authorization failures.
+
+## 2026-08-21 - Missing Input Length Validations
+**Vulnerability:** User input fields (title, description, employer name) lacked maximum length constraints on the frontend before submission.
+**Learning:** Relying only on minimum length validation leaves the application vulnerable to resource exhaustion (DoS) or unexpected database truncation errors if excessively large payloads are sent.
+**Prevention:** Defense in Depth: Always implement explicit maximum length bounds on user inputs alongside minimums, both on the frontend (for UX and basic filtering) and backend.
+
+
+## 2026-08-21 - Type Confusion in HTML Escaping
+**Vulnerability:** The  utility function implicitly assumed all inputs were strings and called  directly.
+**Learning:** If a non-string type (like a number from JSON or a null value bypassing the falsy check) reaches the escaping function, it throws a TypeError, potentially crashing parts of the application or allowing bypasses if error states fail open.
+**Prevention:** Always explicitly cast untrusted or dynamically-typed variables to strings (e.g., ) before performing string manipulation or sanitization.
+
+
+## 2024-05-28 - Missing Input Length Validations
+**Vulnerability:** User input fields (title, description, employer name) lacked maximum length constraints on the frontend before submission.
+**Learning:** Relying only on minimum length validation leaves the application vulnerable to resource exhaustion (DoS) or unexpected database truncation errors if excessively large payloads are sent.
+**Prevention:** Defense in Depth: Always implement explicit maximum length bounds on user inputs alongside minimums, both on the frontend (for UX and basic filtering) and backend.
+
+## 2024-05-28 - Type Confusion in HTML Escaping
+**Vulnerability:** The `escapeHTML` utility function implicitly assumed all inputs were strings and called `.replace()` directly.
+**Learning:** If a non-string type (like a number from JSON or a null value bypassing the falsy check) reaches the escaping function, it throws a TypeError, potentially crashing parts of the application or allowing bypasses if error states fail open.
+**Prevention:** Always explicitly cast untrusted or dynamically-typed variables to strings (e.g., `String(str)`) before performing string manipulation or sanitization.

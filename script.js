@@ -587,12 +587,16 @@ elJobPostForm.addEventListener('submit', async (e) => {
         description = "[GROUP_FRIENDLY]" + description;
     }
 
-    if (title.length < 5) {
-        showToast("Tittelen må være minst 5 tegn lang.", "error");
+    if (title.length < 5 || title.length > 100) {
+        showToast("Tittelen må være mellom 5 og 100 tegn lang.", "error");
         return;
     }
-    if (rawDescription.length < 10) {
-        showToast("Beskrivelsen må være minst 10 tegn.", "error");
+    if (rawDescription.length < 10 || rawDescription.length > 2000) {
+        showToast("Beskrivelsen må være mellom 10 og 2000 tegn.", "error");
+        return;
+    }
+    if (employerName.length > 100) {
+        showToast("Arbeidsgivernavnet kan ikke være over 100 tegn.", "error");
         return;
     }
 
@@ -1056,7 +1060,7 @@ async function renderJobs() {
 
 function escapeHTML(str) {
     if (!str) return '';
-    return str.replace(/[&<>'"]/g,
+    return String(str).replace(/[&<>'"]/g,
         tag => ({
             '&': '&amp;',
             '<': '&lt;',
