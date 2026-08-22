@@ -1007,17 +1007,18 @@ function applyFiltersAndRenderJobs() {
     }
 }
 
+// ⚡ Bolt: Extract mapping to a constant to prevent object re-instantiation on every character match in the .replace() callback, reducing GC overhead.
+const HTML_ESCAPE_MAP = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+};
+
 function escapeHTML(str) {
     if (!str) return '';
-    return String(str).replace(/[&<>'"]/g,
-        tag => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            "'": '&#39;',
-            '"': '&quot;'
-        }[tag])
-    );
+    return String(str).replace(/[&<>'"]/g, tag => HTML_ESCAPE_MAP[tag]);
 }
 
 // --- Utility Functions ---
