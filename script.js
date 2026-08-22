@@ -519,6 +519,15 @@ elJobPostForm.addEventListener('submit', async (e) => {
         showToast("Arbeidsgivernavnet kan ikke være over 100 tegn.", "error");
         return;
     }
+    if (time.length > 100) {
+        showToast("Tidspunkt kan ikke være over 100 tegn.", "error");
+        return;
+    }
+    const pay = document.getElementById('job-pay').value;
+    if (pay.length > 100) {
+        showToast("Godtgjørelse kan ikke være over 100 tegn.", "error");
+        return;
+    }
 
     const submitBtn = elJobPostForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
@@ -526,7 +535,6 @@ elJobPostForm.addEventListener('submit', async (e) => {
 
     const category = document.getElementById('job-category').value;
     const location = document.getElementById('job-location').value;
-    const pay = document.getElementById('job-pay').value;
     const email = currentUser.email;
 
     const jobData = {
