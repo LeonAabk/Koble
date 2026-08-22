@@ -137,12 +137,23 @@ footer {
     transition: all 0.2s ease;
 }
 
-.btn:hover {
+.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.btn:focus-visible,
+.modal-close:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.btn:active {
+.btn:active:not(:disabled) {
     transform: translateY(0) scale(0.97);
     box-shadow: none;
 }
@@ -152,7 +163,7 @@ footer {
     color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
     background-color: var(--primary-hover);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
@@ -162,7 +173,7 @@ footer {
     color: white;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
     background-color: var(--secondary-hover);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
