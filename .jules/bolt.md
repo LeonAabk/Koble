@@ -13,3 +13,7 @@
 ## 2024-11-20 - Prevent Object Re-instantiation in String Replacement Callbacks
 **Learning:** Found a micro-performance bottleneck in `escapeHTML()` where a static mapping object (`{ '&': '&amp;', '<': '&lt;', ... }`) was being re-instantiated *inside* the callback function of `String.prototype.replace()` for every single matched character. Given this function is called up to 8 times per rendered job card during list rendering (which already batches DOM nodes), this pattern creates unnecessary memory allocations and garbage collection pressure on the main thread.
 **Action:** Always extract static mapping objects or arrays to constants outside of iterative functions or callbacks (like `.replace()`, `.map()`, or `.reduce()`) to ensure they are only instantiated once.
+
+## 2024-11-20 - Pre-compute Searchable Strings to Prevent Redundant Allocation
+**Learning:** Calling `.toLowerCase()` inside a `.filter()` array method on keystroke events forces redundant string allocations and GC pressure every time the user types, even with a debouncer.
+**Action:** Pre-compute and cache derived values (like lowercased versions of title and description) onto the source object array immediately after fetching from the database, allowing subsequent iterative filters to perform basic string matching without allocating new memory.
