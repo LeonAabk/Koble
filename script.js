@@ -493,6 +493,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
 
     const title = document.getElementById('job-title').value;
     const employerName = document.getElementById('job-employer-name').value;
+    const phoneNumber = document.getElementById('employer-phone').value;
     const rawDescription = document.getElementById('job-description').value;
     const time = document.getElementById('job-time').value;
     const isGroupFriendly = document.getElementById('job-group-friendly').checked;
@@ -544,7 +545,8 @@ elJobPostForm.addEventListener('submit', async (e) => {
         pay,
         email,
         description,
-        user_id: currentUser.id
+        user_id: currentUser.id,
+        phone_number: phoneNumber || null
     };
 
     try {
@@ -583,6 +585,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
 
 function resetJobForm() {
     elJobPostForm.reset();
+    document.getElementById('employer-phone').value = '';
     editingJobId = null;
     btnSubmitJob.textContent = 'Publiser jobb';
     btnCancelEdit.classList.add('hidden');
@@ -689,6 +692,7 @@ async function renderMyJobs() {
                 ${parsed.isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             </div>
             ${parsed.employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(parsed.employerName)}</p>` : ''}
+            ${job.phone_number ? `<p class="phone"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Telefon:</strong> ${escapeHTML(job.phone_number)}</p>` : ''}
             <p class="location"><i data-lucide="map-pin" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             <p class="date"><i data-lucide="calendar" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><em>Lagt ut: ${formattedDate}</em></p>
             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
@@ -731,6 +735,7 @@ function editJob(job) {
     document.getElementById('job-category').value = job.category;
     document.getElementById('job-location').value = job.location;
     document.getElementById('job-pay').value = job.pay || '';
+    document.getElementById('employer-phone').value = job.phone_number || '';
 
     const parsed = parseJobDescription(job.description);
 
@@ -952,6 +957,7 @@ function applyFiltersAndRenderJobs() {
             <span class="badge ${badgeClass}"><i data-lucide="${catIcon}" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.category)}</span>
             ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             ${employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(employerName)}</p>` : ''}
+            ${job.phone_number ? `<p class="phone"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Telefon:</strong> ${escapeHTML(job.phone_number)}</p>` : ''}
             <p class="location"><i data-lucide="map-pin" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><i data-lucide="calendar" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><em>Lagt ut: ${formattedDate}</em></p>
