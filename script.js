@@ -868,6 +868,12 @@ async function fetchAndRenderJobs() {
     const isAdmin = currentUser && currentUser.email === 'admin@koble.no';
     currentLoadedJobs = await getJobs(!isAdmin); // Fetch all if admin, else only approved
 
+    // ⚡ Bolt: Pre-compute lowercased search strings to avoid repetitive string allocation and garbage collection overhead during frequent filtering
+    currentLoadedJobs.forEach(job => {
+        job._searchTitle = (job.title || '').toLowerCase();
+        job._searchDescription = (job.description || '').toLowerCase();
+    });
+
     applyFiltersAndRenderJobs();
 }
 
@@ -886,8 +892,8 @@ function applyFiltersAndRenderJobs() {
         if (selectedLocation !== 'Alle' && job.location !== selectedLocation) return false;
         if (!searchQuery) return true;
 
-        return job.title.toLowerCase().includes(searchQuery) ||
-               job.description.toLowerCase().includes(searchQuery);
+        return job._searchTitle.includes(searchQuery) ||
+               job._searchDescription.includes(searchQuery);
     });
 
     // Sort logic
