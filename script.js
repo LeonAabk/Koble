@@ -813,9 +813,10 @@ async function markJobAsFilled(jobId) {
 
     if (confirm('Er du sikker på at du vil markere dette oppdraget som tildelt? Det vil ikke lenger være mulig å søke på det.')) {
         try {
+            // Memory: When editing or resubmitting an existing job post from the frontend, always explicitly set is_approved: false
             const { data, error } = await supabaseClient
                 .from('jobs')
-                .update({ status: 'tildelt' })
+                .update({ status: 'tildelt', is_approved: false })
                 .eq('id', jobId)
                 .eq('user_id', currentUser.id)
                 .select();
@@ -825,7 +826,7 @@ async function markJobAsFilled(jobId) {
                 throw new Error("Oppdatering ble avvist av databasen (sannsynligvis manglende rettigheter).");
             }
 
-            showToast('Oppdraget ble markert som tildelt', 'success');
+            showToast('Oppdraget ble markert som tildelt og sendt til godkjenning', 'success');
             renderMyJobs();
         } catch (error) {
             console.error('Error marking job as filled:', error);
