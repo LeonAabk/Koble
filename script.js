@@ -881,8 +881,8 @@ function applyFiltersAndRenderJobs() {
         if (selectedLocation !== 'Alle' && job.location !== selectedLocation) return false;
         if (!searchQuery) return true;
 
-        return job.title.toLowerCase().includes(searchQuery) ||
-               job.description.toLowerCase().includes(searchQuery);
+        return String(job.title || '').toLowerCase().includes(searchQuery) ||
+               String(job.description || '').toLowerCase().includes(searchQuery);
     });
 
     // Sort logic
@@ -933,7 +933,7 @@ function applyFiltersAndRenderJobs() {
         let adminActions = '';
         if (isAdmin) {
             let isRejected = false;
-            if (job.description && job.description.includes("[STATUS:REJECTED]")) {
+            if (job.description && String(job.description).includes("[STATUS:REJECTED]")) {
                 isRejected = true;
             }
             adminActions = `
@@ -1008,7 +1008,7 @@ function applyFiltersAndRenderJobs() {
 }
 
 function escapeHTML(str) {
-    if (!str) return '';
+    if (str === null || str === undefined) return '';
     return String(str).replace(/[&<>'"]/g,
         tag => ({
             '&': '&amp;',
@@ -1029,7 +1029,7 @@ function parseJobDescription(rawString) {
         statusRejected: false,
         rejectionReason: '',
         time: '',
-        rawDescription: rawString || ''
+        rawDescription: String(rawString || '')
     };
 
     if (!result.rawDescription) return result;
@@ -1179,7 +1179,7 @@ async function renderAdminJobs() {
         const statusColor = job.is_approved ? 'var(--success-color)' : '#d97706'; // warning orange
 
         let isRejected = false;
-        if (job.description && job.description.includes("[STATUS:REJECTED]")) {
+        if (job.description && String(job.description).includes("[STATUS:REJECTED]")) {
             isRejected = true;
         }
 
