@@ -781,3 +781,22 @@ textarea:focus {
     color: #92400e;
     border: 1px solid #fde68a;
 }
+
+/* Job Status Badges */
+.badge-filled {
+    background-color: #475569; /* Slate 600 */
+    color: #ffffff;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+    margin-bottom: var(--spacing-md);
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    border-radius: 4px;
+}
+
+.job-card-filled {
+    opacity: 0.65;
+    filter: grayscale(50%);
+    background-color: #f1f5f9; /* Slate 100 */
+}

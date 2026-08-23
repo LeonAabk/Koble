@@ -683,6 +683,13 @@ async function renderMyJobs() {
 
         let editButtonLabel = parsed.statusRejected ? "Endre og send inn på nytt" : "Rediger";
 
+        let assignButton = '';
+        if (job.status === 'tildelt') {
+            assignButton = '<button class="btn btn-secondary" disabled>Allerede tildelt</button>';
+        } else {
+            assignButton = `<button class="btn btn-secondary assign-btn" data-id="${job.id}">Marker som tildelt</button>`;
+        }
+
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
             ${approvalBadge}
@@ -696,6 +703,7 @@ async function renderMyJobs() {
             <p class="location"><i data-lucide="map-pin" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             <p class="date"><i data-lucide="calendar" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><em>Lagt ut: ${formattedDate}</em></p>
             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                ${assignButton}
                 <button class="btn btn-secondary edit-btn" data-id="${job.id}">${editButtonLabel}</button>
                 <button class="btn btn-danger delete-btn" data-id="${job.id}">Slett oppdrag</button>
             </div>
@@ -720,6 +728,14 @@ async function renderMyJobs() {
             const jobId = e.target.getAttribute('data-id');
             const jobToEdit = myJobs.find(j => j.id === jobId);
             if (jobToEdit) editJob(jobToEdit);
+        });
+    });
+
+    const assignButtons = document.querySelectorAll('.assign-btn');
+    assignButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const jobId = e.target.getAttribute('data-id');
+            markJobAsFilled(jobId);
         });
     });
 
@@ -785,6 +801,35 @@ async function deleteJob(jobId) {
         } catch (error) {
             console.error('Error deleting job:', error);
             showToast('Kunne ikke slette oppdraget.', 'error');
+        }
+    }
+}
+
+async function markJobAsFilled(jobId) {
+    if (!currentUser) {
+        showToast('Du må være logget inn for å oppdatere oppdrag.', 'error');
+        return;
+    }
+
+    if (confirm('Er du sikker på at du vil markere dette oppdraget som tildelt? Det vil ikke lenger være mulig å søke på det.')) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('jobs')
+                .update({ status: 'tildelt' })
+                .eq('id', jobId)
+                .eq('user_id', currentUser.id)
+                .select();
+
+            if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error("Oppdatering ble avvist av databasen (sannsynligvis manglende rettigheter).");
+            }
+
+            showToast('Oppdraget ble markert som tildelt', 'success');
+            renderMyJobs();
+        } catch (error) {
+            console.error('Error marking job as filled:', error);
+            showToast('Kunne ikke markere oppdraget som tildelt.', 'error');
         }
     }
 }
@@ -957,18 +1002,24 @@ function applyFiltersAndRenderJobs() {
             `;
         }
 
+        let isFilled = job.status === 'tildelt';
+        if (isFilled) {
+            article.classList.add('job-card-filled');
+        }
+
         article.innerHTML = `
-            <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
+            ${isFilled ? '<span class="badge badge-filled">Oppdraget er tildelt 🔒</span>' : ''}
+            <h3>${escapeHTML(job.title)}${isNew && !isFilled ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
             ${isAdmin && !job.is_approved ? '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>' : ''}
             <span class="badge ${badgeClass}"><i data-lucide="${catIcon}" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.category)}</span>
             ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             ${employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(employerName)}</p>` : ''}
-            ${job.phone_number ? `<p class="phone"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Telefon:</strong> ${escapeHTML(job.phone_number)}</p>` : ''}
+            ${job.phone_number && !isFilled ? `<p class="phone"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Telefon:</strong> ${escapeHTML(job.phone_number)}</p>` : ''}
             <p class="location"><i data-lucide="map-pin" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><i data-lucide="calendar" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><em>Lagt ut: ${formattedDate}</em></p>
             <p class="description">${escapeHTML(displayDescription)}</p>
-            <button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}"><i data-lucide="send" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>Søk nå</button>
+            ${!isFilled ? `<button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}"><i data-lucide="send" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>Søk nå</button>` : ''}
             ${adminActions}
         `;
 
