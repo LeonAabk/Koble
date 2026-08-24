@@ -178,6 +178,18 @@ footer {
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
+.btn-outline {
+    background-color: transparent;
+    border: 2px solid var(--secondary-color);
+    color: var(--secondary-color);
+    padding: calc(0.75rem - 2px) calc(1.5rem - 2px); /* Adjust padding for border */
+}
+
+.btn-outline:hover:not(:disabled) {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
 .btn-text {
     background: none;
     border: none;
