@@ -85,6 +85,16 @@ const elFilterSort = document.getElementById('filter-sort');
 const elSearchInput = document.getElementById('search-input');
 const elNoJobsMsg = document.getElementById('no-jobs-msg');
 
+// Feed Tabs
+const elYouthTabActive = document.getElementById('youth-tab-active');
+const elYouthTabFilled = document.getElementById('youth-tab-filled');
+const elEmployerTabActive = document.getElementById('employer-tab-active');
+const elEmployerTabFilled = document.getElementById('employer-tab-filled');
+
+// Feed Tab State
+let currentYouthFeedTab = 'active';
+let currentEmployerManageTab = 'active';
+
 // Toast Notification
 const elToastNotification = document.getElementById('toast-notification');
 const elToastMessage = document.getElementById('toast-message');
@@ -412,6 +422,39 @@ elTabMyJobs.addEventListener('click', () => {
     renderMyJobs();
 });
 
+// --- Feed Tabs Logic ---
+if (elYouthTabActive && elYouthTabFilled) {
+    elYouthTabActive.addEventListener('click', () => {
+        currentYouthFeedTab = 'active';
+        elYouthTabActive.classList.add('active-tab');
+        elYouthTabFilled.classList.remove('active-tab');
+        applyFiltersAndRenderJobs();
+    });
+
+    elYouthTabFilled.addEventListener('click', () => {
+        currentYouthFeedTab = 'filled';
+        elYouthTabFilled.classList.add('active-tab');
+        elYouthTabActive.classList.remove('active-tab');
+        applyFiltersAndRenderJobs();
+    });
+}
+
+if (elEmployerTabActive && elEmployerTabFilled) {
+    elEmployerTabActive.addEventListener('click', () => {
+        currentEmployerManageTab = 'active';
+        elEmployerTabActive.classList.add('active-tab');
+        elEmployerTabFilled.classList.remove('active-tab');
+        renderMyJobs();
+    });
+
+    elEmployerTabFilled.addEventListener('click', () => {
+        currentEmployerManageTab = 'filled';
+        elEmployerTabFilled.classList.add('active-tab');
+        elEmployerTabActive.classList.remove('active-tab');
+        renderMyJobs();
+    });
+}
+
 
 // --- Toast Notification Logic ---
 function showToast(message, type = 'success') {
@@ -644,9 +687,23 @@ async function renderMyJobs() {
         elNoMyJobsMsg.classList.add('hidden');
     }
 
+    let jobsToRender = myJobs;
+    if (currentEmployerManageTab === 'active') {
+        jobsToRender = jobsToRender.filter(job => job.status !== 'tildelt');
+    } else if (currentEmployerManageTab === 'filled') {
+        jobsToRender = jobsToRender.filter(job => job.status === 'tildelt');
+    }
+
+    if (!jobsToRender || jobsToRender.length === 0) {
+        elNoMyJobsMsg.classList.remove('hidden');
+        return;
+    } else {
+        elNoMyJobsMsg.classList.add('hidden');
+    }
+
     const fragment = document.createDocumentFragment();
 
-    myJobs.forEach(job => {
+    jobsToRender.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
 
@@ -934,6 +991,9 @@ function applyFiltersAndRenderJobs() {
     elJobBoard.innerHTML = '';
 
     const filteredJobs = currentLoadedJobs.filter(job => {
+        if (currentYouthFeedTab === 'active' && job.status === 'tildelt') return false;
+        if (currentYouthFeedTab === 'filled' && job.status !== 'tildelt') return false;
+
         if (selectedFilter !== 'Alle' && job.category !== selectedFilter) return false;
         if (selectedLocation !== 'Alle' && job.location !== selectedLocation) return false;
         if (!searchQuery) return true;

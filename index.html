@@ -151,6 +151,10 @@
             <div id="employer-manage-section" class="hidden">
                 <h2>Mine publiserte oppdrag</h2>
                 <p>Her er en oversikt over jobbene du har lagt ut fra denne enheten.</p>
+                <div class="feed-tabs">
+                    <button id="employer-tab-active" class="btn-text active-tab">Ledige oppdrag</button>
+                    <button id="employer-tab-filled" class="btn-text">Tildelte oppdrag</button>
+                </div>
                 <div id="my-jobs-list" class="job-board">
                     <!-- My jobs will be injected here -->
                 </div>
@@ -179,6 +183,11 @@
         <!-- View 3: Youth View (Browse Jobs) -->
         <section id="youth-view" class="view hidden">
             <h2>Tilgjengelige jobber</h2>
+
+            <div class="feed-tabs">
+                <button id="youth-tab-active" class="btn-text active-tab">Ledige oppdrag</button>
+                <button id="youth-tab-filled" class="btn-text">Tildelte oppdrag</button>
+            </div>
 
             <div class="filter-container">
                 <div class="search-group">

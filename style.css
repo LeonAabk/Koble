@@ -448,8 +448,9 @@ textarea:focus {
     border-width: 0;
 }
 
-/* Employer Tabs */
-.employer-tabs {
+/* Employer & Feed Tabs */
+.employer-tabs,
+.feed-tabs {
     display: flex;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
@@ -457,13 +458,15 @@ textarea:focus {
     padding-bottom: var(--spacing-sm);
 }
 
-.employer-tabs .btn-text {
+.employer-tabs .btn-text,
+.feed-tabs .btn-text {
     padding: var(--spacing-sm) var(--spacing-md);
     color: var(--text-light);
     font-weight: normal;
 }
 
-.employer-tabs .btn-text.active-tab {
+.employer-tabs .btn-text.active-tab,
+.feed-tabs .btn-text.active-tab {
     color: var(--primary-color);
     font-weight: bold;
     border-bottom: 3px solid var(--primary-color);
