@@ -1090,7 +1090,10 @@ function applyFiltersAndRenderJobs() {
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><i data-lucide="calendar" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><em>Lagt ut: ${formattedDate}</em></p>
             <p class="description">${escapeHTML(displayDescription)}</p>
-            ${!isFilled ? `<button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}"><i data-lucide="send" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>Søk nå</button>` : ''}
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                ${!isFilled ? `<button class="btn btn-primary apply-btn" data-email="${escapeHTML(job.email)}" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}"><i data-lucide="send" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>Søk nå</button>` : ''}
+                <button class="btn btn-outline share-btn" data-title="${escapeHTML(job.title)}" data-employer="${escapeHTML(employerName)}" data-location="${escapeHTML(job.location)}"><i data-lucide="share-2" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>Del</button>
+            </div>
             ${adminActions}
         `;
 
@@ -1106,6 +1109,51 @@ function applyFiltersAndRenderJobs() {
             const title = e.target.getAttribute('data-title');
             const employer = e.target.getAttribute('data-employer');
             openApplicationModal(email, title, employer);
+        });
+    });
+
+    const shareButtons = document.querySelectorAll('.share-btn');
+    shareButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            // Traverse up to find the button in case the click was on the icon
+            const targetBtn = e.target.closest('.share-btn');
+            if (!targetBtn) return;
+
+            const title = targetBtn.getAttribute('data-title') || '';
+            const employer = targetBtn.getAttribute('data-employer') || '';
+            const location = targetBtn.getAttribute('data-location') || '';
+
+            let shareText = title;
+            if (employer) {
+                shareText += ` for ${employer}`;
+            }
+            if (location) {
+                shareText += ` i ${location}`;
+            }
+
+            const shareData = {
+                title: "Sjekk ut dette oppdraget på Koble!",
+                text: shareText,
+                url: window.location.origin
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    console.error("Error sharing:", err);
+                }
+            } else {
+                // Fallback
+                const fallbackText = `${shareData.text} ${shareData.url}`;
+                try {
+                    await navigator.clipboard.writeText(fallbackText);
+                    alert('Lenken er kopiert!');
+                } catch (err) {
+                    console.error("Kunne ikke kopiere tekst: ", err);
+                    alert('Kunne ikke kopiere lenken. Prøv å dele manuelt.');
+                }
+            }
         });
     });
 
