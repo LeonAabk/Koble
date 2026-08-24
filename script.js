@@ -915,8 +915,8 @@ async function fetchAndRenderJobs() {
 
     // ⚡ Bolt: Pre-compute lowercased search strings to avoid repetitive string allocation and garbage collection overhead during frequent filtering
     currentLoadedJobs.forEach(job => {
-        job._searchTitle = (job.title || '').toLowerCase();
-        job._searchDescription = (job.description || '').toLowerCase();
+        job._searchTitle = String(job.title || '').toLowerCase();
+        job._searchDescription = String(job.description || '').toLowerCase();
     });
 
     applyFiltersAndRenderJobs();
@@ -989,7 +989,7 @@ function applyFiltersAndRenderJobs() {
         let adminActions = '';
         if (isAdmin) {
             let isRejected = false;
-            if (job.description && job.description.includes("[STATUS:REJECTED]")) {
+            if (job.description && String(job.description).includes("[STATUS:REJECTED]")) {
                 isRejected = true;
             }
             adminActions = `
@@ -1243,7 +1243,7 @@ async function renderAdminJobs() {
         const statusColor = job.is_approved ? 'var(--success-color)' : '#d97706'; // warning orange
 
         let isRejected = false;
-        if (job.description && job.description.includes("[STATUS:REJECTED]")) {
+        if (job.description && String(job.description).includes("[STATUS:REJECTED]")) {
             isRejected = true;
         }
 

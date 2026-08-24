@@ -2,3 +2,11 @@
 **Vulnerability:** Input fields (`job-employer-name`, `job-time`, `job-pay`, `job-title`) lacked explicit maximum length bounds both in the HTML attributes and the JavaScript validation logic before interacting with Supabase.
 **Learning:** This architectural gap exposed the application to potential Resource Exhaustion (DoS risk) by allowing users to programmatically submit excessively large string payloads to the database. Although `title` had a minimum check, and `description` was checked, the other fields were entirely unbounded.
 **Prevention:** Always implement defense-in-depth by explicitly setting reasonable length limits (e.g., `maxlength="100"` or `"2000"`) on all HTML `<input>` and `<textarea>` elements, AND replicate these bounds in the client-side JavaScript validation prior to any database mutation.
+## 2026-08-24 - Data Type Boundaries to prevent Client-Side DoS
+**Vulnerability:** Client-Side rendering loop crash due to missing String conversion when executing string methods (like .toLowerCase() and .includes()) on job titles/descriptions pulled from external API/DB. If truthy non-string data (like integers) bypass API filters and are received, they trigger 'TypeError: X.toLowerCase is not a function' crashing the UI logic.
+**Learning:** Just checking if a variable exists is insufficient to guarantee type safety in Vanilla JS. External payload data must explicitly be cast to a string type before treating it as such.
+**Prevention:** Apply  as defense-in-depth on data fields originating from DB before executing string method operations.
+## 2026-08-24 - Data Type Boundaries to prevent Client-Side DoS
+**Vulnerability:** Client-Side rendering loop crash due to missing String conversion when executing string methods (like .toLowerCase() and .includes()) on job titles/descriptions pulled from external API/DB. If truthy non-string data (like integers) bypass API filters and are received, they trigger 'TypeError: X.toLowerCase is not a function' crashing the UI logic.
+**Learning:** Just checking if a variable exists is insufficient to guarantee type safety in Vanilla JS. External payload data must explicitly be cast to a string type before treating it as such.
+**Prevention:** Apply `String(val || '')` as defense-in-depth on data fields originating from DB before executing string method operations.
