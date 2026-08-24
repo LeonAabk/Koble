@@ -17,3 +17,7 @@
 ## 2024-11-20 - Pre-compute Searchable Strings to Prevent Redundant Allocation
 **Learning:** Calling `.toLowerCase()` inside a `.filter()` array method on keystroke events forces redundant string allocations and GC pressure every time the user types, even with a debouncer.
 **Action:** Pre-compute and cache derived values (like lowercased versions of title and description) onto the source object array immediately after fetching from the database, allowing subsequent iterative filters to perform basic string matching without allocating new memory.
+
+## 2024-11-20 - Prevent Expensive UI Formatting inside Render Loops
+**Learning:** Found a major bottleneck in the `applyFiltersAndRenderJobs` function. Keystroke events were triggering a re-render of the list. Even with debouncing, every re-render of every job card was synchronously running `parseJobDescription` (which uses string parsing and regex), instantiating multiple `new Date()` objects, and calling the expensive `toLocaleDateString` `Intl` API. This caused significant layout jank and wasted cycles during search filtering.
+**Action:** Pre-compute and cache derived display values (`_parsed`, `_formattedDate`, and `_isNew`) onto the source object array immediately after fetching from the database. When rendering lists that are frequently updated by user input, always pull expensive parsing or Intl formatting logic out of the render loop and do it once during the data hydration phase.

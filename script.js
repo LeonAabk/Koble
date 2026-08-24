@@ -703,6 +703,9 @@ async function renderMyJobs() {
 
     const fragment = document.createDocumentFragment();
 
+    // ⚡ Bolt: Cache current time outside the render loop to avoid repeated Date instantiations
+    const now = Date.now();
+
     jobsToRender.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -718,7 +721,7 @@ async function renderMyJobs() {
 
         const d = new Date(job.created_at);
         const formattedDate = d.toLocaleDateString('no-NO');
-        const isNew = (new Date() - d) < (24 * 60 * 60 * 1000);
+        const isNew = (now - d.getTime()) < (24 * 60 * 60 * 1000);
 
         let approvalBadge = '';
         if (job.is_approved) {
@@ -970,11 +973,19 @@ async function fetchAndRenderJobs() {
 
     const isAdmin = currentUser && currentUser.email === 'admin@koble.no';
     currentLoadedJobs = await getJobs(!isAdmin); // Fetch all if admin, else only approved
+    const now = Date.now();
 
     // ⚡ Bolt: Pre-compute lowercased search strings to avoid repetitive string allocation and garbage collection overhead during frequent filtering
+    // ⚡ Bolt: Also pre-compute parsing and Date calculations to prevent expensive work in render loops
     currentLoadedJobs.forEach(job => {
         job._searchTitle = String(job.title || '').toLowerCase();
         job._searchDescription = String(job.description || '').toLowerCase();
+
+        job._parsed = parseJobDescription(job.description);
+
+        const d = new Date(job.created_at);
+        job._formattedDate = d.toLocaleDateString('no-NO');
+        job._isNew = (now - d.getTime()) < (24 * 60 * 60 * 1000);
     });
 
     applyFiltersAndRenderJobs();
@@ -1033,7 +1044,7 @@ function applyFiltersAndRenderJobs() {
         else if (job.category === 'Hushjelp') { badgeClass = 'badge-hushjelp'; catIcon = 'home'; }
         else if (job.category === 'Russedugnad / Gruppearbeid') { badgeClass = 'badge-russedugnad'; catIcon = 'users'; }
 
-        const parsed = parseJobDescription(job.description);
+        const parsed = job._parsed || parseJobDescription(job.description);
         let displayDescription = parsed.rawDescription;
         if (parsed.time) {
              displayDescription = `Når: ${parsed.time}\n\n${displayDescription}`;
@@ -1041,11 +1052,10 @@ function applyFiltersAndRenderJobs() {
         let isGroupFriendly = parsed.isGroupFriendly;
         let employerName = parsed.employerName;
 
-        const d = new Date(job.created_at);
-        const formattedDate = d.toLocaleDateString('no-NO');
+        const formattedDate = job._formattedDate || new Date(job.created_at).toLocaleDateString('no-NO');
 
         // Check if job is less than 24 hours old
-        const isNew = (new Date() - d) < (24 * 60 * 60 * 1000);
+        const isNew = job._isNew !== undefined ? job._isNew : (new Date() - new Date(job.created_at)) < (24 * 60 * 60 * 1000);
 
         let adminActions = '';
         if (isAdmin) {
