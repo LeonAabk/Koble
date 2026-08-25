@@ -371,6 +371,7 @@ function handleRouting() {
             elAdminLoginSection.classList.add('hidden');
             elAdminDashboardSection.classList.remove('hidden');
             renderAdminJobs();
+            renderAdminWorkers();
         } else {
             elAdminDashboardSection.classList.add('hidden');
             elAdminLoginSection.classList.remove('hidden');
@@ -437,10 +438,22 @@ async function fetchAndRenderWorkers() {
     renderSkeletons(elWorkerBoard, 3);
     elNoWorkersMsg.classList.add('hidden');
 
-    const { data, error } = await supabaseClient
+    const isAdmin = currentUser && currentUser.email === 'admin@koble.no';
+
+    let query = supabaseClient
         .from('worker_profiles')
         .select('*')
         .order('created_at', { ascending: false });
+
+    if (!isAdmin) {
+        if (currentUser) {
+            query = query.or(`is_approved.eq.true,user_id.eq.${currentUser.id}`);
+        } else {
+            query = query.eq('is_approved', true);
+        }
+    }
+
+    const { data, error } = await query;
 
     elWorkerBoard.innerHTML = '';
 
@@ -480,7 +493,18 @@ async function fetchAndRenderWorkers() {
         const safePhone = escapeHTML(String(worker.phone_number || ''));
         const safeMail = escapeHTML(String(worker.mail || ''));
 
+        let ownerActions = '';
+        if (currentUser && worker.user_id === currentUser.id) {
+            ownerActions = `
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem;">
+                    <button class="btn btn-secondary btn-sm edit-worker-btn" data-id="${worker.id}">Rediger profil</button>
+                    <button class="btn btn-danger btn-sm delete-worker-btn" data-id="${worker.id}">Slett profil</button>
+                </div>
+            `;
+        }
+
         article.innerHTML = `
+            ${!worker.is_approved ? '<span class="badge badge-status-pending" style="display:block; margin-bottom: 0.5rem; width: fit-content;">⏳ Venter på godkjenning</span>' : ''}
             <h3>${safeTitle}</h3>
             <span class="badge worker-badge"><i data-lucide="${iconName}" style="width: 12px; height: 12px; vertical-align: baseline; margin-right: 4px;"></i>${safeGroup}</span>
             <p class="location"><i data-lucide="map-pin" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px; color: var(--text-light);"></i><strong>Sted:</strong> ${safeLocation}</p>
@@ -490,11 +514,32 @@ async function fetchAndRenderWorkers() {
                 ${safePhone ? `<a href="tel:${safePhone}" class="btn btn-sm" style="background-color: #e9d8fd; color: #44337a; text-decoration: none;"><i data-lucide="phone" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>${safePhone}</a>` : ''}
                 ${safeMail ? `<a href="mailto:${safeMail}" class="btn btn-sm" style="background-color: #ebf8ff; color: #2b6cb0; text-decoration: none;"><i data-lucide="mail" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>Kontakt via E-post</a>` : ''}
             </div>
+            ${ownerActions}
         `;
         fragment.appendChild(article);
     });
 
     elWorkerBoard.appendChild(fragment);
+
+    // Attach event listeners for edit and delete buttons
+    if (currentUser) {
+        const deleteButtons = elWorkerBoard.querySelectorAll('.delete-worker-btn');
+        deleteButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const workerId = e.target.getAttribute('data-id');
+                deleteWorkerProfile(workerId);
+            });
+        });
+
+        const editButtons = elWorkerBoard.querySelectorAll('.edit-worker-btn');
+        editButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const workerId = e.target.getAttribute('data-id');
+                openEditWorkerModal(workerId);
+            });
+        });
+    }
+
     lucide.createIcons();
 }
 
@@ -1623,5 +1668,244 @@ async function rejectAdminJob(jobId, currentDescription) {
     } catch (error) {
         console.error('Error rejecting job as admin:', error);
         showToast('Kunne ikke avvise oppdraget.', 'error');
+    }
+}
+
+// --- Worker Profile Management ---
+async function deleteWorkerProfile(workerId) {
+    if (!currentUser) {
+        showToast('Du må være logget inn for å slette profilen din.', 'error');
+        return;
+    }
+
+    if (confirm('Er du sikker på at du vil slette denne profilen?')) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('worker_profiles')
+                .delete()
+                .eq('id', workerId)
+                .eq('user_id', currentUser.id)
+                .select();
+
+            if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error("Sletting ble avvist av databasen (sannsynligvis manglende rettigheter).");
+            }
+
+            showToast('Profilen ble slettet', 'success');
+            fetchAndRenderWorkers(); // Refresh feed
+        } catch (error) {
+            console.error('Error deleting worker profile:', error);
+            showToast('Kunne ikke slette profilen: ' + error.message, 'error');
+        }
+    }
+}
+
+const elEditWorkerModal = document.getElementById('edit-worker-modal');
+const elCloseEditWorkerModalBtn = document.getElementById('close-edit-worker-modal-btn');
+const elEditWorkerForm = document.getElementById('edit-worker-form');
+
+if (elCloseEditWorkerModalBtn) {
+    elCloseEditWorkerModalBtn.addEventListener('click', () => {
+        elEditWorkerModal.classList.add('hidden');
+    });
+}
+
+function openEditWorkerModal(workerId) {
+    const worker = currentLoadedWorkers.find(w => w.id === workerId || w.id === Number(workerId));
+    if (!worker) return;
+
+    document.getElementById('edit-worker-id').value = worker.id;
+    document.getElementById('edit-worker-title').value = worker.title || '';
+    document.getElementById('edit-worker-group-type').value = worker.group_type || 'Enkeltperson';
+    document.getElementById('edit-worker-location').value = worker.location || 'Hamar';
+    document.getElementById('edit-worker-description').value = worker.description || '';
+    document.getElementById('edit-worker-email').value = worker.mail || '';
+    document.getElementById('edit-worker-phone').value = worker.phone_number || '';
+
+    elEditWorkerModal.classList.remove('hidden');
+}
+
+if (elEditWorkerForm) {
+    elEditWorkerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const workerId = document.getElementById('edit-worker-id').value;
+        const btnSubmit = document.getElementById('btn-submit-edit-worker');
+
+        if (!currentUser) {
+            showToast('Du må være logget inn for å redigere.', 'error');
+            return;
+        }
+
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Lagrer...';
+
+        const payload = {
+            title: document.getElementById('edit-worker-title').value.trim(),
+            group_type: document.getElementById('edit-worker-group-type').value,
+            location: document.getElementById('edit-worker-location').value,
+            description: document.getElementById('edit-worker-description').value.trim(),
+            mail: document.getElementById('edit-worker-email').value.trim(),
+            phone_number: document.getElementById('edit-worker-phone').value.trim(),
+            is_approved: false
+        };
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('worker_profiles')
+                .update(payload)
+                .eq('id', workerId)
+                .eq('user_id', currentUser.id)
+                .select();
+
+            if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error("Oppdatering ble avvist (sannsynligvis manglende rettigheter).");
+            }
+
+            showToast('Profilen ble oppdatert og sendt til godkjenning.', 'success');
+            elEditWorkerModal.classList.add('hidden');
+            fetchAndRenderWorkers(); // Refresh
+        } catch (error) {
+            console.error('Error updating worker profile:', error);
+            showToast('Kunne ikke oppdatere profilen: ' + error.message, 'error');
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Lagre Endringer (Send til ny godkjenning)';
+        }
+    });
+}
+
+// --- Admin Workers Dashboard ---
+async function renderAdminWorkers() {
+    const adminWorkersTableBody = document.getElementById('admin-workers-table-body');
+    if (!adminWorkersTableBody) return;
+
+    adminWorkersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Laster profiler...</td></tr>';
+
+    const { data: workers, error } = await supabaseClient
+        .from('worker_profiles')
+        .select('*')
+        .eq('is_approved', false)
+        .order('created_at', { ascending: false });
+
+    adminWorkersTableBody.innerHTML = '';
+
+    if (error) {
+        console.error('Error fetching workers for admin:', error);
+        adminWorkersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Kunne ikke laste inn profiler.</td></tr>';
+        return;
+    }
+
+    if (!workers || workers.length === 0) {
+        adminWorkersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Ingen arbeidskraftprofiler funnet.</td></tr>';
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    workers.forEach(worker => {
+        const tr = document.createElement('tr');
+        const d = new Date(worker.created_at);
+        const formattedDate = d.toLocaleDateString('no-NO');
+
+        let statusHtml = '';
+        if (worker.is_approved) {
+            statusHtml = '<span class="badge badge-filled">Godkjent</span>';
+        } else {
+            statusHtml = '<span class="badge badge-status-pending" style="background-color: var(--warning-color); color: white;">Venter på godkjenning</span>';
+        }
+
+        tr.innerHTML = `
+            <td><strong>${escapeHTML(worker.title || '')}</strong></td>
+            <td>${escapeHTML(worker.mail || '')}</td>
+            <td>${escapeHTML(worker.group_type || '')}</td>
+            <td>${formattedDate}</td>
+            <td>${statusHtml}</td>
+            <td>
+                ${!worker.is_approved ? `<button class="btn btn-secondary btn-sm admin-approve-worker-btn" data-id="${worker.id}">Godkjenn</button>` : ''}
+                <button class="btn btn-danger btn-sm admin-delete-worker-btn" data-id="${worker.id}">Slett</button>
+            </td>
+        `;
+        fragment.appendChild(tr);
+    });
+
+    adminWorkersTableBody.appendChild(fragment);
+
+    const deleteButtons = adminWorkersTableBody.querySelectorAll('.admin-delete-worker-btn');
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const workerId = e.target.getAttribute('data-id');
+            deleteAdminWorker(workerId);
+        });
+    });
+
+    const approveButtons = adminWorkersTableBody.querySelectorAll('.admin-approve-worker-btn');
+    approveButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const workerId = e.target.getAttribute('data-id');
+            approveAdminWorker(workerId);
+        });
+    });
+}
+
+async function approveAdminWorker(workerId) {
+    if (!currentUser || currentUser.email !== 'admin@koble.no') {
+        showToast('Kun administratorer kan godkjenne profiler.', 'error');
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('worker_profiles')
+            .update({ is_approved: true })
+            .eq('id', workerId)
+            .select();
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            throw new Error("Godkjenning ble avvist (manglende admin-rettigheter?).");
+        }
+
+        showToast('Profilen ble godkjent.', 'success');
+        renderAdminWorkers(); // Refresh admin table
+        if (!elWorkersSection.classList.contains('hidden')) {
+            fetchAndRenderWorkers(); // Refresh public feed if open
+        }
+    } catch (error) {
+        console.error('Error approving worker profile as admin:', error);
+        showToast('Kunne ikke godkjenne profilen.', 'error');
+    }
+}
+
+async function deleteAdminWorker(workerId) {
+    if (!currentUser || currentUser.email !== 'admin@koble.no') {
+        showToast('Ingen tilgang.', 'error');
+        return;
+    }
+
+    if (confirm('ADVARSEL: Er du sikker på at du vil permanent slette denne profilen som administrator?')) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('worker_profiles')
+                .delete()
+                .eq('id', workerId)
+                .select();
+
+            if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error("Sletting ble avvist av databasen (sannsynligvis manglende RLS-policy for admin).");
+            }
+
+            showToast('Profilen ble slettet', 'success');
+            renderAdminWorkers(); // Refresh table
+            if (!elWorkersSection.classList.contains('hidden')) {
+                fetchAndRenderWorkers(); // Refresh public feed if open
+            }
+        } catch (error) {
+            console.error('Error deleting worker profile as admin:', error);
+            showToast('Kunne ikke slette profilen: ' + error.message, 'error');
+        }
     }
 }

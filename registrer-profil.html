@@ -147,7 +147,9 @@
                 location: document.getElementById('profile-location').value,
                 description: document.getElementById('profile-description').value.trim(),
                 mail: document.getElementById('profile-email').value.trim(),
-                phone_number: document.getElementById('profile-phone').value.trim()
+                phone_number: document.getElementById('profile-phone').value.trim(),
+                user_id: currentUser ? currentUser.id : null,
+                is_approved: false
             };
 
 
