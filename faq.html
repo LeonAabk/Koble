@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="style.css">
     <!-- FAQ specific styles -->
     <link rel="stylesheet" href="faq.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <header>
@@ -25,56 +26,67 @@
 
     <main class="container">
         <section class="view">
-            <h2>Ofte stilte spørsmål (FAQ)</h2>
-            <p class="lead">Her finner du svar på de vanligste spørsmålene om Koble.</p>
+            <div class="faq-hero">
+                <h2>Slik fungerer Koble for arbeidsgivere</h2>
+                <p class="lead">Lurer du på hvordan du kan få hjelp til småjobber og dugnad? Her forklarer vi prosessen og svarer på ofte stilte spørsmål.</p>
+            </div>
+
+            <div class="how-it-works-section" style="margin-top: 2rem; margin-bottom: 3rem;">
+                <h3 style="text-align: center; margin-bottom: 2rem;">Slik fungerer det</h3>
+                <div class="steps-container">
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <i data-lucide="file-plus"></i>
+                        </div>
+                        <h4>1. Legg ut oppdrag</h4>
+                        <p>Enkelt skjema, tar 1 minutt.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <i data-lucide="message-square"></i>
+                        </div>
+                        <h4>2. Bli kontaktet</h4>
+                        <p>Ungdom/russ tar direkte kontakt med deg.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <i data-lucide="handshake"></i>
+                        </div>
+                        <h4>3. Gjør en avtale</h4>
+                        <p>Bruk vår innebygde PDF-kontrakt for trygghet.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <i data-lucide="check-circle-2"></i>
+                        </div>
+                        <h4>4. Marker som tildelt</h4>
+                        <p>Oppdater statusen med ett klikk.</p>
+                    </div>
+                </div>
+            </div>
 
             <div class="faq-container">
-                <h3>For Arbeidsgivere</h3>
+                <h3 style="margin-bottom: 1rem;">Ofte stilte spørsmål</h3>
                 <div class="faq-section">
                     <details class="faq-item">
-                        <summary>Koster det penger å bruke plattformen?</summary>
+                        <summary>Hvordan fungerer betalingen?</summary>
                         <div class="faq-content">
-                            <p>Nei, det er helt gratis å registrere seg og legge ut oppdrag på Koble. Du betaler kun for arbeidet som blir utført direkte til den som utfører jobben.</p>
+                            <p>Koble tar ingen andel av betalingen eller gebyrer. Dere avtaler betalingsmetode (som Vipps, faktura for russegrupper, eller bankoverføring) direkte med ungdommen eller gruppen.</p>
                         </div>
                     </details>
                     <details class="faq-item">
-                        <summary>Hvordan betaler jeg for utført arbeid?</summary>
+                        <summary>Hva med kontrakt og sikkerhet?</summary>
                         <div class="faq-content">
-                            <p>Betaling avtales direkte mellom deg og ungdommen/russegruppen. Vi anbefaler å bruke Vipps eller bankoverføring for enkel og sikker betaling når jobben er fullført.</p>
+                            <p>Vi anbefaler alltid å ha klare rammer for arbeidet. Plattformen vår har en egen, innebygd kontraktsgenerator hvor dere enkelt kan fylle ut og laste ned en standardavtale (PDF) før oppdraget starter.</p>
                         </div>
                     </details>
                     <details class="faq-item">
-                        <summary>Hvordan kontakter jeg søkere?</summary>
+                        <summary>Hvem er det som tar oppdragene?</summary>
                         <div class="faq-content">
-                            <p>Ungdom vil kontakte deg på e-postadressen du oppga da du registrerte oppdraget. Sørg for å sjekke innboksen (og søppelposten) din jevnlig for henvendelser.</p>
-                        </div>
-                    </details>
-                </div>
-
-                <h3 style="margin-top: 2rem;">For Ungdom / Russ</h3>
-                <div class="faq-section">
-                    <details class="faq-item">
-                        <summary>Hvordan fungerer dugnad gjennom Koble?</summary>
-                        <div class="faq-content">
-                            <p>Det er enkelt! Finn et oppdrag som passer for deg eller gruppen din, klikk på oppdraget for å se detaljer, og bruk kontaktinformasjonen for å sende en e-post til arbeidsgiver og melde interesse.</p>
-                        </div>
-                    </details>
-                    <details class="faq-item">
-                        <summary>Koster det noe å finne jobber?</summary>
-                        <div class="faq-content">
-                            <p>Nei, Koble er 100% gratis for ungdom og russegrupper som ser etter arbeid og dugnad.</p>
-                        </div>
-                    </details>
-                    <details class="faq-item">
-                        <summary>Hvilke typer oppdrag kan jeg finne?</summary>
-                        <div class="faq-content">
-                            <p>Du kan finne en rekke småjobber og dugnader, inkludert gårdsarbeid, hagearbeid, snømåking, maling, vasking og andre forefallende oppgaver. Utvalget oppdateres jevnlig!</p>
-                        </div>
-                    </details>
-                    <details class="faq-item">
-                        <summary>Hvordan får jeg betalt?</summary>
-                        <div class="faq-content">
-                            <p>Du avtaler betalingsmåte (for eksempel Vipps) direkte med arbeidsgiveren når dere inngår avtale om at du skal ta jobben.</p>
+                            <p>Arbeidsvillig lokal ungdom og russegrupper som ønsker å spare penger til fellesskap, russetid eller egne mål.</p>
                         </div>
                     </details>
                 </div>
@@ -87,5 +99,9 @@
             <p>&copy; 2026 Koble. Laget av ungdom, for ungdom.</p>
         </div>
     </footer>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
 </body>
 </html>
