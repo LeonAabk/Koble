@@ -377,8 +377,9 @@
 
             <div id="admin-dashboard-section" class="hidden">
                 <h2>Moderasjonspanel</h2>
-                <p>Oversikt over alle aktive oppdrag. Du kan slette oppdrag som bryter med retningslinjene.</p>
+                <p>Oversikt over alle aktive oppdrag og arbeidskraftprofiler. Du kan slette innlegg som bryter med retningslinjene.</p>
 
+                <h3>Oppdrag</h3>
                 <div class="table-responsive">
                     <table class="admin-table">
                         <thead>
@@ -396,10 +397,82 @@
                         </tbody>
                     </table>
                 </div>
+
+                <h3 style="margin-top: 2rem;">Arbeidskraftprofiler</h3>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Tittel</th>
+                                <th>E-post</th>
+                                <th>Kategori</th>
+                                <th>Dato</th>
+                                <th>Status</th>
+                                <th>Handling</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-workers-table-body">
+                            <!-- Workers will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
     </main>
 
+
+    <!-- Edit Worker Modal -->
+    <div id="edit-worker-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="close-edit-worker-modal-btn" class="modal-close" aria-label="Lukk">&times;</button>
+            <h2 class="modal-title">Rediger Arbeidskraftprofil</h2>
+            <form id="edit-worker-form" class="form-container">
+                <input type="hidden" id="edit-worker-id">
+
+                <div class="form-group">
+                    <label for="edit-worker-title">Overskrift</label>
+                    <input type="text" id="edit-worker-title" name="edit-worker-title" required maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-worker-group-type">Kategori</label>
+                    <select id="edit-worker-group-type" name="edit-worker-group-type" required>
+                        <option value="Enkeltperson">Enkeltperson</option>
+                        <option value="Russegruppe">Russegruppe</option>
+                        <option value="Idrettslag">Idrettslag / Annen gruppe</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-worker-location">Sted (Kommune)</label>
+                    <select id="edit-worker-location" name="edit-worker-location" required>
+                        <option value="Hamar">Hamar</option>
+                        <option value="Stange">Stange</option>
+                        <option value="Ringsaker">Ringsaker</option>
+                        <option value="Løten">Løten</option>
+                        <option value="Annet">Annet / Utenfor området</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-worker-description">Beskrivelse</label>
+                    <textarea id="edit-worker-description" name="edit-worker-description" rows="5" required maxlength="2000"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-worker-email">E-post for kontakt</label>
+                    <input type="email" id="edit-worker-email" name="edit-worker-email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-worker-phone">Telefonnummer</label>
+                    <input type="tel" id="edit-worker-phone" name="edit-worker-phone" required maxlength="20">
+                </div>
+
+                <button type="submit" id="btn-submit-edit-worker" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Lagre Endringer (Send til ny godkjenning)</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Authentication Modal -->
     <div id="auth-modal" class="modal-overlay hidden">
