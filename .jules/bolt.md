@@ -21,3 +21,11 @@
 ## 2024-11-20 - Prevent Expensive UI Formatting inside Render Loops
 **Learning:** Found a major bottleneck in the `applyFiltersAndRenderJobs` function. Keystroke events were triggering a re-render of the list. Even with debouncing, every re-render of every job card was synchronously running `parseJobDescription` (which uses string parsing and regex), instantiating multiple `new Date()` objects, and calling the expensive `toLocaleDateString` `Intl` API. This caused significant layout jank and wasted cycles during search filtering.
 **Action:** Pre-compute and cache derived display values (`_parsed`, `_formattedDate`, and `_isNew`) onto the source object array immediately after fetching from the database. When rendering lists that are frequently updated by user input, always pull expensive parsing or Intl formatting logic out of the render loop and do it once during the data hydration phase.
+
+## 2024-11-20 - Prevent Redundant Database Queries on Employer Tab Switch
+**Learning:** The "Ledige oppdrag" and "Tildelte oppdrag" tabs in the Employer view were both triggering a full database fetch (`renderMyJobs() -> await supabaseClient.from('jobs')`) each time they were clicked. This caused unnecessary network load for simply switching a local filter view.
+**Action:** Decoupled the fetch from the render by introducing `fetchAndRenderMyJobs()` (which caches results to `currentLoadedMyJobs`) and `applyFiltersAndRenderMyJobs()`. Tab clicks now only call the latter to filter the local array.
+
+## 2024-11-20 - Cache Expensive Date Formatting in Keystroke Loops
+**Learning:** `updateCalculatorTotal()` was instantiating `new Date()` and calling the expensive `toLocaleDateString` on every keystroke event in the calculator inputs.
+**Action:** Cached the formatted date string in a global variable (`cachedPdfDateString`) so it is computed only once and reused across all subsequent keystrokes in that session.

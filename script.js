@@ -180,7 +180,7 @@ async function handleAuthSubmit(e) {
         }
         closeAuthModal();
         showView(elEmployerSection);
-        renderMyJobs();
+        fetchAndRenderMyJobs();
     } catch (error) {
         if (error.message.includes('Invalid login')) {
             authError.textContent = 'Feil e-post eller passord.';
@@ -232,6 +232,8 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 });
 
 // --- Calculator Logic ---
+let cachedPdfDateString = null;
+
 function updateCalculatorTotal() {
     const employer = calcEmployer.value.trim() || '[Oppdragsgiver]';
     const worker = calcWorker.value.trim() || '[Utførende part]';
@@ -246,9 +248,12 @@ function updateCalculatorTotal() {
     calcTotal.textContent = total;
 
     // Update PDF structured text
-    const today = new Date();
-    const dateString = today.toLocaleDateString('no-NO', { year: 'numeric', month: 'long', day: 'numeric' });
-    if (pdfDate) pdfDate.textContent = `Dato: ${dateString}`;
+    // ⚡ Bolt: Cache expensive Date formatting outside the keystroke loop
+    if (!cachedPdfDateString) {
+        const today = new Date();
+        cachedPdfDateString = today.toLocaleDateString('no-NO', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    if (pdfDate) pdfDate.textContent = `Dato: ${cachedPdfDateString}`;
 
     if (pdfEmployer) pdfEmployer.textContent = employer;
     if (pdfWorker) pdfWorker.textContent = worker;
@@ -408,7 +413,7 @@ elYouthRoleBtn.addEventListener('click', () => {
 elEmployerRoleBtn.addEventListener('click', () => {
     if (currentUser) {
         showView(elEmployerSection);
-        renderMyJobs();
+        fetchAndRenderMyJobs();
     } else {
         openAuthModal();
     }
@@ -558,7 +563,7 @@ function switchEmployerTab(activeTabBtn, activeSection) {
 elTabPostJob.addEventListener('click', () => switchEmployerTab(elTabPostJob, elPostSection));
 elTabMyJobs.addEventListener('click', () => {
     switchEmployerTab(elTabMyJobs, elManageSection);
-    renderMyJobs();
+    fetchAndRenderMyJobs();
 });
 
 // --- Feed Tabs Logic ---
@@ -583,14 +588,14 @@ if (elEmployerTabActive && elEmployerTabFilled) {
         currentEmployerManageTab = 'active';
         elEmployerTabActive.classList.add('active-tab');
         elEmployerTabFilled.classList.remove('active-tab');
-        renderMyJobs();
+        applyFiltersAndRenderMyJobs();
     });
 
     elEmployerTabFilled.addEventListener('click', () => {
         currentEmployerManageTab = 'filled';
         elEmployerTabFilled.classList.add('active-tab');
         elEmployerTabActive.classList.remove('active-tab');
-        renderMyJobs();
+        applyFiltersAndRenderMyJobs();
     });
 }
 
@@ -759,7 +764,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
 
         resetJobForm();
         switchEmployerTab(elTabMyJobs, elManageSection);
-        renderMyJobs();
+        fetchAndRenderMyJobs();
     } catch (error) {
         console.error('Error saving job:', error);
         showToast('Feil ved lagring av oppdrag.', 'error');
@@ -804,7 +809,9 @@ function renderSkeletons(container, count = 3) {
     }
 }
 
-async function renderMyJobs() {
+let currentLoadedMyJobs = null;
+
+async function fetchAndRenderMyJobs() {
     if (!currentUser) return;
 
     renderSkeletons(elMyJobsList, 3);
@@ -821,16 +828,23 @@ async function renderMyJobs() {
         return;
     }
 
+    currentLoadedMyJobs = myJobs;
+    applyFiltersAndRenderMyJobs();
+}
+
+function applyFiltersAndRenderMyJobs() {
+    if (!currentLoadedMyJobs) return;
+
     elMyJobsList.innerHTML = '';
 
-    if (!myJobs || myJobs.length === 0) {
+    if (currentLoadedMyJobs.length === 0) {
         elNoMyJobsMsg.classList.remove('hidden');
         return;
     } else {
         elNoMyJobsMsg.classList.add('hidden');
     }
 
-    let jobsToRender = myJobs;
+    let jobsToRender = currentLoadedMyJobs;
     if (currentEmployerManageTab === 'active') {
         jobsToRender = jobsToRender.filter(job => job.status !== 'tildelt');
     } else if (currentEmployerManageTab === 'filled') {
@@ -929,7 +943,7 @@ async function renderMyJobs() {
     editButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const jobId = e.target.getAttribute('data-id');
-            const jobToEdit = myJobs.find(j => j.id === jobId);
+            const jobToEdit = currentLoadedMyJobs.find(j => j.id === jobId);
             if (jobToEdit) editJob(jobToEdit);
         });
     });
@@ -1000,7 +1014,7 @@ async function deleteJob(jobId) {
             }
 
             showToast('Oppdraget ble slettet', 'success');
-            renderMyJobs();
+            fetchAndRenderMyJobs();
         } catch (error) {
             console.error('Error deleting job:', error);
             showToast('Kunne ikke slette oppdraget.', 'error');
@@ -1030,7 +1044,7 @@ async function markJobAsFilled(jobId) {
             }
 
             showToast('Oppdraget ble markert som tildelt og sendt til godkjenning', 'success');
-            renderMyJobs();
+            fetchAndRenderMyJobs();
         } catch (error) {
             console.error('Error marking job as filled:', error);
             showToast('Kunne ikke markere oppdraget som tildelt.', 'error');
