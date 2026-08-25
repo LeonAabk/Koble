@@ -581,6 +581,8 @@ textarea:focus {
     width: 90%;
     position: relative;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modal-close {
