@@ -85,6 +85,14 @@ const elFilterSort = document.getElementById('filter-sort');
 const elSearchInput = document.getElementById('search-input');
 const elNoJobsMsg = document.getElementById('no-jobs-msg');
 
+// Main Youth View Tabs
+const elMainTabJobs = document.getElementById('main-tab-jobs');
+const elMainTabWorkers = document.getElementById('main-tab-workers');
+const elJobsSection = document.getElementById('jobs-section');
+const elWorkersSection = document.getElementById('workers-section');
+const elWorkerBoard = document.getElementById('worker-board');
+const elNoWorkersMsg = document.getElementById('no-workers-msg');
+
 // Feed Tabs
 const elYouthTabActive = document.getElementById('youth-tab-active');
 const elYouthTabFilled = document.getElementById('youth-tab-filled');
@@ -393,6 +401,7 @@ navCalculatorBtn.addEventListener('click', () => {
 elYouthRoleBtn.addEventListener('click', () => {
     showView(elYouthSection);
     fetchAndRenderJobs();
+    switchYouthMainTab('jobs'); // Default to Jobs tab
 });
 
 elEmployerRoleBtn.addEventListener('click', () => {
@@ -403,6 +412,91 @@ elEmployerRoleBtn.addEventListener('click', () => {
         openAuthModal();
     }
 });
+
+// --- Main Tab Toggle ---
+elMainTabJobs.addEventListener('click', () => switchYouthMainTab('jobs'));
+elMainTabWorkers.addEventListener('click', () => switchYouthMainTab('workers'));
+
+function switchYouthMainTab(tab) {
+    if (tab === 'jobs') {
+        elMainTabJobs.classList.add('active-tab');
+        elMainTabWorkers.classList.remove('active-tab');
+        elJobsSection.classList.remove('hidden');
+        elWorkersSection.classList.add('hidden');
+    } else {
+        elMainTabJobs.classList.remove('active-tab');
+        elMainTabWorkers.classList.add('active-tab');
+        elJobsSection.classList.add('hidden');
+        elWorkersSection.classList.remove('hidden');
+        fetchAndRenderWorkers();
+    }
+}
+
+// --- Worker Profiles ---
+async function fetchAndRenderWorkers() {
+    renderSkeletons(elWorkerBoard, 3);
+    elNoWorkersMsg.classList.add('hidden');
+
+    const { data, error } = await supabaseClient
+        .from('worker_profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    elWorkerBoard.innerHTML = '';
+
+    if (error) {
+        console.error("Error fetching workers:", error);
+        showToast("Kunne ikke laste arbeidskraft. Prøv igjen senere.", "error");
+        return;
+    }
+
+    currentLoadedWorkers = data || [];
+
+    if (currentLoadedWorkers.length === 0) {
+        elNoWorkersMsg.classList.remove('hidden');
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    currentLoadedWorkers.forEach(worker => {
+        const article = document.createElement('article');
+        article.className = 'job-card worker-card';
+
+        let iconName = 'user';
+        if (worker.group_type === 'Russegruppe' || worker.group_type === 'Idrettslag') {
+            iconName = 'users';
+        }
+
+        const formattedDate = new Date(worker.created_at).toLocaleDateString('no-NO', {
+            year: 'numeric', month: 'short', day: 'numeric'
+        });
+
+        // ⚡ Bolt: Escape HTML for user inputs
+        const safeTitle = escapeHTML(String(worker.title || ''));
+        const safeDesc = escapeHTML(String(worker.description || ''));
+        const safeLocation = escapeHTML(String(worker.location || ''));
+        const safeGroup = escapeHTML(String(worker.group_type || ''));
+        const safePhone = escapeHTML(String(worker.phone_number || ''));
+        const safeMail = escapeHTML(String(worker.mail || ''));
+
+        article.innerHTML = `
+            <h3>${safeTitle}</h3>
+            <span class="badge worker-badge"><i data-lucide="${iconName}" style="width: 12px; height: 12px; vertical-align: baseline; margin-right: 4px;"></i>${safeGroup}</span>
+            <p class="location"><i data-lucide="map-pin" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px; color: var(--text-light);"></i><strong>Sted:</strong> ${safeLocation}</p>
+            <p class="description" style="color: #4a5568;">${safeDesc}</p>
+            <p style="font-size: 0.85rem; color: #a0aec0; margin-bottom: 1rem;">Registrert: ${formattedDate}</p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                ${safePhone ? `<a href="tel:${safePhone}" class="btn btn-sm" style="background-color: #e9d8fd; color: #44337a; text-decoration: none;"><i data-lucide="phone" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>${safePhone}</a>` : ''}
+                ${safeMail ? `<a href="mailto:${safeMail}" class="btn btn-sm" style="background-color: #ebf8ff; color: #2b6cb0; text-decoration: none;"><i data-lucide="mail" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>Kontakt via E-post</a>` : ''}
+            </div>
+        `;
+        fragment.appendChild(article);
+    });
+
+    elWorkerBoard.appendChild(fragment);
+    lucide.createIcons();
+}
 
 // --- Employer Tabs Logic ---
 function switchEmployerTab(activeTabBtn, activeSection) {
@@ -970,6 +1064,7 @@ elCopyTemplateBtn.addEventListener('click', () => {
 
 // --- Youth Features (Browsing, Searching & Filtering Jobs) ---
 let currentLoadedJobs = null;
+let currentLoadedWorkers = null;
 
 async function fetchAndRenderJobs() {
     renderSkeletons(elJobBoard, 4);

@@ -182,14 +182,18 @@
 
         <!-- View 3: Youth View (Browse Jobs) -->
         <section id="youth-view" class="view hidden">
-            <h2>Tilgjengelige jobber</h2>
-
-            <div class="feed-tabs">
-                <button id="youth-tab-active" class="btn-text active-tab">Ledige oppdrag</button>
-                <button id="youth-tab-filled" class="btn-text">Tildelte oppdrag</button>
+            <div class="employer-tabs" style="margin-bottom: 2rem;">
+                <button id="main-tab-jobs" class="btn-text active-tab" style="font-size: 1.1rem;">Ledige oppdrag</button>
+                <button id="main-tab-workers" class="btn-text" style="font-size: 1.1rem;">Tilgjengelig arbeidskraft</button>
             </div>
 
-            <div class="filter-container">
+            <div id="jobs-section">
+                <div class="feed-tabs">
+                    <button id="youth-tab-active" class="btn-text active-tab">Ledige oppdrag</button>
+                    <button id="youth-tab-filled" class="btn-text">Tildelte oppdrag</button>
+                </div>
+
+                <div class="filter-container">
                 <div class="search-group">
                     <label for="search-input" class="sr-only">Søk i oppdrag:</label>
                     <input type="text" id="search-input" placeholder="Søk etter tittel eller beskrivelse...">
@@ -236,6 +240,23 @@
                 <i data-lucide="search-x" style="width: 48px; height: 48px; color: #a0aec0; margin-bottom: 1rem;"></i>
                 <p>Ingen oppdrag funnet i denne kategorien ennå.</p>
                 <button id="btn-reset-filters" class="btn btn-secondary">Nullstill filtre</button>
+            </div>
+            </div>
+
+            <div id="workers-section" class="hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                    <p style="margin: 0;">Her kan du finne ungdom og grupper som tilbyr sin arbeidskraft.</p>
+                    <button onclick="window.location.href='registrer-profil.html'" class="btn btn-secondary btn-sm"><i data-lucide="user-plus" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>Registrer Arbeidskraft</button>
+                </div>
+
+                <div id="worker-board" class="job-board">
+                    <!-- Worker profiles will be injected here -->
+                </div>
+
+                <div id="no-workers-msg" class="empty-state hidden">
+                    <i data-lucide="users" style="width: 48px; height: 48px; color: #a0aec0; margin-bottom: 1rem;"></i>
+                    <p>Ingen profiler registrert ennå.</p>
+                </div>
             </div>
         </section>
         <!-- View 6: Calculator View -->

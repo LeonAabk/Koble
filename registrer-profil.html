@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrer Profil - Koble</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .header-simple {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--spacing-md) 0;
+            text-align: center;
+        }
+        .header-simple h1 {
+            color: var(--primary-color);
+            margin: 0;
+            cursor: pointer;
+        }
+        .form-view {
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+    </style>
+</head>
+<body>
+    <header class="header-simple">
+        <div class="container">
+            <h1 onclick="window.location.href='index.html'">Koble</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="view form-view">
+            <h2>Registrer Arbeidskraft</h2>
+            <p>Tilby din hjelp! Opprett en profil slik at oppdragsgivere kan kontakte deg eller din gruppe når de trenger ekstra hender.</p>
+
+            <form id="profile-form" class="form-container">
+                <div class="form-group">
+                    <label for="profile-title">Overskrift</label>
+                    <input type="text" id="profile-title" name="profile-title" required maxlength="100" placeholder="F.eks. Arbeidsvillig russegruppe tar alle oppdrag!">
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-group-type">Kategori (Hvem er dere?)</label>
+                    <select id="profile-group-type" name="profile-group-type" required>
+                        <option value="" disabled selected>Velg kategori</option>
+                        <option value="Enkeltperson">Enkeltperson</option>
+                        <option value="Russegruppe">Russegruppe</option>
+                        <option value="Idrettslag">Idrettslag / Annen gruppe</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-location">Sted (Kommune)</label>
+                    <select id="profile-location" name="profile-location" required>
+                        <option value="Hamar">Hamar</option>
+                        <option value="Stange">Stange</option>
+                        <option value="Ringsaker">Ringsaker</option>
+                        <option value="Løten">Løten</option>
+                        <option value="Annet">Annet / Utenfor området</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-description">Beskrivelse (Hva kan dere hjelpe med?)</label>
+                    <textarea id="profile-description" name="profile-description" rows="5" required maxlength="2000" placeholder="Fortell litt om hva slags arbeid dere ønsker, når dere er tilgjengelige, og annen relevant info."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-email">E-post for kontakt</label>
+                    <input type="email" id="profile-email" name="profile-email" required placeholder="epost@eksempel.no">
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-phone">Telefonnummer</label>
+                    <input type="tel" id="profile-phone" name="profile-phone" required maxlength="20" placeholder="F.eks. 987 65 432">
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" id="btn-submit-profile" class="btn btn-primary">Publiser Profil</button>
+                    <button type="button" onclick="window.location.href='index.html'" class="btn btn-secondary" style="background: var(--text-light)">Avbryt</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <!-- Global Toast Notification -->
+    <div id="toast-notification" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase Setup
+        const SUPABASE_URL = 'https://ogpmuicqbcfyxznxjkto.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_yBZlKvvzPzBHkQGntQErjQ_uhSC8bKl';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Check if user is logged in
+        let currentUser = null;
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                currentUser = session.user;
+            } else {
+                showToast('Du må være logget inn for å registrere arbeidskraft.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'index.html'; // Or show login modal, but simple redirect is easier for this standalone page
+                }, 2000);
+            }
+        });
+
+
+        // Toast logic
+        const elToastNotification = document.getElementById('toast-notification');
+        const elToastMessage = document.getElementById('toast-message');
+
+        function showToast(message, type = 'success') {
+            elToastMessage.textContent = message;
+            elToastNotification.classList.remove('hidden');
+            elToastNotification.classList.remove('toast-error');
+
+            if (type === 'error') {
+                elToastNotification.classList.add('toast-error');
+            }
+
+            setTimeout(() => {
+                elToastNotification.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Form submission
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btnSubmit = document.getElementById('btn-submit-profile');
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Lagrer...';
+
+            const payload = {
+                title: document.getElementById('profile-title').value.trim(),
+                group_type: document.getElementById('profile-group-type').value,
+                location: document.getElementById('profile-location').value,
+                description: document.getElementById('profile-description').value.trim(),
+                mail: document.getElementById('profile-email').value.trim(),
+                phone_number: document.getElementById('profile-phone').value.trim()
+            };
+
+
+
+            try {
+                // If there's no user_id column, we shouldn't insert it.
+                // Earlier RLS failed because it lacked a user context, but maybe it just requires the JWT to be present on the request, NOT the user_id column in the payload.
+                const { error } = await supabaseClient
+                    .from('worker_profiles')
+                    .insert([payload]);
+
+                if (error) throw error;
+
+                showToast('Profil publisert!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error("Error inserting profile:", error);
+                showToast('En feil oppstod. Vennligst prøv igjen.', 'error');
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Publiser Profil';
+            }
+        });
+    </script>
+</body>
+</html>

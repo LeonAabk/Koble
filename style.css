@@ -351,6 +351,20 @@ textarea:focus {
 .badge-russedugnad { background-color: var(--cat-russedugnad-bg); color: var(--cat-russedugnad-text); }
 .badge-annet { background-color: var(--cat-annet-bg); color: var(--cat-annet-text); }
 
+.worker-card {
+    border-left: 4px solid #6b46c1; /* Soft purple */
+    background-color: #faf5ff; /* Very light purple tint */
+}
+
+.worker-card h3 {
+    color: #553c9a;
+}
+
+.worker-badge {
+    background-color: #e9d8fd;
+    color: #44337a;
+}
+
 .job-card p {
     margin-bottom: var(--spacing-sm);
 }
