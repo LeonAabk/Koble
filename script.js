@@ -563,6 +563,10 @@ elJobPostForm.addEventListener('submit', async (e) => {
         showToast("Arbeidsgivernavnet kan ikke være over 100 tegn.", "error");
         return;
     }
+    if (phoneNumber && phoneNumber.length > 20) {
+        showToast("Telefonnummeret kan ikke være over 20 tegn.", "error");
+        return;
+    }
     if (time.length > 100) {
         showToast("Tidspunkt kan ikke være over 100 tegn.", "error");
         return;
@@ -1212,7 +1216,7 @@ function parseJobDescription(rawString) {
         statusRejected: false,
         rejectionReason: '',
         time: '',
-        rawDescription: rawString || ''
+        rawDescription: String(rawString || '')
     };
 
     if (!result.rawDescription) return result;
@@ -1493,6 +1497,10 @@ async function rejectAdminJob(jobId, currentDescription) {
     if (reason === null) return; // User cancelled
     if (reason.trim() === "") {
         showToast("Årsak må fylles ut.", "error");
+        return;
+    }
+    if (reason.length > 500) {
+        showToast("Årsaken kan ikke være over 500 tegn.", "error");
         return;
     }
 
