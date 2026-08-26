@@ -29,3 +29,7 @@
 ## 2024-11-20 - Cache Expensive Date Formatting in Keystroke Loops
 **Learning:** `updateCalculatorTotal()` was instantiating `new Date()` and calling the expensive `toLocaleDateString` on every keystroke event in the calculator inputs.
 **Action:** Cached the formatted date string in a global variable (`cachedPdfDateString`) so it is computed only once and reused across all subsequent keystrokes in that session.
+
+## 2024-11-20 - Prevent Memory Bloat with Event Delegation in Vanilla SPA
+**Learning:** Attaching event listeners (e.g., via `btn.addEventListener('click', ...)`) directly to dynamically generated elements inside frequent rendering loops (like `applyFiltersAndRenderJobs`) causes significant memory bloat, high garbage collection overhead, and degrades performance. Furthermore, clicking on child icons inside these buttons would fail to trigger actions if `e.target` lacked the `data-*` attributes.
+**Action:** Always implement Event Delegation in Vanilla JS SPAs for frequently re-rendered list items. Attach a single event listener to the static parent container (e.g., `elJobBoard`), check `e.target.closest('button')` to identify the action, and read attributes from the button element.
