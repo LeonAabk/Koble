@@ -66,6 +66,7 @@ const pdfExportArea = document.getElementById('pdf-export-area');
 const elNavHomeBtn = document.getElementById('nav-home-btn');
 const navCalculatorBtn = document.getElementById('nav-calculator-btn');
 const elLogoTitle = document.getElementById('logo-title');
+const elYouthRoleBtnHero = document.getElementById('youth-role-btn-hero');
 const elEmployerRoleBtnHero = document.getElementById('employer-role-btn-hero');
 const elWorkerRoleBtnHero = document.getElementById('worker-role-btn-hero');
 
@@ -402,6 +403,13 @@ navCalculatorBtn.addEventListener('click', () => {
     window.location.hash = '';
     showView(elCalculatorSection);
     updateCalculatorTotal(); // initialize date and default text on load
+});
+
+elYouthRoleBtnHero.addEventListener('click', () => {
+    showView(elYouthSection);
+    fetchAndRenderJobs();
+    switchYouthMainTab('jobs'); // Default to Jobs tab
+    elYouthSection.scrollIntoView({ behavior: 'smooth' });
 });
 
 elEmployerRoleBtnHero.addEventListener('click', () => {
