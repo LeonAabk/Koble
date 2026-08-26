@@ -693,6 +693,7 @@ elJobPostForm.addEventListener('submit', async (e) => {
     const rawDescription = document.getElementById('job-description').value;
     const time = document.getElementById('job-time').value;
     const isGroupFriendly = document.getElementById('job-group-friendly').checked;
+    const isUrgent = document.getElementById('job-is-urgent').checked;
 
     // Combine the time, the description, and the group-friendly tag into one string
     // This allows us to handle the logic without a DB migration
@@ -746,7 +747,8 @@ elJobPostForm.addEventListener('submit', async (e) => {
         email,
         description,
         user_id: currentUser.id,
-        phone_number: phoneNumber || null
+        phone_number: phoneNumber || null,
+        is_urgent: isUrgent
     };
 
     try {
@@ -795,6 +797,10 @@ function resetJobForm() {
     elJobTitleError.classList.remove('show');
     elJobDescInput.classList.remove('input-error');
     elJobDescError.classList.remove('show');
+    const urgentCheckbox = document.getElementById('job-is-urgent');
+    if (urgentCheckbox) {
+        urgentCheckbox.checked = false;
+    }
 }
 
 if (btnCancelEdit) {
@@ -867,6 +873,14 @@ function applyFiltersAndRenderMyJobs() {
         elNoMyJobsMsg.classList.add('hidden');
     }
 
+    // Sort logic
+    jobsToRender.sort((a, b) => {
+        // Urgent jobs always sort to the top
+        if (a.is_urgent && !b.is_urgent) return -1;
+        if (!a.is_urgent && b.is_urgent) return 1;
+        return a.created_at > b.created_at ? -1 : (a.created_at < b.created_at ? 1 : 0);
+    });
+
     const fragment = document.createDocumentFragment();
 
     // ⚡ Bolt: Cache current time outside the render loop to avoid repeated Date instantiations
@@ -919,6 +933,7 @@ function applyFiltersAndRenderMyJobs() {
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
             <div class="card-badges">
+                ${job.is_urgent ? `<span class="badge badge-urgent">🔥 Haster!</span>` : ''}
                 ${approvalBadge}
                 <span class="badge ${badgeClass}"><i data-lucide="${catIcon}" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.category)}</span>
                 ${parsed.isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
@@ -985,6 +1000,11 @@ function editJob(job) {
     document.getElementById('job-employer-name').value = parsed.employerName;
     document.getElementById('job-time').value = parsed.time;
     document.getElementById('job-description').value = parsed.rawDescription;
+
+    const urgentCheckbox = document.getElementById('job-is-urgent');
+    if (urgentCheckbox) {
+        urgentCheckbox.checked = !!job.is_urgent;
+    }
 
     // Trigger validation logic off initial load so it doesn't show errors immediately when editing
     elJobTitleInput.classList.remove('input-error');
@@ -1183,6 +1203,10 @@ function applyFiltersAndRenderJobs() {
     // Sort logic
     const sortOrder = elFilterSort.value;
     filteredJobs.sort((a, b) => {
+        // Urgent jobs always sort to the top, regardless of date sorting
+        if (a.is_urgent && !b.is_urgent) return -1;
+        if (!a.is_urgent && b.is_urgent) return 1;
+
         // ISO-8601 strings sort correctly lexicographically, avoiding expensive Date parsing overhead
         if (sortOrder === 'oldest') {
             return a.created_at < b.created_at ? -1 : (a.created_at > b.created_at ? 1 : 0);
@@ -1249,6 +1273,7 @@ function applyFiltersAndRenderJobs() {
             ${isFilled ? '<span class="badge badge-filled">Oppdraget er tildelt 🔒</span>' : ''}
             <h3>${escapeHTML(job.title)}${isNew && !isFilled ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
             <div class="card-badges">
+                ${job.is_urgent && !isFilled ? `<span class="badge badge-urgent">🔥 Haster!</span>` : ''}
                 ${isAdmin && !job.is_approved ? '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>' : ''}
                 <span class="badge ${badgeClass}"><i data-lucide="${catIcon}" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.category)}</span>
                 ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
@@ -1547,7 +1572,7 @@ async function renderAdminJobs() {
         }
 
         tr.innerHTML = `
-            <td>${escapeHTML(job.title)}</td>
+            <td>${job.is_urgent ? '🔥 ' : ''}${escapeHTML(job.title)}</td>
             <td>${escapeHTML(job.email)}</td>
             <td>${escapeHTML(job.location)}</td>
             <td>${formattedDate}</td>
