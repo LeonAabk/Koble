@@ -627,6 +627,11 @@ async function getJobs(onlyApproved = true) {
         .select('*')
         .order('created_at', { ascending: false });
 
+    // 🛡️ Sentinel: Enforce authorization to prevent non-admins from fetching unapproved jobs
+    if (!onlyApproved && (!currentUser || currentUser.email !== 'admin@koble.no')) {
+        onlyApproved = true;
+    }
+
     if (onlyApproved) {
         query = query.eq('is_approved', true);
     }
@@ -1496,6 +1501,9 @@ if (adminAuthForm) {
 
 // --- Admin Moderation Dashboard ---
 async function renderAdminJobs() {
+    // 🛡️ Sentinel: Enforce client-side authorization to prevent admin UI rendering for unauthorized users
+    if (!currentUser || currentUser.email !== 'admin@koble.no') return;
+
     const adminTableBody = document.getElementById('admin-jobs-table-body');
     if (!adminTableBody) return;
 
@@ -1793,6 +1801,9 @@ if (elEditWorkerForm) {
 
 // --- Admin Workers Dashboard ---
 async function renderAdminWorkers() {
+    // 🛡️ Sentinel: Enforce client-side authorization to prevent admin UI rendering for unauthorized users
+    if (!currentUser || currentUser.email !== 'admin@koble.no') return;
+
     const adminWorkersTableBody = document.getElementById('admin-workers-table-body');
     if (!adminWorkersTableBody) return;
 
