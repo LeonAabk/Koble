@@ -281,8 +281,13 @@ if (downloadPdfBtn && pdfExportArea) {
             return;
         }
 
+        // Inject dynamic data before PDF snapshot
+        updateCalculatorTotal();
+
         // 1. Clone the Content
         const clonedContent = pdfExportArea.cloneNode(true);
+        clonedContent.classList.remove('hidden');
+        clonedContent.style.display = 'block';
 
         // Hide UI buttons from final PDF
         const btns = clonedContent.querySelectorAll('button');
@@ -294,23 +299,31 @@ if (downloadPdfBtn && pdfExportArea) {
         clonedContent.style.margin = '0';
         clonedContent.style.padding = '0';
 
+        // Ensure black text color
+        clonedContent.style.color = '#000000';
+
         const allElements = clonedContent.querySelectorAll('*');
         allElements.forEach(el => {
             el.style.boxShadow = 'none';
             el.style.borderRadius = '0';
+            if (el.tagName !== 'DIV') {
+                el.style.color = '#000000';
+            }
         });
 
-        // 2. Create a Temporary Print Container
+        // 2. Create a Temporary Print Container directly attached to body
         const tempContainer = document.createElement('div');
         tempContainer.style.position = 'absolute';
-        tempContainer.style.top = '-9999px';
-        tempContainer.style.left = '-9999px';
+        tempContainer.style.top = '0';
+        tempContainer.style.left = '0';
         tempContainer.style.width = '210mm';
-        tempContainer.style.background = 'white';
-        tempContainer.style.color = 'black';
+        tempContainer.style.backgroundColor = '#ffffff';
+        tempContainer.style.color = '#000000';
+        tempContainer.style.zIndex = '-9999';
 
         // 3. Strip Web CSS
         tempContainer.style.display = 'block';
+        tempContainer.style.visibility = 'visible';
         tempContainer.style.padding = '20mm';
         tempContainer.style.boxShadow = 'none';
         tempContainer.style.borderRadius = '0';
@@ -318,21 +331,25 @@ if (downloadPdfBtn && pdfExportArea) {
         tempContainer.appendChild(clonedContent);
         document.body.appendChild(tempContainer);
 
-        const opt = {
-            margin:       0, // Handled by the container's padding instead
-            filename:     'Koble-Avtale.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, windowWidth: 794 }, // 794px is A4 width at 96 DPI
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        // 4. Force DOM layout update by delaying snapshot
+        tempContainer.offsetHeight; // force layout
+        setTimeout(() => {
+            const opt = {
+                margin:       0, // Handled by the container's padding instead
+                filename:     'Koble-Avtale.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, windowWidth: 794 }, // 794px is A4 width at 96 DPI
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
-        // 4 & 5. Generate & Clean Up
-        html2pdf().set(opt).from(tempContainer).save().then(() => {
-            tempContainer.remove();
-        }).catch(err => {
-            console.error('PDF Generation failed', err);
-            tempContainer.remove();
-        });
+            // 5. Generate & Clean Up AFTER promise resolves
+            html2pdf().set(opt).from(tempContainer).save().then(() => {
+                tempContainer.remove();
+            }).catch(err => {
+                console.error('PDF Generation failed', err);
+                tempContainer.remove();
+            });
+        }, 150);
     });
 }
 
