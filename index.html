@@ -18,7 +18,7 @@
 <body>
     <header>
         <div class="container header-content">
-            <h1 id="logo-title">Koble</h1>
+            <div id="logo-title" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">Koble</div>
             <nav id="main-nav">
                 <button id="nav-home-btn" class="btn-text">Hjem</button>
                 <button id="nav-calculator-btn" class="btn-text">Kalkulator</button>
@@ -36,11 +36,12 @@
         <!-- View 1: Landing Page / Main Menu -->
         <section id="landing-view" class="landing-view">
             <div class="hero-section">
-                <h2>Velkommen til Koble</h2>
+                <h1>Velkommen til Koble</h1>
                 <p class="lead">Plattformen som kobler arbeidsvillig ungdom og russ med bønder, bedrifter og privatpersoner som trenger ekstra hender.</p>
-                <div class="role-buttons">
-                    <button id="youth-role-btn" class="btn btn-primary btn-lg"><i data-lucide="search" style="width: 1.2rem; height: 1.2rem; vertical-align: middle; margin-right: 0.5rem;"></i>Finn oppdrag</button>
-                    <button id="employer-role-btn" class="btn btn-secondary btn-lg"><i data-lucide="plus-circle" style="width: 1.2rem; height: 1.2rem; vertical-align: middle; margin-right: 0.5rem;"></i>Legg ut oppdrag</button>
+                <div class="role-buttons" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button id="youth-role-btn-hero" class="btn btn-primary btn-lg"><i data-lucide="search" style="width: 1.2rem; height: 1.2rem; vertical-align: middle; margin-right: 0.5rem;"></i>Se ledige oppdrag</button>
+                    <button id="employer-role-btn-hero" class="btn btn-secondary btn-lg"><i data-lucide="plus-circle" style="width: 1.2rem; height: 1.2rem; vertical-align: middle; margin-right: 0.5rem;"></i>Legg ut oppdrag</button>
+                    <button id="worker-role-btn-hero" class="btn btn-outline btn-lg" onclick="window.location.href='registrer-profil.html'"><i data-lucide="user-plus" style="width: 1.2rem; height: 1.2rem; vertical-align: middle; margin-right: 0.5rem;"></i>Registrer arbeidskraft</button>
                 </div>
             </div>
 
@@ -182,7 +183,7 @@
 
         <!-- View 3: Youth View (Browse Jobs) -->
         <section id="youth-view" class="view hidden">
-            <div class="employer-tabs" style="margin-bottom: 2rem;">
+            <div class="employer-tabs sticky-tabs" style="margin-bottom: 2rem;">
                 <button id="main-tab-jobs" class="btn-text active-tab" style="font-size: 1.1rem;">Ledige oppdrag</button>
                 <button id="main-tab-workers" class="btn-text" style="font-size: 1.1rem;">Tilgjengelig arbeidskraft</button>
             </div>

@@ -66,8 +66,9 @@ const pdfExportArea = document.getElementById('pdf-export-area');
 const elNavHomeBtn = document.getElementById('nav-home-btn');
 const navCalculatorBtn = document.getElementById('nav-calculator-btn');
 const elLogoTitle = document.getElementById('logo-title');
-const elYouthRoleBtn = document.getElementById('youth-role-btn');
-const elEmployerRoleBtn = document.getElementById('employer-role-btn');
+const elYouthRoleBtnHero = document.getElementById('youth-role-btn-hero');
+const elEmployerRoleBtnHero = document.getElementById('employer-role-btn-hero');
+const elWorkerRoleBtnHero = document.getElementById('worker-role-btn-hero');
 
 // Employer Tabs & Sections
 const elTabPostJob = document.getElementById('tab-post-job');
@@ -404,13 +405,14 @@ navCalculatorBtn.addEventListener('click', () => {
     updateCalculatorTotal(); // initialize date and default text on load
 });
 
-elYouthRoleBtn.addEventListener('click', () => {
+elYouthRoleBtnHero.addEventListener('click', () => {
     showView(elYouthSection);
     fetchAndRenderJobs();
     switchYouthMainTab('jobs'); // Default to Jobs tab
+    elYouthSection.scrollIntoView({ behavior: 'smooth' });
 });
 
-elEmployerRoleBtn.addEventListener('click', () => {
+elEmployerRoleBtnHero.addEventListener('click', () => {
     if (currentUser) {
         showView(elEmployerSection);
         fetchAndRenderMyJobs();
@@ -509,9 +511,11 @@ async function fetchAndRenderWorkers() {
         }
 
         article.innerHTML = `
-            ${!worker.is_approved ? '<span class="badge badge-status-pending" style="display:block; margin-bottom: 0.5rem; width: fit-content;">⏳ Venter på godkjenning</span>' : ''}
             <h3>${safeTitle}</h3>
-            <span class="badge worker-badge"><i data-lucide="${iconName}" style="width: 12px; height: 12px; vertical-align: baseline; margin-right: 4px;"></i>${safeGroup}</span>
+            <div class="card-badges">
+                ${!worker.is_approved ? '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>' : ''}
+                <span class="badge worker-badge"><i data-lucide="${iconName}" style="width: 12px; height: 12px; vertical-align: baseline; margin-right: 4px;"></i>${safeGroup}</span>
+            </div>
             <p class="location"><i data-lucide="map-pin" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px; color: var(--text-light);"></i><strong>Sted:</strong> ${safeLocation}</p>
             <p class="description" style="color: #4a5568;">${safeDesc}</p>
             <p style="font-size: 0.85rem; color: #a0aec0; margin-bottom: 1rem;">Registrert: ${formattedDate}</p>
@@ -914,12 +918,12 @@ function applyFiltersAndRenderMyJobs() {
 
         article.innerHTML = `
             <h3>${escapeHTML(job.title)}${isNew ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
-            ${approvalBadge}
-            ${feedbackBox}
-            <div style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+            <div class="card-badges">
+                ${approvalBadge}
                 <span class="badge ${badgeClass}"><i data-lucide="${catIcon}" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.category)}</span>
                 ${parsed.isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             </div>
+            ${feedbackBox}
             ${parsed.employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(parsed.employerName)}</p>` : ''}
             ${job.phone_number ? `<p class="phone"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Telefon:</strong> ${escapeHTML(job.phone_number)}</p>` : ''}
             <p class="location"><i data-lucide="map-pin" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
@@ -1244,9 +1248,11 @@ function applyFiltersAndRenderJobs() {
         article.innerHTML = `
             ${isFilled ? '<span class="badge badge-filled">Oppdraget er tildelt 🔒</span>' : ''}
             <h3>${escapeHTML(job.title)}${isNew && !isFilled ? '<span class="badge badge-new">Ny</span>' : ''}</h3>
-            ${isAdmin && !job.is_approved ? '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>' : ''}
-            <span class="badge ${badgeClass}"><i data-lucide="${catIcon}" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.category)}</span>
-            ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
+            <div class="card-badges">
+                ${isAdmin && !job.is_approved ? '<span class="badge badge-status-pending">⏳ Venter på godkjenning</span>' : ''}
+                <span class="badge ${badgeClass}"><i data-lucide="${catIcon}" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.category)}</span>
+                ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
+            </div>
             ${employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(employerName)}</p>` : ''}
             ${job.phone_number && !isFilled ? `<p class="phone"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Telefon:</strong> ${escapeHTML(job.phone_number)}</p>` : ''}
             <p class="location"><i data-lucide="map-pin" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Sted:</strong> ${escapeHTML(job.location)}</p>

@@ -212,8 +212,21 @@ footer {
 }
 
 @media (max-width: 600px) {
+    .hero-section {
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+
     .role-buttons {
         flex-direction: column;
+        width: 100%;
+    }
+
+    .role-buttons .btn {
+        width: 100%;
     }
 
     header .container {
@@ -312,13 +325,13 @@ textarea:focus {
 .job-board {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 1.5rem;
 }
 
 .job-card {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: var(--spacing-md);
+    padding: 1.5rem;
     background-color: var(--card-bg);
     box-shadow: var(--card-shadow);
     transition: all 0.2s ease;
@@ -331,6 +344,25 @@ textarea:focus {
 
 .job-card h3 {
     margin-bottom: var(--spacing-sm);
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.job-card p.location,
+.job-card p.pay,
+.job-card p.date,
+.job-card p.phone,
+.job-card p.employer {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .badge {
@@ -379,20 +411,23 @@ textarea:focus {
 /* --- Landing Page Specific Styles --- */
 .landing-view {
     /* Extending the base view styling, but centering text for the hero */
-    background-color: var(--card-bg);
-    padding: var(--spacing-lg);
-    border-radius: var(--border-radius);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
     margin-bottom: var(--spacing-lg);
 }
 
 .hero-section {
     text-align: center;
+    background-color: var(--card-bg);
+    padding: calc(var(--spacing-lg) * 2) var(--spacing-lg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
     margin-bottom: calc(var(--spacing-lg) * 2);
-    padding-top: var(--spacing-md);
 }
 
-.hero-section h2 {
+.hero-section h1 {
     font-size: 2.5rem;
     color: var(--primary-color);
     margin-bottom: var(--spacing-sm);
@@ -411,8 +446,10 @@ textarea:focus {
 }
 
 .preview-section {
-    border-top: 1px solid var(--border-color);
-    padding-top: var(--spacing-lg);
+    background-color: var(--card-bg);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
 }
 
 .preview-section h3 {
@@ -482,6 +519,19 @@ textarea:focus {
     margin-bottom: var(--spacing-lg);
     border-bottom: 2px solid var(--border-color);
     padding-bottom: var(--spacing-sm);
+}
+
+.sticky-tabs {
+    position: sticky;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+    padding-top: 1rem;
+    margin-left: calc(-1 * var(--spacing-lg));
+    margin-right: calc(-1 * var(--spacing-lg));
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
 }
 
 .employer-tabs .btn-text,
