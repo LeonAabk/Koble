@@ -141,13 +141,43 @@
             btnSubmit.disabled = true;
             btnSubmit.textContent = 'Lagrer...';
 
+            const title = document.getElementById('profile-title').value.trim();
+            const description = document.getElementById('profile-description').value.trim();
+            const mail = document.getElementById('profile-email').value.trim();
+            const phone_number = document.getElementById('profile-phone').value.trim();
+
+            if (title.length > 100) {
+                showToast("Overskrift kan ikke være over 100 tegn.", "error");
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Publiser profil';
+                return;
+            }
+            if (description.length > 2000) {
+                showToast("Beskrivelsen kan ikke være over 2000 tegn.", "error");
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Publiser profil';
+                return;
+            }
+            if (mail.length > 100) {
+                showToast("E-post kan ikke være over 100 tegn.", "error");
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Publiser profil';
+                return;
+            }
+            if (phone_number.length > 20) {
+                showToast("Telefonnummer kan ikke være over 20 tegn.", "error");
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Publiser profil';
+                return;
+            }
+
             const payload = {
-                title: document.getElementById('profile-title').value.trim(),
+                title: title,
                 group_type: document.getElementById('profile-group-type').value,
                 location: document.getElementById('profile-location').value,
-                description: document.getElementById('profile-description').value.trim(),
-                mail: document.getElementById('profile-email').value.trim(),
-                phone_number: document.getElementById('profile-phone').value.trim(),
+                description: description,
+                mail: mail,
+                phone_number: phone_number,
                 user_id: currentUser ? currentUser.id : null,
                 is_approved: false
             };

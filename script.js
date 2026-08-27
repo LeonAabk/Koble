@@ -1811,13 +1811,43 @@ if (elEditWorkerForm) {
         btnSubmit.disabled = true;
         btnSubmit.textContent = 'Lagrer...';
 
+        const title = document.getElementById('edit-worker-title').value.trim();
+        const description = document.getElementById('edit-worker-description').value.trim();
+        const mail = document.getElementById('edit-worker-email').value.trim();
+        const phone_number = document.getElementById('edit-worker-phone').value.trim();
+
+        if (title.length > 100) {
+            showToast("Overskrift kan ikke være over 100 tegn.", "error");
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Lagre Endringer (Send til ny godkjenning)';
+            return;
+        }
+        if (description.length > 2000) {
+            showToast("Beskrivelsen kan ikke være over 2000 tegn.", "error");
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Lagre Endringer (Send til ny godkjenning)';
+            return;
+        }
+        if (mail.length > 100) {
+            showToast("E-post kan ikke være over 100 tegn.", "error");
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Lagre Endringer (Send til ny godkjenning)';
+            return;
+        }
+        if (phone_number.length > 20) {
+            showToast("Telefonnummer kan ikke være over 20 tegn.", "error");
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Lagre Endringer (Send til ny godkjenning)';
+            return;
+        }
+
         const payload = {
-            title: document.getElementById('edit-worker-title').value.trim(),
+            title: title,
             group_type: document.getElementById('edit-worker-group-type').value,
             location: document.getElementById('edit-worker-location').value,
-            description: document.getElementById('edit-worker-description').value.trim(),
-            mail: document.getElementById('edit-worker-email').value.trim(),
-            phone_number: document.getElementById('edit-worker-phone').value.trim(),
+            description: description,
+            mail: mail,
+            phone_number: phone_number,
             is_approved: false
         };
 
