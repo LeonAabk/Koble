@@ -896,3 +896,41 @@ textarea:focus {
     filter: grayscale(50%);
     background-color: #f1f5f9; /* Slate 100 */
 }
+
+/* Print Styles */
+@media print {
+    /* Hide everything by default */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Ensure only the PDF export area and its children are visible */
+    #pdf-export-area, #pdf-export-area * {
+        visibility: visible;
+    }
+
+    #pdf-export-area {
+        display: block !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        color: #000;
+        background: #fff;
+        z-index: 9999;
+    }
+
+    /* Reset body background and margins for print */
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+    }
+
+    /* Specifically hide UI components that shouldn't appear anywhere near print output */
+    header, nav, footer, button, .modal-overlay, .action-buttons, .calculator-section, #landing-view {
+        display: none !important;
+    }
+}
