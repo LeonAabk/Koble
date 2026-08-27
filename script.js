@@ -547,26 +547,27 @@ async function fetchAndRenderWorkers() {
 
     elWorkerBoard.appendChild(fragment);
 
-    // Attach event listeners for edit and delete buttons
-    if (currentUser) {
-        const deleteButtons = elWorkerBoard.querySelectorAll('.delete-worker-btn');
-        deleteButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const workerId = e.target.getAttribute('data-id');
-                deleteWorkerProfile(workerId);
-            });
-        });
-
-        const editButtons = elWorkerBoard.querySelectorAll('.edit-worker-btn');
-        editButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const workerId = e.target.getAttribute('data-id');
-                openEditWorkerModal(workerId);
-            });
-        });
-    }
-
     lucide.createIcons();
+}
+
+// ⚡ Bolt: Use Event Delegation on the parent container to prevent attaching O(n) event listeners
+// every time the worker board re-renders, reducing memory allocations and garbage collection overhead.
+if (elWorkerBoard) {
+    elWorkerBoard.addEventListener('click', (e) => {
+        if (!currentUser) return;
+
+        // Traverse up to find the actual button in case the click was on a child element (e.g. an icon)
+        const targetBtn = e.target.closest('.delete-worker-btn, .edit-worker-btn');
+        if (!targetBtn) return;
+
+        if (targetBtn.classList.contains('delete-worker-btn')) {
+            const workerId = targetBtn.getAttribute('data-id');
+            if (workerId) deleteWorkerProfile(workerId);
+        } else if (targetBtn.classList.contains('edit-worker-btn')) {
+            const workerId = targetBtn.getAttribute('data-id');
+            if (workerId) openEditWorkerModal(workerId);
+        }
+    });
 }
 
 // --- Employer Tabs Logic ---
@@ -972,34 +973,32 @@ function applyFiltersAndRenderMyJobs() {
 
     elMyJobsList.appendChild(fragment);
 
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    deleteButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            deleteJob(jobId);
-        });
-    });
-
-    const editButtons = document.querySelectorAll('.edit-btn');
-    editButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            const jobToEdit = currentLoadedMyJobs.find(j => j.id === jobId);
-            if (jobToEdit) editJob(jobToEdit);
-        });
-    });
-
-    const assignButtons = document.querySelectorAll('.assign-btn');
-    assignButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            markJobAsFilled(jobId);
-        });
-    });
-
     if (window.lucide) {
         lucide.createIcons();
     }
+}
+
+// ⚡ Bolt: Use Event Delegation on the parent container to prevent attaching O(n) event listeners
+// every time the "My Jobs" list re-renders, reducing memory allocations and garbage collection overhead.
+if (elMyJobsList) {
+    elMyJobsList.addEventListener('click', (e) => {
+        const targetBtn = e.target.closest('.delete-btn, .edit-btn, .assign-btn');
+        if (!targetBtn) return;
+
+        if (targetBtn.classList.contains('delete-btn')) {
+            const jobId = targetBtn.getAttribute('data-id');
+            if (jobId) deleteJob(jobId);
+        } else if (targetBtn.classList.contains('edit-btn')) {
+            const jobId = targetBtn.getAttribute('data-id');
+            if (jobId && currentLoadedMyJobs) {
+                const jobToEdit = currentLoadedMyJobs.find(j => j.id === jobId);
+                if (jobToEdit) editJob(jobToEdit);
+            }
+        } else if (targetBtn.classList.contains('assign-btn')) {
+            const jobId = targetBtn.getAttribute('data-id');
+            if (jobId) markJobAsFilled(jobId);
+        }
+    });
 }
 
 function editJob(job) {
@@ -1313,23 +1312,25 @@ function applyFiltersAndRenderJobs() {
 
     elJobBoard.appendChild(fragment);
 
-    const applyButtons = document.querySelectorAll('.apply-btn');
-    applyButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const email = e.target.getAttribute('data-email');
-            const title = e.target.getAttribute('data-title');
-            const employer = e.target.getAttribute('data-employer');
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+// ⚡ Bolt: Use Event Delegation on the parent container to prevent attaching O(n) event listeners
+// every time the job board re-renders (which happens often due to debounced search),
+// reducing memory allocations and garbage collection overhead.
+if (elJobBoard) {
+    elJobBoard.addEventListener('click', async (e) => {
+        const targetBtn = e.target.closest('.apply-btn, .share-btn, .admin-delete-btn, .admin-approve-btn, .admin-reject-btn');
+        if (!targetBtn) return;
+
+        if (targetBtn.classList.contains('apply-btn')) {
+            const email = targetBtn.getAttribute('data-email');
+            const title = targetBtn.getAttribute('data-title');
+            const employer = targetBtn.getAttribute('data-employer');
             openApplicationModal(email, title, employer);
-        });
-    });
-
-    const shareButtons = document.querySelectorAll('.share-btn');
-    shareButtons.forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            // Traverse up to find the button in case the click was on the icon
-            const targetBtn = e.target.closest('.share-btn');
-            if (!targetBtn) return;
-
+        } else if (targetBtn.classList.contains('share-btn')) {
             const title = targetBtn.getAttribute('data-title') || '';
             const employer = targetBtn.getAttribute('data-employer') || '';
             const location = targetBtn.getAttribute('data-location') || '';
@@ -1365,39 +1366,23 @@ function applyFiltersAndRenderJobs() {
                     alert('Kunne ikke kopiere lenken. Prøv å dele manuelt.');
                 }
             }
-        });
+        } else if (currentUser && currentUser.email === 'admin@koble.no') {
+            // Admin Actions
+            if (targetBtn.classList.contains('admin-delete-btn')) {
+                const jobId = targetBtn.getAttribute('data-id');
+                if (jobId) deleteAdminJob(jobId);
+            } else if (targetBtn.classList.contains('admin-approve-btn')) {
+                const jobId = targetBtn.getAttribute('data-id');
+                if (jobId) approveAdminJob(jobId);
+            } else if (targetBtn.classList.contains('admin-reject-btn')) {
+                const jobId = targetBtn.getAttribute('data-id');
+                if (jobId && currentLoadedJobs) {
+                    const job = currentLoadedJobs.find(j => j.id === jobId);
+                    if (job) rejectAdminJob(jobId, job.description);
+                }
+            }
+        }
     });
-
-    if (isAdmin) {
-        const deleteButtons = elJobBoard.querySelectorAll('.admin-delete-btn');
-        deleteButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const jobId = e.target.getAttribute('data-id');
-                deleteAdminJob(jobId);
-            });
-        });
-
-        const approveButtons = elJobBoard.querySelectorAll('.admin-approve-btn');
-        approveButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const jobId = e.target.getAttribute('data-id');
-                approveAdminJob(jobId);
-            });
-        });
-
-        const rejectButtons = elJobBoard.querySelectorAll('.admin-reject-btn');
-        rejectButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const jobId = e.target.getAttribute('data-id');
-                const job = filteredJobs.find(j => j.id === jobId);
-                if (job) rejectAdminJob(jobId, job.description);
-            });
-        });
-    }
-
-    if (window.lucide) {
-        lucide.createIcons();
-    }
 }
 
 // ⚡ Bolt: Extract mapping to a constant to prevent object re-instantiation on every character match in the .replace() callback, reducing GC overhead.
