@@ -35,6 +35,8 @@ const elAdminSection = document.getElementById('admin-view');
 const elCalculatorSection = document.getElementById('calculator-view');
 const elAdminLoginSection = document.getElementById('admin-login-section');
 const elAdminDashboardSection = document.getElementById('admin-dashboard-section');
+const elAdminJobsTableBody = document.getElementById('admin-jobs-table-body');
+const elAdminWorkersTableBody = document.getElementById('admin-workers-table-body');
 const elProfileEmailDisplay = document.getElementById('profile-email-display');
 const elProfileLogoutBtn = document.getElementById('profile-logout-btn');
 const elMainNav = document.getElementById('main-nav');
@@ -1100,6 +1102,7 @@ elCopyTemplateBtn.addEventListener('click', () => {
 // --- Youth Features (Browsing, Searching & Filtering Jobs) ---
 let currentLoadedJobs = null;
 let currentLoadedWorkers = null;
+let currentLoadedAdminJobs = null;
 
 async function fetchAndRenderJobs() {
     renderSkeletons(elJobBoard, 4);
@@ -1464,6 +1467,29 @@ if (adminAuthForm) {
 }
 
 // --- Admin Moderation Dashboard ---
+// ⚡ Bolt: Use Event Delegation on the parent container to prevent attaching O(n) event listeners
+// every time the admin jobs table re-renders, reducing memory allocations and garbage collection overhead.
+if (elAdminJobsTableBody) {
+    elAdminJobsTableBody.addEventListener('click', (e) => {
+        const targetBtn = e.target.closest('.admin-delete-btn, .admin-approve-btn, .admin-reject-btn');
+        if (!targetBtn) return;
+
+        if (targetBtn.classList.contains('admin-delete-btn')) {
+            const jobId = targetBtn.getAttribute('data-id');
+            if (jobId) deleteAdminJob(jobId);
+        } else if (targetBtn.classList.contains('admin-approve-btn')) {
+            const jobId = targetBtn.getAttribute('data-id');
+            if (jobId) approveAdminJob(jobId);
+        } else if (targetBtn.classList.contains('admin-reject-btn')) {
+            const jobId = targetBtn.getAttribute('data-id');
+            const job = currentLoadedAdminJobs ? currentLoadedAdminJobs.find(j => j.id === jobId) : null;
+            if (jobId && job) {
+                rejectAdminJob(jobId, job.description);
+            }
+        }
+    });
+}
+
 async function renderAdminJobs() {
     // 🛡️ Sentinel: Enforce client-side authorization to prevent admin UI rendering for unauthorized users
     if (!currentUser || currentUser.email !== 'admin@koble.no') return;
@@ -1474,6 +1500,7 @@ async function renderAdminJobs() {
     adminTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Laster oppdrag...</td></tr>';
 
     const jobs = await getJobs(false); // Fetch ALL jobs for admin, regardless of approval status
+    currentLoadedAdminJobs = jobs; // Cache for delegated event listeners
 
     adminTableBody.innerHTML = '';
 
@@ -1520,32 +1547,6 @@ async function renderAdminJobs() {
     });
 
     adminTableBody.appendChild(fragment);
-
-    const deleteButtons = adminTableBody.querySelectorAll('.admin-delete-btn');
-    deleteButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            deleteAdminJob(jobId);
-        });
-    });
-
-    const approveButtons = adminTableBody.querySelectorAll('.admin-approve-btn');
-    approveButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            approveAdminJob(jobId);
-        });
-    });
-
-    const rejectButtons = adminTableBody.querySelectorAll('.admin-reject-btn');
-    rejectButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            // use unescapeHTML to get original description back if it has quotes, though simpler to just get from job object.
-            const job = jobs.find(j => j.id === jobId);
-            if (job) rejectAdminJob(jobId, job.description);
-        });
-    });
 
     if (window.lucide) {
         lucide.createIcons();
@@ -1794,6 +1795,23 @@ if (elEditWorkerForm) {
 }
 
 // --- Admin Workers Dashboard ---
+// ⚡ Bolt: Use Event Delegation on the parent container to prevent attaching O(n) event listeners
+// every time the admin workers table re-renders, reducing memory allocations and garbage collection overhead.
+if (elAdminWorkersTableBody) {
+    elAdminWorkersTableBody.addEventListener('click', (e) => {
+        const targetBtn = e.target.closest('.admin-delete-worker-btn, .admin-approve-worker-btn');
+        if (!targetBtn) return;
+
+        if (targetBtn.classList.contains('admin-delete-worker-btn')) {
+            const workerId = targetBtn.getAttribute('data-id');
+            if (workerId) deleteAdminWorker(workerId);
+        } else if (targetBtn.classList.contains('admin-approve-worker-btn')) {
+            const workerId = targetBtn.getAttribute('data-id');
+            if (workerId) approveAdminWorker(workerId);
+        }
+    });
+}
+
 async function renderAdminWorkers() {
     // 🛡️ Sentinel: Enforce client-side authorization to prevent admin UI rendering for unauthorized users
     if (!currentUser || currentUser.email !== 'admin@koble.no') return;
@@ -1851,22 +1869,6 @@ async function renderAdminWorkers() {
     });
 
     adminWorkersTableBody.appendChild(fragment);
-
-    const deleteButtons = adminWorkersTableBody.querySelectorAll('.admin-delete-worker-btn');
-    deleteButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const workerId = e.target.getAttribute('data-id');
-            deleteAdminWorker(workerId);
-        });
-    });
-
-    const approveButtons = adminWorkersTableBody.querySelectorAll('.admin-approve-worker-btn');
-    approveButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const workerId = e.target.getAttribute('data-id');
-            approveAdminWorker(workerId);
-        });
-    });
 }
 
 async function approveAdminWorker(workerId) {
