@@ -103,6 +103,7 @@ const elEmployerTabFilled = document.getElementById('employer-tab-filled');
 // Feed Tab State
 let currentYouthFeedTab = 'active';
 let currentEmployerManageTab = 'active';
+let currentLoadedAdminJobs = [];
 
 // Toast Notification
 const elToastNotification = document.getElementById('toast-notification');
@@ -1463,6 +1464,42 @@ if (adminAuthForm) {
     });
 }
 
+// ⚡ Bolt: Event Delegation for Admin Jobs Table
+// Attaching a single event listener to the static table body prevents memory bloat
+// and high garbage collection overhead caused by adding individual listeners during re-renders.
+const adminJobsTableBody = document.getElementById('admin-jobs-table-body');
+if (adminJobsTableBody) {
+    adminJobsTableBody.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const jobId = btn.getAttribute('data-id');
+        if (btn.classList.contains('admin-delete-btn')) {
+            deleteAdminJob(jobId);
+        } else if (btn.classList.contains('admin-approve-btn')) {
+            approveAdminJob(jobId);
+        } else if (btn.classList.contains('admin-reject-btn')) {
+            const job = currentLoadedAdminJobs.find(j => j.id === jobId);
+            if (job) rejectAdminJob(jobId, job.description);
+        }
+    });
+}
+
+// ⚡ Bolt: Event Delegation for Admin Workers Table
+// Same optimization as above to prevent memory bloat during re-renders.
+const adminWorkersTableBodyElement = document.getElementById('admin-workers-table-body');
+if (adminWorkersTableBodyElement) {
+    adminWorkersTableBodyElement.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const workerId = btn.getAttribute('data-id');
+        if (btn.classList.contains('admin-delete-worker-btn')) {
+            deleteAdminWorker(workerId);
+        } else if (btn.classList.contains('admin-approve-worker-btn')) {
+            approveAdminWorker(workerId);
+        }
+    });
+}
+
 // --- Admin Moderation Dashboard ---
 async function renderAdminJobs() {
     // 🛡️ Sentinel: Enforce client-side authorization to prevent admin UI rendering for unauthorized users
@@ -1474,6 +1511,7 @@ async function renderAdminJobs() {
     adminTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Laster oppdrag...</td></tr>';
 
     const jobs = await getJobs(false); // Fetch ALL jobs for admin, regardless of approval status
+    currentLoadedAdminJobs = jobs;
 
     adminTableBody.innerHTML = '';
 
@@ -1520,32 +1558,6 @@ async function renderAdminJobs() {
     });
 
     adminTableBody.appendChild(fragment);
-
-    const deleteButtons = adminTableBody.querySelectorAll('.admin-delete-btn');
-    deleteButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            deleteAdminJob(jobId);
-        });
-    });
-
-    const approveButtons = adminTableBody.querySelectorAll('.admin-approve-btn');
-    approveButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            approveAdminJob(jobId);
-        });
-    });
-
-    const rejectButtons = adminTableBody.querySelectorAll('.admin-reject-btn');
-    rejectButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const jobId = e.target.getAttribute('data-id');
-            // use unescapeHTML to get original description back if it has quotes, though simpler to just get from job object.
-            const job = jobs.find(j => j.id === jobId);
-            if (job) rejectAdminJob(jobId, job.description);
-        });
-    });
 
     if (window.lucide) {
         lucide.createIcons();
@@ -1851,22 +1863,6 @@ async function renderAdminWorkers() {
     });
 
     adminWorkersTableBody.appendChild(fragment);
-
-    const deleteButtons = adminWorkersTableBody.querySelectorAll('.admin-delete-worker-btn');
-    deleteButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const workerId = e.target.getAttribute('data-id');
-            deleteAdminWorker(workerId);
-        });
-    });
-
-    const approveButtons = adminWorkersTableBody.querySelectorAll('.admin-approve-worker-btn');
-    approveButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const workerId = e.target.getAttribute('data-id');
-            approveAdminWorker(workerId);
-        });
-    });
 }
 
 async function approveAdminWorker(workerId) {

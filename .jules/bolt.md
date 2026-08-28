@@ -33,3 +33,7 @@
 ## 2024-11-20 - Prevent Memory Bloat with Event Delegation in Vanilla SPA
 **Learning:** Attaching event listeners (e.g., via `btn.addEventListener('click', ...)`) directly to dynamically generated elements inside frequent rendering loops (like `applyFiltersAndRenderJobs`) causes significant memory bloat, high garbage collection overhead, and degrades performance. Furthermore, clicking on child icons inside these buttons would fail to trigger actions if `e.target` lacked the `data-*` attributes.
 **Action:** Always implement Event Delegation in Vanilla JS SPAs for frequently re-rendered list items. Attach a single event listener to the static parent container (e.g., `elJobBoard`), check `e.target.closest('button')` to identify the action, and read attributes from the button element.
+
+## 2024-11-20 - Prevent Memory Bloat with Event Delegation in Admin Tables
+**Learning:** The admin tables for jobs and workers were attaching event listeners to each approve, reject, and delete button individually inside the render loop, leading to memory bloat and garbage collection pressure when the tables re-render.
+**Action:** Used event delegation by attaching a single click listener to the static `tbody` elements (`admin-jobs-table-body` and `admin-workers-table-body`) and checking `e.target.closest('button')` to identify the action.
