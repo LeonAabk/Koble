@@ -1682,7 +1682,7 @@ async function deleteWorkerProfile(workerId) {
             fetchAndRenderWorkers(); // Refresh feed
         } catch (error) {
             console.error('Error deleting worker profile:', error);
-            showToast('Kunne ikke slette profilen: ' + error.message, 'error');
+            showToast('Kunne ikke slette profilen.', 'error');
         }
     }
 }
@@ -1785,7 +1785,7 @@ if (elEditWorkerForm) {
             fetchAndRenderWorkers(); // Refresh
         } catch (error) {
             console.error('Error updating worker profile:', error);
-            showToast('Kunne ikke oppdatere profilen: ' + error.message, 'error');
+            showToast('Kunne ikke oppdatere profilen.', 'error');
         } finally {
             btnSubmit.disabled = false;
             btnSubmit.textContent = 'Lagre Endringer (Send til ny godkjenning)';
@@ -1924,7 +1924,7 @@ async function deleteAdminWorker(workerId) {
             }
         } catch (error) {
             console.error('Error deleting worker profile as admin:', error);
-            showToast('Kunne ikke slette profilen: ' + error.message, 'error');
+            showToast('Kunne ikke slette profilen.', 'error');
         }
     }
 }
