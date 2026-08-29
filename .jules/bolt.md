@@ -33,3 +33,7 @@
 ## 2024-11-20 - Prevent Memory Bloat with Event Delegation in Vanilla SPA
 **Learning:** Attaching event listeners (e.g., via `btn.addEventListener('click', ...)`) directly to dynamically generated elements inside frequent rendering loops (like `applyFiltersAndRenderJobs`) causes significant memory bloat, high garbage collection overhead, and degrades performance. Furthermore, clicking on child icons inside these buttons would fail to trigger actions if `e.target` lacked the `data-*` attributes.
 **Action:** Always implement Event Delegation in Vanilla JS SPAs for frequently re-rendered list items. Attach a single event listener to the static parent container (e.g., `elJobBoard`), check `e.target.closest('button')` to identify the action, and read attributes from the button element.
+
+## 2024-06-25 - Avoid Implicit Date Formatter Instantiation in Loops
+**Learning:** Calling `new Date().toLocaleDateString()` inside iterative rendering loops implicitly instantiates a new internal `Intl.DateTimeFormat` object on every iteration, leading to significant memory allocation, garbage collection overhead, and slow main thread execution.
+**Action:** Replaced `.toLocaleDateString()` inside array loops (`.forEach`, `.map`) with a pre-instantiated `Intl.DateTimeFormat` object declared outside the loop scope. Calling `dateFormatter.format(date)` reuses the formatter instance and is an order of magnitude faster for large datasets.
