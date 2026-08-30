@@ -37,6 +37,11 @@ const elAdminLoginSection = document.getElementById('admin-login-section');
 const elAdminDashboardSection = document.getElementById('admin-dashboard-section');
 const elProfileEmailDisplay = document.getElementById('profile-email-display');
 const elProfileLogoutBtn = document.getElementById('profile-logout-btn');
+const elProfileDisplayName = document.getElementById('profile-display-name');
+const elProfilePhone = document.getElementById('profile-phone');
+const elProfileSaveSettingsBtn = document.getElementById('profile-save-settings-btn');
+const elMyWorkersList = document.getElementById('my-worker-profiles-list');
+const elNoMyWorkersMsg = document.getElementById('no-my-workers-msg');
 const elMainNav = document.getElementById('main-nav');
 
 // Calculator Elements
@@ -293,9 +298,22 @@ authForm.addEventListener('submit', handleAuthSubmit);
 navProfileBtn.addEventListener('click', () => {
     showView(elProfileSection);
     elProfileEmailDisplay.textContent = currentUser.email;
+    elProfileDisplayName.value = localStorage.getItem('koble_display_name') || '';
+    elProfilePhone.value = localStorage.getItem('koble_phone') || '';
+    fetchAndRenderMyWorkerProfiles();
 });
 
 elProfileLogoutBtn.addEventListener('click', handleLogout);
+
+if (elProfileSaveSettingsBtn) {
+    elProfileSaveSettingsBtn.addEventListener('click', () => {
+        const displayName = elProfileDisplayName.value.trim();
+        const phone = elProfilePhone.value.trim();
+        localStorage.setItem('koble_display_name', displayName);
+        localStorage.setItem('koble_phone', phone);
+        showToast('Innstillinger lagret', 'success');
+    });
+}
 
 authModal.addEventListener('click', (e) => {
     if (e.target === authModal) {
@@ -386,6 +404,122 @@ function switchYouthMainTab(tab) {
         elWorkersSection.classList.remove('hidden');
         fetchAndRenderWorkers();
     }
+}
+
+// --- My Worker Profiles ---
+let currentLoadedMyWorkers = null;
+
+async function fetchAndRenderMyWorkerProfiles() {
+    if (!currentUser) return;
+
+    renderSkeletons(elMyWorkersList, 2);
+
+    if (elNoMyWorkersMsg) {
+        elNoMyWorkersMsg.classList.add('hidden');
+    }
+
+    const { data: myWorkers, error } = await supabaseClient
+        .from('worker_profiles')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching my worker profiles:', error);
+        return;
+    }
+
+    currentLoadedMyWorkers = myWorkers;
+    renderMyWorkerProfiles();
+}
+
+function renderMyWorkerProfiles() {
+    if (!elMyWorkersList) return;
+
+    elMyWorkersList.innerHTML = '';
+
+    if (!currentLoadedMyWorkers || currentLoadedMyWorkers.length === 0) {
+        if (elNoMyWorkersMsg) elNoMyWorkersMsg.classList.remove('hidden');
+        return;
+    } else {
+        if (elNoMyWorkersMsg) elNoMyWorkersMsg.classList.add('hidden');
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    currentLoadedMyWorkers.forEach(worker => {
+        const article = document.createElement('article');
+        article.classList.add('worker-card');
+
+        let approvalBadge = '';
+        if (!worker.is_approved) {
+            approvalBadge = `<span class="badge badge-pending">Venter på godkjenning</span>`;
+        }
+
+        const title = worker.title ? escapeHTML(worker.title) : 'Uten tittel';
+        const groupType = worker.group_type ? escapeHTML(worker.group_type) : 'Enkeltperson';
+        const location = worker.location ? escapeHTML(worker.location) : 'Hamar';
+        const desc = worker.description ? escapeHTML(worker.description) : 'Ingen beskrivelse';
+
+        let mailBtn = worker.mail
+            ? `<button class="btn btn-primary apply-btn" data-email="${escapeHTML(worker.mail)}" data-title="${title}" data-employer="Min Profil"><i data-lucide="mail"></i> Kontakt</button>`
+            : '';
+
+        let phoneBtn = worker.phone_number
+            ? `<a href="tel:${escapeHTML(worker.phone_number)}" class="btn btn-secondary apply-btn"><i data-lucide="phone"></i> Ring</a>`
+            : '';
+
+        article.innerHTML = `
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">${title}</h3>
+                    <div class="card-badges">
+                        <span class="badge"><i data-lucide="users"></i> ${groupType}</span>
+                        <span class="badge"><i data-lucide="map-pin"></i> ${location}</span>
+                        ${approvalBadge}
+                    </div>
+                </div>
+            </div>
+            <p class="description">${desc}</p>
+            <div class="card-footer" style="flex-wrap: wrap; justify-content: space-between;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    ${mailBtn}
+                    ${phoneBtn}
+                </div>
+                <div class="card-actions">
+                    <button class="btn-icon edit-worker-btn" data-id="${worker.id}" title="Rediger profil" style="color: var(--primary-color);">
+                        <i data-lucide="edit"></i>
+                    </button>
+                    <button class="btn-icon delete-worker-btn" data-id="${worker.id}" title="Slett profil" style="color: var(--danger-color);">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        fragment.appendChild(article);
+    });
+
+    elMyWorkersList.appendChild(fragment);
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+if (elMyWorkersList) {
+    elMyWorkersList.addEventListener('click', (e) => {
+        const targetBtn = e.target.closest('.delete-worker-btn, .edit-worker-btn');
+        if (!targetBtn) return;
+
+        if (targetBtn.classList.contains('delete-worker-btn')) {
+            const workerId = targetBtn.getAttribute('data-id');
+            if (workerId) deleteWorkerProfile(workerId);
+        } else if (targetBtn.classList.contains('edit-worker-btn')) {
+            const workerId = targetBtn.getAttribute('data-id');
+            if (workerId) openEditWorkerModal(workerId);
+        }
+    });
 }
 
 // --- Worker Profiles ---
@@ -518,7 +652,21 @@ function switchEmployerTab(activeTabBtn, activeSection) {
     activeSection.classList.remove('hidden');
 }
 
-elTabPostJob.addEventListener('click', () => switchEmployerTab(elTabPostJob, elPostSection));
+elTabPostJob.addEventListener('click', () => {
+    switchEmployerTab(elTabPostJob, elPostSection);
+
+    // Pre-fill logic if empty
+    const elJobEmployerName = document.getElementById('job-employer-name');
+    const elEmployerPhone = document.getElementById('employer-phone');
+
+    if (elJobEmployerName && !elJobEmployerName.value && localStorage.getItem('koble_display_name')) {
+        elJobEmployerName.value = localStorage.getItem('koble_display_name');
+    }
+
+    if (elEmployerPhone && !elEmployerPhone.value && localStorage.getItem('koble_phone')) {
+        elEmployerPhone.value = localStorage.getItem('koble_phone');
+    }
+});
 elTabMyJobs.addEventListener('click', () => {
     switchEmployerTab(elTabMyJobs, elManageSection);
     fetchAndRenderMyJobs();
@@ -1705,6 +1853,7 @@ async function deleteWorkerProfile(workerId) {
 
             showToast('Profilen ble slettet', 'success');
             fetchAndRenderWorkers(); // Refresh feed
+            fetchAndRenderMyWorkerProfiles(); // Refresh Min Profil
         } catch (error) {
             console.error('Error deleting worker profile:', error);
             showToast('Kunne ikke slette profilen: ' + error.message, 'error');
@@ -1723,7 +1872,8 @@ if (elCloseEditWorkerModalBtn) {
 }
 
 function openEditWorkerModal(workerId) {
-    const worker = currentLoadedWorkers.find(w => w.id === workerId || w.id === Number(workerId));
+    const worker = (currentLoadedWorkers && currentLoadedWorkers.find(w => w.id === workerId || w.id === Number(workerId)))
+                   || (currentLoadedMyWorkers && currentLoadedMyWorkers.find(w => w.id === workerId || w.id === Number(workerId)));
     if (!worker) return;
 
     document.getElementById('edit-worker-id').value = worker.id;
@@ -1808,6 +1958,7 @@ if (elEditWorkerForm) {
             showToast('Profilen ble oppdatert og sendt til godkjenning.', 'success');
             elEditWorkerModal.classList.add('hidden');
             fetchAndRenderWorkers(); // Refresh
+            fetchAndRenderMyWorkerProfiles(); // Refresh Min Profil
         } catch (error) {
             console.error('Error updating worker profile:', error);
             showToast('Kunne ikke oppdatere profilen: ' + error.message, 'error');
