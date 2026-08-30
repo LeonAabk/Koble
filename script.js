@@ -427,6 +427,12 @@ async function fetchAndRenderWorkers() {
 
     const fragment = document.createDocumentFragment();
 
+    // ⚡ Bolt: Cache Intl.DateTimeFormat outside the loop. Reusing a single formatter
+    // is significantly faster than implicitly creating one on every .toLocaleDateString() call.
+    const workerDateFormatter = new Intl.DateTimeFormat('no-NO', {
+        year: 'numeric', month: 'short', day: 'numeric'
+    });
+
     currentLoadedWorkers.forEach(worker => {
         const article = document.createElement('article');
         article.className = 'job-card worker-card';
@@ -436,9 +442,8 @@ async function fetchAndRenderWorkers() {
             iconName = 'users';
         }
 
-        const formattedDate = new Date(worker.created_at).toLocaleDateString('no-NO', {
-            year: 'numeric', month: 'short', day: 'numeric'
-        });
+        const workerDate = new Date(worker.created_at);
+        const formattedDate = !isNaN(workerDate.getTime()) ? workerDateFormatter.format(workerDate) : 'Ukjent dato';
 
         // ⚡ Bolt: Escape HTML for user inputs
         const safeTitle = escapeHTML(String(worker.title || ''));
@@ -835,6 +840,10 @@ function applyFiltersAndRenderMyJobs() {
     // ⚡ Bolt: Cache current time outside the render loop to avoid repeated Date instantiations
     const now = Date.now();
 
+    // ⚡ Bolt: Cache Intl.DateTimeFormat outside the loop. Reusing a single formatter
+    // is significantly faster than implicitly creating one on every .toLocaleDateString() call.
+    const dateFormatter = new Intl.DateTimeFormat('no-NO');
+
     jobsToRender.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -849,7 +858,7 @@ function applyFiltersAndRenderMyJobs() {
         const parsed = parseJobDescription(job.description);
 
         const d = new Date(job.created_at);
-        const formattedDate = d.toLocaleDateString('no-NO');
+        const formattedDate = !isNaN(d.getTime()) ? dateFormatter.format(d) : 'Ukjent dato';
         const isNew = (now - d.getTime()) < (24 * 60 * 60 * 1000);
 
         let approvalBadge = '';
@@ -1111,6 +1120,10 @@ async function fetchAndRenderJobs() {
 
     // ⚡ Bolt: Pre-compute lowercased search strings to avoid repetitive string allocation and garbage collection overhead during frequent filtering
     // ⚡ Bolt: Also pre-compute parsing and Date calculations to prevent expensive work in render loops
+    // ⚡ Bolt: Cache Intl.DateTimeFormat outside the loop. Reusing a single formatter
+    // is significantly faster than implicitly creating one on every .toLocaleDateString() call.
+    const dateFormatter = new Intl.DateTimeFormat('no-NO');
+
     currentLoadedJobs.forEach(job => {
         job._searchTitle = String(job.title || '').toLowerCase();
         job._searchDescription = String(job.description || '').toLowerCase();
@@ -1118,7 +1131,7 @@ async function fetchAndRenderJobs() {
         job._parsed = parseJobDescription(job.description);
 
         const d = new Date(job.created_at);
-        job._formattedDate = d.toLocaleDateString('no-NO');
+        job._formattedDate = !isNaN(d.getTime()) ? dateFormatter.format(d) : 'Ukjent dato';
         job._isNew = (now - d.getTime()) < (24 * 60 * 60 * 1000);
     });
 
@@ -1171,6 +1184,9 @@ function applyFiltersAndRenderJobs() {
 
     const fragment = document.createDocumentFragment();
 
+    // Fallback formatter initialized outside the loop in case _formattedDate is missing
+    const fallbackFormatter = new Intl.DateTimeFormat('no-NO');
+
     filteredJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -1190,7 +1206,12 @@ function applyFiltersAndRenderJobs() {
         let isGroupFriendly = parsed.isGroupFriendly;
         let employerName = parsed.employerName;
 
-        const formattedDate = job._formattedDate || new Date(job.created_at).toLocaleDateString('no-NO');
+        // Fallback for missing pre-computed formatting (if direct update bypasses fetchAndRenderJobs)
+        let formattedDate = job._formattedDate;
+        if (!formattedDate) {
+            const fallbackDate = new Date(job.created_at);
+            formattedDate = !isNaN(fallbackDate.getTime()) ? fallbackFormatter.format(fallbackDate) : 'Ukjent dato';
+        }
 
         // Check if job is less than 24 hours old
         const isNew = job._isNew !== undefined ? job._isNew : (new Date() - new Date(job.created_at)) < (24 * 60 * 60 * 1000);
@@ -1484,10 +1505,14 @@ async function renderAdminJobs() {
 
     const fragment = document.createDocumentFragment();
 
+    // ⚡ Bolt: Cache Intl.DateTimeFormat outside the loop. Reusing a single formatter
+    // is significantly faster than implicitly creating one on every .toLocaleDateString() call.
+    const dateFormatter = new Intl.DateTimeFormat('no-NO');
+
     jobs.forEach(job => {
         const tr = document.createElement('tr');
         const d = new Date(job.created_at);
-        const formattedDate = d.toLocaleDateString('no-NO');
+        const formattedDate = !isNaN(d.getTime()) ? dateFormatter.format(d) : 'Ukjent dato';
         const statusText = job.is_approved ? 'Godkjent' : 'Venter';
         const statusColor = job.is_approved ? 'var(--success-color)' : '#d97706'; // warning orange
 
@@ -1824,10 +1849,14 @@ async function renderAdminWorkers() {
 
     const fragment = document.createDocumentFragment();
 
+    // ⚡ Bolt: Cache Intl.DateTimeFormat outside the loop. Reusing a single formatter
+    // is significantly faster than implicitly creating one on every .toLocaleDateString() call.
+    const dateFormatter = new Intl.DateTimeFormat('no-NO');
+
     workers.forEach(worker => {
         const tr = document.createElement('tr');
         const d = new Date(worker.created_at);
-        const formattedDate = d.toLocaleDateString('no-NO');
+        const formattedDate = !isNaN(d.getTime()) ? dateFormatter.format(d) : 'Ukjent dato';
 
         let statusHtml = '';
         if (worker.is_approved) {
