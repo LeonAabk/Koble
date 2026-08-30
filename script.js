@@ -38,6 +38,41 @@ document.body.addEventListener('click', (e) => {
         }
     });
 });
+// --- Global Copy Mail Logic ---
+document.body.addEventListener('click', (e) => {
+    const targetBtn = e.target.closest('.copy-mail-btn');
+    if (!targetBtn) return;
+
+    e.preventDefault();
+
+    // Prevent rapid clicking state bug
+    if (targetBtn.dataset.copied === 'true') return;
+
+    const mail = targetBtn.getAttribute('data-mail');
+    if (!mail) return;
+
+    navigator.clipboard.writeText(mail).then(() => {
+        const originalHtml = targetBtn.innerHTML;
+        const currentWidth = targetBtn.offsetWidth;
+
+        targetBtn.dataset.copied = 'true';
+        targetBtn.style.width = `${currentWidth}px`;
+        targetBtn.innerHTML = 'Kopiert! ✅';
+
+        setTimeout(() => {
+            targetBtn.innerHTML = originalHtml;
+            targetBtn.style.width = '';
+            delete targetBtn.dataset.copied;
+        }, 2000);
+    }).catch(err => {
+        console.error("Kunne ikke kopiere tekst: ", err);
+        if (typeof showToast === 'function') {
+            showToast("Kunne ikke kopiere. Prøv å markere teksten manuelt.", "error");
+        } else {
+            alert("Kunne ikke kopiere. Prøv å markere teksten manuelt.");
+        }
+    });
+});
 
 // --- Auth State ---
 let currentUser = null;
@@ -644,7 +679,7 @@ async function fetchAndRenderWorkers() {
             <p style="font-size: 0.85rem; color: #a0aec0; margin-bottom: 1rem;">Registrert: ${formattedDate}</p>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 ${safePhone ? `<button type="button" data-phone="${safePhone}" class="btn btn-sm copy-phone-btn" style="background-color: #e9d8fd; color: #44337a; border: none; cursor: pointer; display: inline-flex; align-items: center;"><i data-lucide="phone" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>${safePhone}</button>` : ''}
-                ${safeMail ? `<a href="mailto:${safeMail}" class="btn btn-sm" style="background-color: #ebf8ff; color: #2b6cb0; text-decoration: none;"><i data-lucide="mail" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>Kontakt via E-post</a>` : ''}
+                ${safeMail ? `<button type="button" data-mail="${safeMail}" class="btn btn-sm copy-mail-btn" style="background-color: #ebf8ff; color: #2b6cb0; border: none; cursor: pointer; display: inline-flex; align-items: center;"><i data-lucide="mail" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>${safeMail}</button>` : ''}
             </div>
             ${ownerActions}
         `;
