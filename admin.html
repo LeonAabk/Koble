@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Koble</title>
+    <!-- Import Inter Font for a clean, professional typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .header-simple {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--spacing-md) 0;
+            text-align: center;
+        }
+        .header-simple h1 {
+            color: var(--primary-color);
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .moderation-section {
+            margin-bottom: 2rem;
+        }
+
+        .moderation-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .moderation-table th, .moderation-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .moderation-table th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .moderation-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .btn-delete {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <header class="header-simple">
+        <div class="container">
+            <h1 onclick="window.location.href='index.html'">Koble Admin</h1>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <h2>Dashboard</h2>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Totalt antall oppdrag</h3>
+                <div class="stat-value" id="stat-jobs">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Aktive arbeidsprofiler</h3>
+                <div class="stat-value" id="stat-profiles">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Registrerte brukere</h3>
+                <div class="stat-value" id="stat-users">50+</div> <!-- Static placeholder as requested -->
+            </div>
+        </div>
+
+        <div class="moderation-section">
+            <h3>Alle Oppdrag</h3>
+            <table class="moderation-table" id="jobs-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tittel</th>
+                        <th>Arbeidsgiver</th>
+                        <th>Dato</th>
+                        <th>Handling</th>
+                    </tr>
+                </thead>
+                <tbody id="jobs-table-body">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="moderation-section">
+            <h3>Alle Arbeidsprofiler</h3>
+            <table class="moderation-table" id="profiles-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Navn/Gruppe</th>
+                        <th>Sted</th>
+                        <th>Dato</th>
+                        <th>Handling</th>
+                    </tr>
+                </thead>
+                <tbody id="profiles-table-body">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Global Toast Notification -->
+    <div id="toast-notification" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase Setup
+        const SUPABASE_URL = 'https://ogpmuicqbcfyxznxjkto.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_yBZlKvvzPzBHkQGntQErjQ_uhSC8bKl';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Authentication Safeguard
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (!session || session.user.email !== 'admin@koble.no') {
+                window.location.href = 'index.html';
+            } else {
+                // Initialize Admin Dashboard
+                initAdminDashboard();
+            }
+        });
+
+        // Toast logic
+        const elToastNotification = document.getElementById('toast-notification');
+        const elToastMessage = document.getElementById('toast-message');
+
+        function showToast(message, type = 'success') {
+            elToastMessage.textContent = message;
+            elToastNotification.classList.remove('hidden');
+            elToastNotification.classList.remove('toast-error');
+
+            if (type === 'error') {
+                elToastNotification.classList.add('toast-error');
+            }
+
+            setTimeout(() => {
+                elToastNotification.classList.add('hidden');
+            }, 3000);
+        }
+
+        async function initAdminDashboard() {
+            await fetchAndRenderJobs();
+            await fetchAndRenderProfiles();
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) return '';
+            return new Intl.DateTimeFormat('no-NO', { year: 'numeric', month: 'short', day: 'numeric' }).format(date);
+        }
+
+        async function fetchAndRenderJobs() {
+            try {
+                const { data, error, count } = await supabaseClient
+                    .from('jobs')
+                    .select('*', { count: 'exact' })
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                document.getElementById('stat-jobs').textContent = count || 0;
+                const tbody = document.getElementById('jobs-table-body');
+                tbody.innerHTML = '';
+
+                if (data && data.length > 0) {
+                    const fragment = document.createDocumentFragment();
+                    data.forEach(job => {
+                        const tr = document.createElement('tr');
+
+                        const employerNameMatch = job.description ? job.description.match(/\[EMPLOYER_NAME\]\s*(.*?)(?=\n\n|$)/) : null;
+                        const employerName = employerNameMatch ? employerNameMatch[1] : 'Ukjent';
+
+                        tr.innerHTML = `
+                            <td>${String(job.id).substring(0, 8)}...</td>
+                            <td>${escapeHTML(job.title || '')}</td>
+                            <td>${escapeHTML(employerName)}</td>
+                            <td>${formatDate(job.created_at)}</td>
+                            <td>
+                                <button class="btn-delete" data-id="${job.id}" data-type="job">Slett</button>
+                            </td>
+                        `;
+                        fragment.appendChild(tr);
+                    });
+                    tbody.appendChild(fragment);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Ingen oppdrag funnet.</td></tr>';
+                }
+            } catch (error) {
+                console.error("Error fetching jobs:", error);
+                showToast("Feil ved lasting av oppdrag.", "error");
+            }
+        }
+
+        async function fetchAndRenderProfiles() {
+            try {
+                const { data, error, count } = await supabaseClient
+                    .from('worker_profiles')
+                    .select('*', { count: 'exact' })
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                document.getElementById('stat-profiles').textContent = count || 0;
+                const tbody = document.getElementById('profiles-table-body');
+                tbody.innerHTML = '';
+
+                if (data && data.length > 0) {
+                    const fragment = document.createDocumentFragment();
+                    data.forEach(profile => {
+                        const tr = document.createElement('tr');
+
+                        tr.innerHTML = `
+                            <td>${String(profile.id).substring(0, 8)}...</td>
+                            <td>${escapeHTML(profile.title || '')} <br><small style="color: var(--text-light);">${escapeHTML(profile.group_type || '')}</small></td>
+                            <td>${escapeHTML(profile.location || '')}</td>
+                            <td>${formatDate(profile.created_at)}</td>
+                            <td>
+                                <button class="btn-delete" data-id="${profile.id}" data-type="profile">Slett</button>
+                            </td>
+                        `;
+                        fragment.appendChild(tr);
+                    });
+                    tbody.appendChild(fragment);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Ingen profiler funnet.</td></tr>';
+                }
+            } catch (error) {
+                console.error("Error fetching profiles:", error);
+                showToast("Feil ved lasting av profiler.", "error");
+            }
+        }
+
+        // Use Event Delegation for deletion
+        document.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('btn-delete')) {
+                const id = e.target.getAttribute('data-id');
+                const type = e.target.getAttribute('data-type');
+
+                if (confirm(`Er du sikker på at du vil slette dette ${type === 'job' ? 'oppdraget' : 'profilen'}?`)) {
+                    await deleteItem(id, type, e.target);
+                }
+            }
+        });
+
+        async function deleteItem(id, type, buttonElement) {
+            try {
+                buttonElement.disabled = true;
+                buttonElement.textContent = 'Sletter...';
+
+                const table = type === 'job' ? 'jobs' : 'worker_profiles';
+
+                const { error, data } = await supabaseClient
+                    .from(table)
+                    .delete()
+                    .eq('id', id)
+                    .select();
+
+                // Check if RLS blocked it silently
+                if (!error && data && data.length === 0) {
+                     throw new Error("Manglende rettigheter til å slette, eller elementet finnes ikke.");
+                }
+
+                if (error) throw error;
+
+                // Remove from DOM
+                const row = buttonElement.closest('tr');
+                if (row) {
+                    row.remove();
+                }
+
+                showToast("Elementet ble slettet.", "success");
+
+                // Refresh counts
+                if (type === 'job') {
+                    const elStat = document.getElementById('stat-jobs');
+                    elStat.textContent = parseInt(elStat.textContent || 0) - 1;
+                } else {
+                    const elStat = document.getElementById('stat-profiles');
+                    elStat.textContent = parseInt(elStat.textContent || 0) - 1;
+                }
+
+            } catch (error) {
+                console.error(`Error deleting ${type}:`, error);
+                showToast("Feil ved sletting.", "error");
+                buttonElement.disabled = false;
+                buttonElement.textContent = 'Slett';
+            }
+        }
+
+        // Basic HTML Sanitizer
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g,
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>
