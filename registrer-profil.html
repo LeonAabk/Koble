@@ -106,6 +106,12 @@
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
             if (session) {
                 currentUser = session.user;
+
+                // Pre-fill phone from localStorage if available and field is empty
+                const elProfilePhone = document.getElementById('profile-phone');
+                if (elProfilePhone && !elProfilePhone.value && localStorage.getItem('koble_phone')) {
+                    elProfilePhone.value = localStorage.getItem('koble_phone');
+                }
             } else {
                 showToast('Du må være logget inn for å registrere arbeidskraft.', 'error');
                 setTimeout(() => {

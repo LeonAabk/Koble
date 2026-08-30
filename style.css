@@ -717,6 +717,29 @@ textarea:focus {
 }
 
 /* Profile View Styles */
+.profile-dashboard-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+    margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+    .profile-dashboard-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.profile-settings-section, .profile-workers-section {
+    width: 100%;
+}
+
+.profile-settings-section h3, .profile-workers-section h3 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
 .profile-card {
     background: #fff;
     padding: 2rem;
