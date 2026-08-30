@@ -3,6 +3,42 @@ const SUPABASE_URL = 'https://ogpmuicqbcfyxznxjkto.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yBZlKvvzPzBHkQGntQErjQ_uhSC8bKl';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// --- Global Copy Phone Logic ---
+document.body.addEventListener('click', (e) => {
+    const targetBtn = e.target.closest('.copy-phone-btn');
+    if (!targetBtn) return;
+
+    e.preventDefault();
+
+    // Prevent rapid clicking state bug
+    if (targetBtn.dataset.copied === 'true') return;
+
+    const phone = targetBtn.getAttribute('data-phone');
+    if (!phone) return;
+
+    navigator.clipboard.writeText(phone).then(() => {
+        const originalHtml = targetBtn.innerHTML;
+        const currentWidth = targetBtn.offsetWidth;
+
+        targetBtn.dataset.copied = 'true';
+        targetBtn.style.width = `${currentWidth}px`;
+        targetBtn.innerHTML = 'Kopiert! ✅';
+
+        setTimeout(() => {
+            targetBtn.innerHTML = originalHtml;
+            targetBtn.style.width = '';
+            delete targetBtn.dataset.copied;
+        }, 2000);
+    }).catch(err => {
+        console.error("Kunne ikke kopiere tekst: ", err);
+        if (typeof showToast === 'function') {
+            showToast("Kunne ikke kopiere. Prøv å markere teksten manuelt.", "error");
+        } else {
+            alert("Kunne ikke kopiere. Prøv å markere teksten manuelt.");
+        }
+    });
+});
+
 // --- Auth State ---
 let currentUser = null;
 
@@ -466,7 +502,7 @@ function renderMyWorkerProfiles() {
             : '';
 
         let phoneBtn = worker.phone_number
-            ? `<a href="tel:${escapeHTML(worker.phone_number)}" class="btn btn-secondary apply-btn"><i data-lucide="phone"></i> Ring</a>`
+            ? `<button type="button" data-phone="${escapeHTML(worker.phone_number)}" class="btn btn-secondary copy-phone-btn"><i data-lucide="phone"></i> Telefon</button>`
             : '';
 
         article.innerHTML = `
@@ -607,7 +643,7 @@ async function fetchAndRenderWorkers() {
             <p class="description" style="color: #4a5568;">${safeDesc}</p>
             <p style="font-size: 0.85rem; color: #a0aec0; margin-bottom: 1rem;">Registrert: ${formattedDate}</p>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                ${safePhone ? `<a href="tel:${safePhone}" class="btn btn-sm" style="background-color: #e9d8fd; color: #44337a; text-decoration: none;"><i data-lucide="phone" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>${safePhone}</a>` : ''}
+                ${safePhone ? `<button type="button" data-phone="${safePhone}" class="btn btn-sm copy-phone-btn" style="background-color: #e9d8fd; color: #44337a; border: none; cursor: pointer; display: inline-flex; align-items: center;"><i data-lucide="phone" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>${safePhone}</button>` : ''}
                 ${safeMail ? `<a href="mailto:${safeMail}" class="btn btn-sm" style="background-color: #ebf8ff; color: #2b6cb0; text-decoration: none;"><i data-lucide="mail" style="width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 4px;"></i>Kontakt via E-post</a>` : ''}
             </div>
             ${ownerActions}
@@ -1046,7 +1082,7 @@ function applyFiltersAndRenderMyJobs() {
             </div>
             ${feedbackBox}
             ${parsed.employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(parsed.employerName)}</p>` : ''}
-            ${job.phone_number ? `<p class="phone"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Telefon:</strong> ${escapeHTML(job.phone_number)}</p>` : ''}
+            ${job.phone_number ? `<div style="margin-bottom: 0.5rem;"><button type="button" class="btn btn-sm copy-phone-btn" data-phone="${escapeHTML(job.phone_number)}" style="background-color: #e9d8fd; color: #44337a; border: none; cursor: pointer; display: inline-flex; align-items: center;"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.phone_number)}</button></div>` : ''}
             <p class="location"><i data-lucide="map-pin" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             <p class="date"><i data-lucide="calendar" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><em>Lagt ut: ${formattedDate}</em></p>
             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
@@ -1395,7 +1431,7 @@ function applyFiltersAndRenderJobs() {
                 ${isGroupFriendly ? `<span class="badge badge-group-friendly">Passer for grupper</span>` : ''}
             </div>
             ${employerName ? `<p class="employer"><strong>Arbeidsgiver:</strong> ${escapeHTML(employerName)}</p>` : ''}
-            ${job.phone_number && !isFilled ? `<p class="phone"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Telefon:</strong> ${escapeHTML(job.phone_number)}</p>` : ''}
+            ${job.phone_number && !isFilled ? `<div style="margin-bottom: 0.5rem;"><button type="button" class="btn btn-sm copy-phone-btn" data-phone="${escapeHTML(job.phone_number)}" style="background-color: #e9d8fd; color: #44337a; border: none; cursor: pointer; display: inline-flex; align-items: center;"><i data-lucide="phone" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i>${escapeHTML(job.phone_number)}</button></div>` : ''}
             <p class="location"><i data-lucide="map-pin" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><strong>Sted:</strong> ${escapeHTML(job.location)}</p>
             ${job.pay ? `<p class="pay"><strong>Godtgjørelse:</strong> ${escapeHTML(job.pay)}</p>` : ''}
             <p class="date"><i data-lucide="calendar" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;"></i><em>Lagt ut: ${formattedDate}</em></p>
