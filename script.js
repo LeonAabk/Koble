@@ -287,7 +287,30 @@ function updateNavForUser(user) {
         navLoginBtn.classList.add('hidden');
         navUserInfo.classList.remove('hidden');
         navUserEmail.textContent = user.email;
+
+        // Add Admin link if user is admin
+        if (user.email === 'admin@koble.no') {
+            if (!document.getElementById('nav-admin-btn')) {
+                const adminLink = document.createElement('a');
+                adminLink.href = 'admin.html';
+                adminLink.id = 'nav-admin-btn';
+                adminLink.className = 'btn-text';
+                adminLink.style.textDecoration = 'none';
+                adminLink.textContent = 'Admin';
+                // Insert before 'Min Profil' button
+                navUserInfo.insertBefore(adminLink, document.getElementById('nav-profile-btn'));
+            }
+        } else {
+            const adminLink = document.getElementById('nav-admin-btn');
+            if (adminLink) {
+                adminLink.remove();
+            }
+        }
     } else {
+        const adminLink = document.getElementById('nav-admin-btn');
+        if (adminLink) {
+            adminLink.remove();
+        }
         navLoginBtn.classList.remove('hidden');
         navUserInfo.classList.add('hidden');
         navUserEmail.textContent = '';
