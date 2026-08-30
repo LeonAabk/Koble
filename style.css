@@ -159,22 +159,26 @@ footer {
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: white;
+    transition: filter 0.2s ease, transform 0.2s ease;
 }
 
 .btn-primary:hover:not(:disabled) {
-    background-color: var(--primary-hover);
+    filter: brightness(1.1);
+    transform: scale(1.02);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 .btn-secondary {
-    background-color: var(--secondary-color);
+    background: linear-gradient(135deg, #16a34a, #15803d);
     color: white;
+    transition: filter 0.2s ease, transform 0.2s ease;
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background-color: var(--secondary-hover);
+    filter: brightness(1.1);
+    transform: scale(1.02);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
@@ -328,18 +332,30 @@ textarea:focus {
     gap: 1.5rem;
 }
 
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .job-card {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     background-color: var(--card-bg);
     box-shadow: var(--card-shadow);
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .job-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
 }
 
 .job-card h3 {
@@ -421,6 +437,7 @@ textarea:focus {
 .hero-section {
     text-align: center;
     background-color: var(--card-bg);
+    background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.04) 0%, rgba(255, 255, 255, 0) 70%);
     padding: calc(var(--spacing-lg) * 2) var(--spacing-lg);
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -708,6 +725,13 @@ textarea:focus {
     border: 1px solid var(--border-color);
     max-width: 500px;
     margin-top: 1rem;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.profile-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
 }
 
 /* Navigation Auth State */
