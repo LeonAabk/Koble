@@ -1,6 +1,6 @@
 // --- Supabase Setup ---
-const SUPABASE_URL = 'https://ogpmuicqbcfyxznxjkto.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_yBZlKvvzPzBHkQGntQErjQ_uhSC8bKl';
+const SUPABASE_URL = window.ENV.SUPABASE_URL;
+const SUPABASE_ANON_KEY = window.ENV.SUPABASE_ANON_KEY;
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- Global Copy Phone Logic ---
