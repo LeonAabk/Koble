@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontakt Oss - Koble</title>
+    <!-- Import Inter Font for a clean, professional typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .header-simple {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--spacing-md) 0;
+            text-align: center;
+        }
+        .header-simple h1 {
+            color: var(--primary-color);
+            margin: 0;
+            cursor: pointer;
+        }
+        .form-view {
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div id="logo-title" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);"><a href="index.html" style="text-decoration: none; color: inherit;">Koble</a></div>
+            <nav id="main-nav">
+                <a href="index.html" class="btn-text" style="text-decoration: none;">Hjem</a>
+                <a href="faq.html" class="btn-text" style="text-decoration: none;">FAQ</a>
+                <a href="tips.html" class="btn-text" style="text-decoration: none;">Tips for ungdom</a>
+                <a href="kontakt.html" class="btn-text" style="text-decoration: none;">Kontakt oss</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="view form-view">
+            <h2>Kontakt Oss</h2>
+            <p>Har du spørsmål, forslag til forbedringer eller problemer? Send oss en henvendelse, så svarer vi så fort vi kan.</p>
+
+            <form id="contact-form" class="form-container" action="https://formsubmit.co/koblejobb@gmail.com" method="POST">
+                <!-- Honeypot -->
+                <input type="text" name="_honey" style="display:none">
+                <!-- Disable Captcha optionally if desired, usually standard for formsubmit but let's keep it default to avoid issues -->
+                <!-- <input type="hidden" name="_captcha" value="false"> -->
+                <input type="hidden" name="_next" value="https://koble.no/kontakt.html"> <!-- Needs to be correct URL or can be omitted, will omit for now -->
+
+                <div class="form-group">
+                    <label for="contact-name">Navn</label>
+                    <input type="text" id="contact-name" name="name" required maxlength="100" placeholder="Ditt navn">
+                </div>
+
+                <div class="form-group">
+                    <label for="contact-email">E-postadresse</label>
+                    <input type="email" id="contact-email" name="email" required placeholder="din@epost.no">
+                </div>
+
+                <div class="form-group">
+                    <label for="contact-category">Kategori</label>
+                    <select id="contact-category" name="category" required>
+                        <option value="" disabled selected>Velg en kategori</option>
+                        <option value="Spørsmål/Henvendelse">Spørsmål/Henvendelse</option>
+                        <option value="Forslag til forbedring">Forslag til forbedring</option>
+                        <option value="Rapporter et problem">Rapporter et problem</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact-message">Melding</label>
+                    <textarea id="contact-message" name="message" rows="5" required placeholder="Skriv din melding her..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Send henvendelse</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Koble. En plattform for å koble ungdom med arbeid.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                <a href="terms.html" style="color: var(--text-light); text-decoration: none;">Brukervilkår og Personvern</a>
+                <span style="color: var(--text-light); margin: 0 0.5rem;">|</span>
+                <a href="kontakt.html" style="color: var(--text-light); text-decoration: none;">Kontakt oss</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons if any
+        lucide.createIcons();
+    </script>
+</body>
+</html>
