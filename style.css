@@ -983,3 +983,132 @@ textarea:focus {
         display: none !important;
     }
 }
+
+/* --- Modern Auth Modal Styles --- */
+.auth-modal-content {
+    max-width: 450px;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+}
+
+.auth-modal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-modal-logo {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+}
+
+.auth-modal-header h2 {
+    font-size: 1.75rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.auth-modal-header p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+.auth-form-modern .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.auth-form-modern label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    display: block;
+}
+
+.modern-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background-color: #f9fafb;
+}
+
+.modern-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    background-color: #ffffff;
+}
+
+.auth-modal-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+.remember-me input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.forgot-password {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+.modern-btn {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    transition: all 0.2s ease;
+}
+
+.modern-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px rgba(37, 99, 235, 0.3);
+}
+
+.modern-toggle {
+    margin-top: 2rem;
+    text-align: center;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1.5rem;
+}
+
+.modern-toggle p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+.modern-toggle .btn-text {
+    font-weight: 600;
+    color: var(--primary-color);
+}
