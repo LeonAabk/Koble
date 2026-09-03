@@ -385,10 +385,10 @@ textarea:focus {
 
 .badge {
     display: inline-block;
-    padding: 0.25rem 0.6rem;
+    padding: 0.35rem 0.75rem;
     font-size: 0.85rem;
     font-weight: 600;
-    border-radius: 20px; /* Pill shape */
+    border-radius: 9999px; /* Pill shape */
     margin-bottom: var(--spacing-sm);
     /* Default fallback colors */
     background-color: var(--cat-annet-bg);
@@ -402,17 +402,36 @@ textarea:focus {
 .badge-annet { background-color: var(--cat-annet-bg); color: var(--cat-annet-text); }
 
 .worker-card {
-    border-left: 4px solid #6b46c1; /* Soft purple */
-    background-color: #faf5ff; /* Very light purple tint */
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
 }
 
 .worker-card h3 {
-    color: #553c9a;
+    color: var(--text-dark);
 }
 
 .worker-badge {
     background-color: #e9d8fd;
     color: #44337a;
+}
+
+.btn-borderless-icon {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s, opacity 0.2s;
+}
+
+.btn-borderless-icon:hover {
+    background-color: #f3f4f6;
+    opacity: 0.8;
 }
 
 .job-card p {
@@ -744,10 +763,10 @@ textarea:focus {
 
 .profile-card {
     background-color: #ffffff;
-    padding: 2rem;
-    border-radius: var(--radius);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    border: 1px solid var(--border-color);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    border: none;
     max-width: 500px;
     margin-top: 1rem;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;

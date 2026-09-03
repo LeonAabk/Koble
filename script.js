@@ -580,11 +580,11 @@ function renderMyWorkerProfiles() {
                     ${mailBtn}
                     ${phoneBtn}
                 </div>
-                <div class="card-actions">
-                    <button class="btn-icon edit-worker-btn" data-id="${worker.id}" title="Rediger profil" style="color: var(--primary-color);">
+                <div class="card-actions" style="display: flex; gap: 0.5rem;">
+                    <button class="btn-borderless-icon edit-worker-btn" data-id="${worker.id}" title="Rediger profil" style="color: var(--primary-color);">
                         <i data-lucide="edit"></i>
                     </button>
-                    <button class="btn-icon delete-worker-btn" data-id="${worker.id}" title="Slett profil" style="color: var(--danger-color);">
+                    <button class="btn-borderless-icon delete-worker-btn" data-id="${worker.id}" title="Slett profil" style="color: var(--danger-color);">
                         <i data-lucide="trash-2"></i>
                     </button>
                 </div>
