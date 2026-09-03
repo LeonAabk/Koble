@@ -151,7 +151,7 @@
                 <thead>
                     <tr>
                         <th>Dato</th>
-                        <th>Navn</th>
+                        <th>Navn / E-post</th>
                         <th>Kategori</th>
                         <th>Melding</th>
                         <th>Handling</th>
@@ -425,11 +425,14 @@
 
                         tr.innerHTML = `
                             <td>${formatDate(henvendelse.created_at)}</td>
-                            <td>${escapeHTML(henvendelse.navn || '')}</td>
+                            <td>
+                                ${escapeHTML(henvendelse.navn || '')}
+                                <br><small style="color: var(--text-light);">${escapeHTML(henvendelse.epost || '')}</small>
+                            </td>
                             <td>${escapeHTML(henvendelse.kategori || '')}</td>
                             <td style="max-width: 300px; white-space: pre-wrap; overflow-wrap: break-word;">${escapeHTML(henvendelse.melding || '')}</td>
                             <td>
-                                <a href="mailto:${emailEncoded}?subject=${subjectEncoded}" class="btn-approve" style="background-color: #3b82f6; text-decoration: none; padding: 6px 12px; border-radius: 4px; color: white; margin-right: 8px; display: inline-block;">Svar</a>
+                                <button class="btn-copy-email" data-email="${escapeHTML(henvendelse.epost || '')}" style="background-color: #3b82f6; text-decoration: none; padding: 6px 12px; border-radius: 4px; color: white; margin-right: 8px; border: none; cursor: pointer; display: inline-block; font-size: 0.9rem;">Kopier e-post</button>
                                 <button class="btn-delete" data-id="${henvendelse.id}" data-type="henvendelse">Slett</button>
                             </td>
                         `;
@@ -459,6 +462,25 @@
                 const type = e.target.getAttribute('data-type');
 
                 await approveItem(id, type, e.target);
+            } else if (e.target.classList.contains('btn-copy-email')) {
+                if (e.target.dataset.copied === 'true') return;
+
+                const email = e.target.dataset.email;
+                if (!email) return;
+
+                try {
+                    await navigator.clipboard.writeText(email);
+                    e.target.dataset.copied = 'true';
+                    const originalText = e.target.textContent;
+                    e.target.textContent = 'Kopiert!';
+                    setTimeout(() => {
+                        e.target.dataset.copied = 'false';
+                        e.target.textContent = originalText;
+                    }, 2000);
+                } catch (err) {
+                    console.error("Kunne ikke kopiere e-post:", err);
+                    showToast("Feil ved kopiering av e-post.", "error");
+                }
             }
         });
 
