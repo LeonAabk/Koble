@@ -146,6 +146,24 @@
         </div>
 
         <div class="moderation-section">
+            <h3>Innboks: Henvendelser</h3>
+            <table class="moderation-table" id="henvendelser-table">
+                <thead>
+                    <tr>
+                        <th>Dato</th>
+                        <th>Navn</th>
+                        <th>Kategori</th>
+                        <th>Melding</th>
+                        <th>Handling</th>
+                    </tr>
+                </thead>
+                <tbody id="henvendelser-table-body">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="moderation-section">
             <h3>Alle Oppdrag</h3>
             <table class="moderation-table" id="jobs-table">
                 <thead>
@@ -227,6 +245,7 @@
             await fetchAndRenderPending();
             await fetchAndRenderJobs();
             await fetchAndRenderProfiles();
+            await fetchAndRenderHenvendelser();
         }
 
         async function fetchAndRenderPending() {
@@ -385,16 +404,57 @@
             }
         }
 
+        async function fetchAndRenderHenvendelser() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('henvendelser')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('henvendelser-table-body');
+                tbody.innerHTML = '';
+
+                if (data && data.length > 0) {
+                    const fragment = document.createDocumentFragment();
+                    data.forEach(henvendelse => {
+                        const tr = document.createElement('tr');
+                        const emailEncoded = encodeURIComponent(henvendelse.epost || '');
+                        const subjectEncoded = encodeURIComponent(`Svar på din henvendelse til Koble: ${henvendelse.kategori || ''}`);
+
+                        tr.innerHTML = `
+                            <td>${formatDate(henvendelse.created_at)}</td>
+                            <td>${escapeHTML(henvendelse.navn || '')}</td>
+                            <td>${escapeHTML(henvendelse.kategori || '')}</td>
+                            <td style="max-width: 300px; white-space: pre-wrap; overflow-wrap: break-word;">${escapeHTML(henvendelse.melding || '')}</td>
+                            <td>
+                                <a href="mailto:${emailEncoded}?subject=${subjectEncoded}" class="btn-approve" style="background-color: #3b82f6; text-decoration: none; padding: 6px 12px; border-radius: 4px; color: white; margin-right: 8px; display: inline-block;">Svar</a>
+                                <button class="btn-delete" data-id="${henvendelse.id}" data-type="henvendelse">Slett</button>
+                            </td>
+                        `;
+                        fragment.appendChild(tr);
+                    });
+                    tbody.appendChild(fragment);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Ingen henvendelser funnet.</td></tr>';
+                }
+            } catch (error) {
+                console.error("Error fetching henvendelser:", error);
+                showToast("Feil ved lasting av henvendelser.", "error");
+            }
+        }
+
         // Use Event Delegation for deletion and approval
         document.addEventListener('click', async (e) => {
             if (e.target.classList.contains('btn-delete')) {
                 const id = e.target.getAttribute('data-id');
                 const type = e.target.getAttribute('data-type');
 
-                if (confirm(`Er du sikker på at du vil slette dette ${type === 'job' ? 'oppdraget' : 'profilen'}?`)) {
+                if (confirm(`Er du sikker på at du vil slette dette ${type === 'job' ? 'oppdraget' : type === 'henvendelse' ? 'henvendelsen' : 'profilen'}?`)) {
                     await deleteItem(id, type, e.target);
                 }
-            } else if (e.target.classList.contains('btn-approve')) {
+            } else if (e.target.classList.contains('btn-approve') && e.target.tagName !== 'A') {
                 const id = e.target.getAttribute('data-id');
                 const type = e.target.getAttribute('data-type');
 
@@ -455,7 +515,7 @@
                 buttonElement.disabled = true;
                 buttonElement.textContent = 'Sletter...';
 
-                const table = type === 'job' ? 'jobs' : 'worker_profiles';
+                const table = type === 'job' ? 'jobs' : type === 'henvendelse' ? 'henvendelser' : 'worker_profiles';
 
                 const { error, data } = await supabaseClient
                     .from(table)
@@ -482,10 +542,11 @@
                 if (type === 'job') {
                     const elStat = document.getElementById('stat-jobs');
                     elStat.textContent = parseInt(elStat.textContent || 0) - 1;
-                } else {
+                } else if (type === 'profile') {
                     const elStat = document.getElementById('stat-profiles');
                     elStat.textContent = parseInt(elStat.textContent || 0) - 1;
                 }
+                // henvendelser do not have a stat count to update
 
             } catch (error) {
                 console.error(`Error deleting ${type}:`, error);
