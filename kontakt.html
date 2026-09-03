@@ -46,12 +46,7 @@
             <h2>Kontakt Oss</h2>
             <p>Har du spørsmål, forslag til forbedringer eller problemer? Send oss en henvendelse, så svarer vi så fort vi kan.</p>
 
-            <form id="contact-form" class="form-container" action="https://formsubmit.co/koblejobb@gmail.com" method="POST">
-                <!-- Honeypot -->
-                <input type="text" name="_honey" style="display:none">
-                <!-- Disable Captcha optionally if desired, usually standard for formsubmit but let's keep it default to avoid issues -->
-                <!-- <input type="hidden" name="_captcha" value="false"> -->
-                <input type="hidden" name="_next" value="https://koblejobb.com/kontakt.html"> <!-- Needs to be correct URL or can be omitted, will omit for now -->
+            <form id="contact-form" class="form-container">
 
                 <div class="form-group">
                     <label for="contact-name">Navn</label>
@@ -96,9 +91,37 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
     <script>
         // Initialize Lucide icons if any
         lucide.createIcons();
+
+        document.getElementById('contact-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const category = document.getElementById('contact-category').value;
+            const message = document.getElementById('contact-message').value;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('henvendelser')
+                    .insert([{ navn: name, epost: email, kategori: category, melding: message }]);
+
+                if (error) {
+                    console.error('Supabase error:', error);
+                    alert('Det skjedde en feil. Prøv igjen senere.');
+                } else {
+                    alert('Suksess! Din henvendelse er sendt.');
+                    e.target.reset();
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                alert('Det skjedde en uventet feil. Prøv igjen senere.');
+            }
+        });
     </script>
 </body>
 </html>
