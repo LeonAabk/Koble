@@ -1157,3 +1157,9 @@ textarea:focus {
     font-weight: 600;
     color: var(--primary-color);
 }
+
+.logo img {
+  max-height: 50px;
+  width: auto;
+  display: block;
+}
