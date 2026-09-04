@@ -80,74 +80,96 @@
                 <h2>Legg ut en småjobb</h2>
                 <p>Fyll ut skjemaet under for å nå ut til arbeidsvillig ungdom i ditt nærområde.</p>
 
-                <form id="job-post-form" class="form-container">
-                <div class="form-group">
-                    <label for="job-employer-name">Ditt navn / Bedriftsnavn</label>
-                    <input type="text" id="job-employer-name" name="job-employer-name" required maxlength="100" placeholder="Ola Nordmann / Ola's Gård">
-                </div>
+                <form id="job-post-form" class="form-container job-post-modern-form">
 
-                <div class="form-group">
-                    <label for="employer-phone">Telefonnummer (valgfritt)</label>
-                    <input type="tel" id="employer-phone" name="employer-phone" maxlength="20" placeholder="F.eks. 987 65 432">
-                </div>
+                    <div class="form-section">
+                        <h3 class="form-section-title">Kontaktinformasjon</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="job-employer-name">Ditt navn / Bedriftsnavn</label>
+                                <input type="text" class="modern-input" id="job-employer-name" name="job-employer-name" required maxlength="100" placeholder="Ola Nordmann / Ola's Gård">
+                            </div>
+                            <div class="form-group">
+                                <label for="employer-phone">Telefonnummer (valgfritt)</label>
+                                <input type="tel" class="modern-input" id="employer-phone" name="employer-phone" maxlength="20" placeholder="F.eks. 987 65 432">
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label for="job-title">Tittel på jobben</label>
-                    <input type="text" id="job-title" name="job-title" required maxlength="100" placeholder="F.eks. Plenklipping og hagearbeid">
-                    <div id="job-title-error" class="error-text">Tittelen må være minst 5 tegn lang.</div>
-                </div>
+                    <div class="form-section">
+                        <h3 class="form-section-title">Oppdragsdetaljer</h3>
+                        <div class="form-group">
+                            <label for="job-title">Tittel på jobben</label>
+                            <input type="text" class="modern-input" id="job-title" name="job-title" required maxlength="100" placeholder="F.eks. Plenklipping og hagearbeid">
+                            <div id="job-title-error" class="error-text">Tittelen må være minst 5 tegn lang.</div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="job-category">Kategori</label>
+                                <select id="job-category" name="job-category" class="modern-input" required>
+                                    <option value="" disabled selected>Velg en kategori</option>
+                                    <option value="Gårdsarbeid">Gårdsarbeid</option>
+                                    <option value="Vedlikehold">Vedlikehold</option>
+                                    <option value="Hushjelp">Hushjelp</option>
+                                    <option value="Russedugnad / Gruppearbeid">Russedugnad / Gruppearbeid</option>
+                                    <option value="Annet">Annet</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="job-location">Sted (Kommune)</label>
+                                <select id="job-location" name="job-location" class="modern-input" required>
+                                    <option value="Hamar">Hamar</option>
+                                    <option value="Stange">Stange</option>
+                                    <option value="Ringsaker">Ringsaker</option>
+                                    <option value="Løten">Løten</option>
+                                    <option value="Annet">Annet / Utenfor området</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label for="job-category">Kategori</label>
-                    <select id="job-category" name="job-category" required>
-                        <option value="" disabled selected>Velg en kategori</option>
-                        <option value="Gårdsarbeid">Gårdsarbeid</option>
-                        <option value="Vedlikehold">Vedlikehold</option>
-                        <option value="Hushjelp">Hushjelp</option>
-                        <option value="Russedugnad / Gruppearbeid">Russedugnad / Gruppearbeid</option>
-                        <option value="Annet">Annet</option>
-                    </select>
-                </div>
+                    <div class="form-section">
+                        <h3 class="form-section-title">Tid & Lønn</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="job-time">Når?</label>
+                                <input type="text" class="modern-input" id="job-time" name="job-time" required maxlength="100" placeholder="F.eks. Neste fredag, Snarest, Kl 14:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="job-pay">Godtgjørelse (Frivillig)</label>
+                                <input type="text" class="modern-input" id="job-pay" name="job-pay" maxlength="100" placeholder="F.eks. 200 kr/timen eller avtales">
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label for="job-location">Sted (Kommune)</label>
-                    <select id="job-location" name="job-location" required>
-                        <option value="Hamar">Hamar</option>
-                        <option value="Stange">Stange</option>
-                        <option value="Ringsaker">Ringsaker</option>
-                        <option value="Løten">Løten</option>
-                        <option value="Annet">Annet / Utenfor området</option>
-                    </select>
-                </div>
+                    <div class="form-section">
+                        <h3 class="form-section-title">Beskrivelse</h3>
+                        <div class="form-group">
+                            <label for="job-description">Beskrivelse</label>
+                            <textarea id="job-description" name="job-description" class="modern-input" rows="4" required maxlength="2000" placeholder="Beskriv hva som skal gjøres, når det passer, osv."></textarea>
+                            <div id="job-description-error" class="error-text">Beskrivelsen må være minst 10 tegn.</div>
+                        </div>
 
-                <div class="form-group">
-                    <label for="job-time">Når?</label>
-                    <input type="text" id="job-time" name="job-time" required maxlength="100" placeholder="F.eks. Neste fredag, Snarest, Kl 14:00">
-                </div>
+                        <div class="form-row" style="margin-top: 1rem;">
+                            <label class="modern-checkbox-card" for="job-group-friendly">
+                                <input type="checkbox" id="job-group-friendly" class="visually-hidden">
+                                <div class="checkbox-card-content">
+                                    <i data-lucide="users" style="width: 20px; height: 20px; color: var(--primary-color);"></i>
+                                    <span>Passer for grupper/russ</span>
+                                </div>
+                            </label>
 
-                <div class="form-group">
-                    <label for="job-pay">Godtgjørelse (Frivillig)</label>
-                    <input type="text" id="job-pay" name="job-pay" maxlength="100" placeholder="F.eks. 200 kr/timen eller avtales">
-                </div>
+                            <label class="modern-checkbox-card" for="job-is-urgent">
+                                <input type="checkbox" id="job-is-urgent" name="job-is-urgent" class="visually-hidden">
+                                <div class="checkbox-card-content">
+                                    <i data-lucide="flame" style="width: 20px; height: 20px; color: var(--error-color);"></i>
+                                    <span>Dette oppdraget haster 🔥</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
 
-
-                <div class="form-group">
-                    <label for="job-description">Beskrivelse</label>
-                    <textarea id="job-description" name="job-description" rows="4" required maxlength="2000" placeholder="Beskriv hva som skal gjøres, når det passer, osv."></textarea>
-                    <div id="job-description-error" class="error-text">Beskrivelsen må være minst 10 tegn.</div>
-                </div>
-
-                <div class="form-group" style="flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.5rem; margin-top: 0.5rem;">
-                    <input type="checkbox" id="job-group-friendly" style="width: auto;">
-                    <label for="job-group-friendly" style="margin-bottom: 0; font-weight: normal; font-size: 0.9rem;">Passer for grupper/russ</label>
-                </div>
-
-                <div class="form-group" style="flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 1.5rem;">
-                    <input type="checkbox" id="job-is-urgent" name="job-is-urgent" style="width: auto;">
-                    <label for="job-is-urgent" style="margin-bottom: 0; font-weight: normal; font-size: 0.9rem;">Dette oppdraget haster 🔥</label>
-                </div>
-
-                    <div style="display: flex; gap: 1rem;">
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                         <button type="submit" id="btn-submit-job" class="btn btn-primary">Publiser jobb</button>
                         <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden">Avbryt</button>
                     </div>
