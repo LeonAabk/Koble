@@ -1127,6 +1127,32 @@ textarea:focus {
     font-size: 0.95rem;
 }
 
+.auth-toggle-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.register-btn {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    transition: all 0.2s ease;
+}
+
+.register-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
+
 .modern-toggle .btn-text {
     font-weight: 600;
     color: var(--primary-color);
