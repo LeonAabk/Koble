@@ -256,8 +256,7 @@ async function handleAuthSubmit(e) {
             showToast('Konto opprettet! Du er nå logget inn.', 'success');
         }
         closeAuthModal();
-        showView(elEmployerSection);
-        fetchAndRenderMyJobs();
+        showHomeView();
     } catch (error) {
         if (error.message.includes('Invalid login')) {
             authError.textContent = 'Feil e-post eller passord.';
