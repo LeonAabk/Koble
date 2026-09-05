@@ -32,6 +32,8 @@
     --cat-hushjelp-text: #d93025;
     --cat-russedugnad-bg: #fef7e0;
     --cat-russedugnad-text: #b06000;
+    --cat-dugnadsbytte-bg: #fff7ed;
+    --cat-dugnadsbytte-text: #c2410c;
     --cat-annet-bg: #f3f2f1;
     --cat-annet-text: #323130;
 
@@ -485,6 +487,7 @@ textarea:focus {
 .badge-vedlikehold { background-color: var(--cat-vedlikehold-bg); color: var(--cat-vedlikehold-text); }
 .badge-hushjelp { background-color: var(--cat-hushjelp-bg); color: var(--cat-hushjelp-text); }
 .badge-russedugnad { background-color: var(--cat-russedugnad-bg); color: var(--cat-russedugnad-text); }
+.badge-dugnadsbytte { background-color: var(--cat-dugnadsbytte-bg); color: var(--cat-dugnadsbytte-text); border: 1px solid #fed7aa; }
 .badge-annet { background-color: var(--cat-annet-bg); color: var(--cat-annet-text); }
 
 .worker-card {

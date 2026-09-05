@@ -112,6 +112,7 @@
                                     <option value="Vedlikehold">Vedlikehold</option>
                                     <option value="Hushjelp">Hushjelp</option>
                                     <option value="Russedugnad / Gruppearbeid">Russedugnad / Gruppearbeid</option>
+                                    <option value="Dugnadsbytte">Dugnadsbytte</option>
                                     <option value="Annet">Annet</option>
                                 </select>
                             </div>
@@ -139,6 +140,12 @@
                                 <label for="job-pay">Godtgjørelse (Frivillig)</label>
                                 <input type="text" class="modern-input" id="job-pay" name="job-pay" maxlength="100" placeholder="F.eks. 200 kr/timen eller avtales">
                             </div>
+                        </div>
+                        <div id="dugnadsbytte-checkbox-group" class="form-group hidden" style="margin-top: 1rem; background-color: var(--cat-russedugnad-bg); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--cat-russedugnad-text);">
+                            <label style="display: flex; gap: 0.5rem; align-items: flex-start; cursor: pointer; font-weight: 500;">
+                                <input type="checkbox" id="dugnadsbytte-confirmation" style="margin-top: 0.25rem;">
+                                <span>Jeg bekrefter at denne dugnaden kan tas over av andre, og at dette er avklart med idrettslaget/organisasjonen.</span>
+                            </label>
                         </div>
                     </div>
 
@@ -239,7 +246,21 @@
         <section id="youth-view" class="view hidden">
             <div class="employer-tabs sticky-tabs" style="margin-bottom: 2rem;">
                 <button id="main-tab-jobs" class="btn-text active-tab" style="font-size: 1.1rem;">Ledige oppdrag</button>
+                <button id="main-tab-dugnadsbytte" class="btn-text" style="font-size: 1.1rem;">Dugnadsbytte</button>
                 <button id="main-tab-workers" class="btn-text" style="font-size: 1.1rem;">Tilgjengelig arbeidskraft</button>
+            </div>
+
+            <div id="dugnadsbytte-section" class="hidden">
+                <div class="filter-container">
+                    <p style="margin-bottom: 1rem; color: #555;">Her finner du dugnader som andre trenger å få byttet bort eller trenger hjelp til å utføre. Du kan melde deg frivillig eller inngå en avtale om kompensasjon.</p>
+                </div>
+                <div id="dugnadsbytte-board" class="job-board">
+                    <!-- Dugnadsbytte jobs will be injected here -->
+                </div>
+                <div id="no-dugnadsbytte-msg" class="empty-state hidden">
+                    <i data-lucide="refresh-cw" style="width: 48px; height: 48px; color: #a0aec0; margin-bottom: 1rem;"></i>
+                    <p>Ingen dugnadsbytter tilgjengelig for øyeblikket.</p>
+                </div>
             </div>
 
             <div id="jobs-section">
