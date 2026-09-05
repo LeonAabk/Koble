@@ -164,11 +164,15 @@ const elNoJobsMsg = document.getElementById('no-jobs-msg');
 
 // Main Youth View Tabs
 const elMainTabJobs = document.getElementById('main-tab-jobs');
+const elMainTabDugnadsbytte = document.getElementById('main-tab-dugnadsbytte');
 const elMainTabWorkers = document.getElementById('main-tab-workers');
 const elJobsSection = document.getElementById('jobs-section');
+const elDugnadsbytteSection = document.getElementById('dugnadsbytte-section');
 const elWorkersSection = document.getElementById('workers-section');
 const elWorkerBoard = document.getElementById('worker-board');
 const elNoWorkersMsg = document.getElementById('no-workers-msg');
+const elDugnadsbytteBoard = document.getElementById('dugnadsbytte-board');
+const elNoDugnadsbytteMsg = document.getElementById('no-dugnadsbytte-msg');
 
 // Feed Tabs
 const elYouthTabActive = document.getElementById('youth-tab-active');
@@ -482,18 +486,26 @@ elEmployerRoleBtnHero.addEventListener('click', () => {
 
 // --- Main Tab Toggle ---
 elMainTabJobs.addEventListener('click', () => switchYouthMainTab('jobs'));
+elMainTabDugnadsbytte.addEventListener('click', () => switchYouthMainTab('dugnadsbytte'));
 elMainTabWorkers.addEventListener('click', () => switchYouthMainTab('workers'));
 
 function switchYouthMainTab(tab) {
+    elMainTabJobs.classList.remove('active-tab');
+    elMainTabDugnadsbytte.classList.remove('active-tab');
+    elMainTabWorkers.classList.remove('active-tab');
+
+    elJobsSection.classList.add('hidden');
+    elDugnadsbytteSection.classList.add('hidden');
+    elWorkersSection.classList.add('hidden');
+
     if (tab === 'jobs') {
         elMainTabJobs.classList.add('active-tab');
-        elMainTabWorkers.classList.remove('active-tab');
         elJobsSection.classList.remove('hidden');
-        elWorkersSection.classList.add('hidden');
+    } else if (tab === 'dugnadsbytte') {
+        elMainTabDugnadsbytte.classList.add('active-tab');
+        elDugnadsbytteSection.classList.remove('hidden');
     } else {
-        elMainTabJobs.classList.remove('active-tab');
         elMainTabWorkers.classList.add('active-tab');
-        elJobsSection.classList.add('hidden');
         elWorkersSection.classList.remove('hidden');
         fetchAndRenderWorkers();
     }
@@ -849,6 +861,20 @@ const elJobPostForm = document.getElementById('job-post-form');
 const btnSubmitJob = document.getElementById('btn-submit-job');
 const btnCancelEdit = document.getElementById('btn-cancel-edit');
 const elJobTitleInput = document.getElementById('job-title');
+const elJobCategoryInput = document.getElementById('job-category');
+const elDugnadsbytteCheckboxGroup = document.getElementById('dugnadsbytte-checkbox-group');
+const elDugnadsbytteConfirmation = document.getElementById('dugnadsbytte-confirmation');
+
+if (elJobCategoryInput) {
+    elJobCategoryInput.addEventListener('change', () => {
+        if (elJobCategoryInput.value === 'Dugnadsbytte') {
+            elDugnadsbytteCheckboxGroup.classList.remove('hidden');
+        } else {
+            elDugnadsbytteCheckboxGroup.classList.add('hidden');
+            elDugnadsbytteConfirmation.checked = false;
+        }
+    });
+}
 const elJobDescInput = document.getElementById('job-description');
 const elJobTitleError = document.getElementById('job-title-error');
 const elJobDescError = document.getElementById('job-description-error');
@@ -926,12 +952,18 @@ elJobPostForm.addEventListener('submit', async (e) => {
         return;
     }
 
+    const category = document.getElementById('job-category').value;
+    const location = document.getElementById('job-location').value;
+
+    if (category === 'Dugnadsbytte' && !elDugnadsbytteConfirmation.checked) {
+        showToast('Du må bekrefte at dugnaden kan overtas.', 'error');
+        return;
+    }
+
     const submitBtn = elJobPostForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Publiserer...';
 
-    const category = document.getElementById('job-category').value;
-    const location = document.getElementById('job-location').value;
     const email = currentUser.email;
 
     const jobData = {
@@ -1095,6 +1127,7 @@ function applyFiltersAndRenderMyJobs() {
         else if (job.category === 'Vedlikehold') { badgeClass = 'badge-vedlikehold'; catIcon = 'hammer'; }
         else if (job.category === 'Hushjelp') { badgeClass = 'badge-hushjelp'; catIcon = 'home'; }
         else if (job.category === 'Russedugnad / Gruppearbeid') { badgeClass = 'badge-russedugnad'; catIcon = 'users'; }
+        else if (job.category === 'Dugnadsbytte') { badgeClass = 'badge-dugnadsbytte'; catIcon = 'users'; }
 
         const parsed = parseJobDescription(job.description);
 
@@ -1428,6 +1461,13 @@ function applyFiltersAndRenderJobs() {
     // Fallback formatter initialized outside the loop in case _formattedDate is missing
     const fallbackFormatter = new Intl.DateTimeFormat('no-NO');
 
+    const jobsFragment = document.createDocumentFragment();
+    const dugnadsbytteFragment = document.createDocumentFragment();
+    let hasJobs = false;
+    let hasDugnadsbytte = false;
+
+    if (elDugnadsbytteBoard) elDugnadsbytteBoard.innerHTML = '';
+
     filteredJobs.forEach(job => {
         const article = document.createElement('article');
         article.classList.add('job-card');
@@ -1438,6 +1478,7 @@ function applyFiltersAndRenderJobs() {
         else if (job.category === 'Vedlikehold') { badgeClass = 'badge-vedlikehold'; catIcon = 'hammer'; }
         else if (job.category === 'Hushjelp') { badgeClass = 'badge-hushjelp'; catIcon = 'home'; }
         else if (job.category === 'Russedugnad / Gruppearbeid') { badgeClass = 'badge-russedugnad'; catIcon = 'users'; }
+        else if (job.category === 'Dugnadsbytte') { badgeClass = 'badge-dugnadsbytte'; catIcon = 'users'; }
 
         const parsed = job._parsed || parseJobDescription(job.description);
         let displayDescription = parsed.rawDescription;
@@ -1500,10 +1541,31 @@ function applyFiltersAndRenderJobs() {
             ${adminActions}
         `;
 
-        fragment.appendChild(article);
+        if (job.category === 'Dugnadsbytte') {
+            dugnadsbytteFragment.appendChild(article);
+            hasDugnadsbytte = true;
+        } else {
+            jobsFragment.appendChild(article);
+            hasJobs = true;
+        }
     });
 
-    elJobBoard.appendChild(fragment);
+    if (!hasJobs) {
+        elNoJobsMsg.classList.remove('hidden');
+    } else {
+        elNoJobsMsg.classList.add('hidden');
+    }
+
+    if (elNoDugnadsbytteMsg) {
+        if (!hasDugnadsbytte) {
+            elNoDugnadsbytteMsg.classList.remove('hidden');
+        } else {
+            elNoDugnadsbytteMsg.classList.add('hidden');
+        }
+    }
+
+    elJobBoard.appendChild(jobsFragment);
+    if (elDugnadsbytteBoard) elDugnadsbytteBoard.appendChild(dugnadsbytteFragment);
 
     if (window.lucide) {
         lucide.createIcons();
