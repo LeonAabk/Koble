@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oppdater Passord | Koble</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="page-centered">
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Koble Logo">
+                <span>Koble</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="container page-content">
+        <div class="auth-modal-content" style="max-width: 400px; margin: 4rem auto; background: white; padding: 2.5rem; border-radius: 16px; box-shadow: var(--card-shadow); text-align: center;">
+            <div class="auth-modal-header">
+                <h2>Oppdater Passord</h2>
+                <p>Skriv inn ditt nye passord nedenfor.</p>
+            </div>
+
+            <form id="update-password-form" class="form-container auth-form-modern" style="text-align: left;">
+                <div class="form-group">
+                    <label for="new-password">Nytt passord</label>
+                    <input type="password" id="new-password" required placeholder="Min. 6 tegn" class="modern-input" minlength="6">
+                </div>
+
+                <button type="submit" id="update-submit-btn" class="btn btn-primary modern-btn" style="width: 100%; margin-top: 1rem;">Lagre nytt passord</button>
+                <div id="update-error" class="auth-error hidden" style="margin-top: 1rem;"></div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Global Toast Notification -->
+    <div id="toast-notification" class="toast hidden">
+        <div class="toast-icon"></div>
+        <div class="toast-message"></div>
+    </div>
+
+    <!-- Initialization -->
+    <script>
+        const SUPABASE_URL = 'https://ogpmuicqbcfyxznxjkto.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_yBZlKvvzPzBHkQGntQErjQ_uhSC8bKl';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const updateForm = document.getElementById('update-password-form');
+        const updateSubmitBtn = document.getElementById('update-submit-btn');
+        const updateError = document.getElementById('update-error');
+        const newPasswordInput = document.getElementById('new-password');
+
+        // Toast UI (Simplified)
+        const toast = document.getElementById('toast-notification');
+        function showToast(message, type = 'success') {
+            const icon = toast.querySelector('.toast-icon');
+            const msg = toast.querySelector('.toast-message');
+
+            toast.className = 'toast hidden';
+            void toast.offsetWidth;
+
+            msg.textContent = message;
+            toast.classList.add(`toast-${type}`);
+
+            if (type === 'success') {
+                icon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+            } else {
+                icon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+            }
+
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 5000);
+        }
+
+        updateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const newPassword = newPasswordInput.value;
+
+            updateError.classList.add('hidden');
+            updateSubmitBtn.disabled = true;
+            updateSubmitBtn.textContent = 'Lagrer...';
+
+            try {
+                const { data, error } = await supabaseClient.auth.updateUser({
+                    password: newPassword
+                });
+
+                if (error) throw error;
+
+                alert('Passordet ditt er nå oppdatert! Du blir sendt til forsiden.');
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error('Update password error:', error);
+                updateError.textContent = 'En feil oppstod ved oppdatering av passord. Kanskje lenken er utløpt?';
+                updateError.classList.remove('hidden');
+            } finally {
+                updateSubmitBtn.disabled = false;
+                updateSubmitBtn.textContent = 'Lagre nytt passord';
+            }
+        });
+    </script>
+</body>
+</html>
