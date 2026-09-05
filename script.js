@@ -88,13 +88,16 @@ const toggleAuthBtn = document.getElementById('toggle-auth-mode-btn');
 const authEmail = document.getElementById('auth-email');
 const authPassword = document.getElementById('auth-password');
 const authError = document.getElementById('auth-error');
+const authPasswordGroup = document.getElementById('auth-password-group');
+const authOptionsGroup = document.getElementById('auth-options-group');
+const forgotPasswordLink = document.getElementById('forgot-password-link');
 
 const navLoginBtn = document.getElementById('nav-login-btn');
 const navUserInfo = document.getElementById('nav-user-info');
 const navUserEmail = document.getElementById('nav-user-email');
 const navProfileBtn = document.getElementById('nav-profile-btn');
 
-let isLoginMode = true;
+let authMode = 'login'; // 'login', 'register', or 'forgotPassword'
 
 // --- Global Constants & Elements ---
 // Views
@@ -204,28 +207,50 @@ function resetAuthForm() {
     authForm.reset();
     authError.classList.add('hidden');
     authError.textContent = '';
-    isLoginMode = true;
+    authMode = 'login';
     updateAuthUI();
 }
 
 function updateAuthUI() {
-    if (isLoginMode) {
+    if (authMode === 'login') {
         authTitle.textContent = 'Logg inn';
         authSubtitle.textContent = 'Logg inn for å administrere dine oppdrag.';
         authSubmitBtn.textContent = 'Logg inn';
         toggleAuthBtn.textContent = 'Registrer deg';
         toggleAuthBtn.parentElement.childNodes[0].textContent = 'Har du ikke en konto? ';
-    } else {
+
+        authPasswordGroup.classList.remove('hidden');
+        authOptionsGroup.classList.remove('hidden');
+        authPassword.required = true;
+    } else if (authMode === 'register') {
         authTitle.textContent = 'Registrer deg';
         authSubtitle.textContent = 'Opprett en konto for å legge ut oppdrag.';
         authSubmitBtn.textContent = 'Registrer konto';
         toggleAuthBtn.textContent = 'Logg inn';
         toggleAuthBtn.parentElement.childNodes[0].textContent = 'Har du allerede en konto? ';
+
+        authPasswordGroup.classList.remove('hidden');
+        authOptionsGroup.classList.remove('hidden');
+        authPassword.required = true;
+    } else if (authMode === 'forgotPassword') {
+        authTitle.textContent = 'Tilbakestill passord';
+        authSubtitle.textContent = 'Skriv inn e-postadressen din, så sender vi deg en lenke for å tilbakestille passordet.';
+        authSubmitBtn.textContent = 'Send lenke';
+        toggleAuthBtn.textContent = 'Tilbake til logg inn';
+        toggleAuthBtn.parentElement.childNodes[0].textContent = 'Husker du passordet ditt? ';
+
+        authPasswordGroup.classList.add('hidden');
+        authOptionsGroup.classList.add('hidden');
+        authPassword.required = false;
     }
 }
 
 function toggleAuthMode() {
-    isLoginMode = !isLoginMode;
+    if (authMode === 'forgotPassword') {
+        authMode = 'login';
+    } else {
+        authMode = authMode === 'login' ? 'register' : 'login';
+    }
     updateAuthUI();
     authError.classList.add('hidden');
 }
@@ -240,13 +265,15 @@ async function handleAuthSubmit(e) {
     authSubmitBtn.textContent = 'Laster...';
 
     try {
-        if (isLoginMode) {
+        if (authMode === 'login') {
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email,
                 password,
             });
             if (error) throw error;
-        } else {
+            closeAuthModal();
+            showHomeView();
+        } else if (authMode === 'register') {
             const { data, error } = await supabaseClient.auth.signUp({
                 email,
                 password,
@@ -254,14 +281,25 @@ async function handleAuthSubmit(e) {
             if (error) throw error;
             if (data.user && data.user.identities && data.user.identities.length === 0) {
                  showToast('Kontoen finnes allerede. Prøv å logge inn.', 'error');
-                 toggleAuthMode();
+                 authMode = 'login';
+                 updateAuthUI();
                  return;
             }
             showToast('Konto opprettet! Du er nå logget inn.', 'success');
+            closeAuthModal();
+            showHomeView();
+        } else if (authMode === 'forgotPassword') {
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/oppdater-passord.html'
+            });
+            if (error) throw error;
+
+            showToast('Sjekk innboksen din! Vi har sendt deg en lenke for å tilbakestille passordet.', 'success');
+            authMode = 'login';
+            updateAuthUI();
         }
-        closeAuthModal();
-        showHomeView();
     } catch (error) {
+        console.error('Auth error:', error);
         if (error.message.includes('Invalid login')) {
             authError.textContent = 'Feil e-post eller passord.';
         } else if (error.message.includes('rate limit')) {
@@ -390,6 +428,16 @@ if (downloadPdfBtn && pdfExportArea) {
 navLoginBtn.addEventListener('click', openAuthModal);
 closeAuthBtn.addEventListener('click', closeAuthModal);
 toggleAuthBtn.addEventListener('click', toggleAuthMode);
+
+if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        authMode = 'forgotPassword';
+        updateAuthUI();
+        authError.classList.add('hidden');
+    });
+}
+
 authForm.addEventListener('submit', handleAuthSubmit);
 
 navProfileBtn.addEventListener('click', () => {
