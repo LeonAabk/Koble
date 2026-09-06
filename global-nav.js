@@ -42,7 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add Min side link
     const profileLink = document.createElement('a');
-    profileLink.href = 'index.html#profile';
+    // Fix: Use hash navigation if already on the main app page to avoid reload, otherwise route to index.html
+    const isIndexPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
+    profileLink.href = isIndexPage ? '#profile' : 'index.html#profile';
     profileLink.id = 'nav-profile-btn';
     profileLink.className = 'btn-text';
     profileLink.style.textDecoration = 'none';
