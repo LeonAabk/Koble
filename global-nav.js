@@ -49,21 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     profileLink.textContent = 'Min side';
     userInfoContainer.appendChild(profileLink);
 
-    // Add Logg ut button
-    const logoutBtn = document.createElement('button');
-    logoutBtn.id = 'nav-logout-btn';
-    logoutBtn.className = 'btn btn-secondary';
-    logoutBtn.style.padding = '0.5rem 1rem';
-    logoutBtn.textContent = 'Logg ut';
-    userInfoContainer.appendChild(logoutBtn);
-
     // Append user info container after the login button
     loginBtn.parentNode.insertBefore(userInfoContainer, loginBtn.nextSibling);
-
-    logoutBtn.addEventListener('click', async () => {
-        await client.auth.signOut();
-        window.location.href = 'index.html';
-    });
 
     const updateNav = (user) => {
         if (user) {
