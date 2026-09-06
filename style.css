@@ -6,16 +6,23 @@
  * changes (like supporting dark mode) in the future simply by updating these roots.
  */
 :root {
+
     /* Color Palette */
+    --bg-pattern-color: #e5e7eb;
+    --bg-color: #F8FAFC;
+    --card-bg: #ffffff;
+
+    --border-color: #e5e7eb;
+
     --primary-color: #2563EB;       /* Electric blue */
     --primary-hover: #1D4ED8;
     --secondary-color: #28a745;     /* Action-oriented green */
     --secondary-hover: #218838;
     --text-color: #1E293B;          /* Dark slate/charcoal */
     --text-light: #666666;
-    --bg-color: #F8FAFC;            /* Clean, soft off-white background */
-    --card-bg: #ffffff;
-    --border-color: #E2E8F0;
+
+
+
     --error-color: #dc3545;
     --success-color: #28a745;
 
@@ -45,6 +52,33 @@
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+:root[data-theme="dark"] {
+    --bg-pattern-color: #333333;
+    --bg-color: #121212;
+    --card-bg: #1E1E1E;
+    --text-color: #E0E0E0;
+    --text-light: #A0A0A0;
+    --border-color: #333333;
+
+    /* Modify category colors for dark mode to be less bright and more readable */
+    --cat-gardsarbeid-bg: #143521;
+    --cat-gardsarbeid-text: #6ce99a;
+    --cat-vedlikehold-bg: #102958;
+    --cat-vedlikehold-text: #8fbdf8;
+    --cat-hushjelp-bg: #4f1712;
+    --cat-hushjelp-text: #fc948c;
+    --cat-russedugnad-bg: #4a2c00;
+    --cat-russedugnad-text: #fdc363;
+    --cat-dugnadsbytte-bg: #4a1900;
+    --cat-dugnadsbytte-text: #fb9a6e;
+    --cat-annet-bg: #2d2d2d;
+    --cat-annet-text: #d4d4d4;
+
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+}
+
+
 /* Base Reset & Typography */
 * {
     box-sizing: border-box;
@@ -55,8 +89,8 @@
 body {
     font-family: var(--font-family);
     color: var(--text-color);
-    background-color: #fafafa;
-    background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+    background-color: var(--bg-color);
+    background-image: radial-gradient(var(--bg-pattern-color) 1px, transparent 1px);
     background-size: 24px 24px;
     line-height: 1.6;
     display: flex;
@@ -328,8 +362,8 @@ footer {
     align-items: center;
     gap: 0.75rem;
     padding: 1rem;
-    background: #f9fafb;
-    border: 2px solid #e5e7eb;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     transition: all 0.2s ease;
     font-weight: 600;
@@ -338,7 +372,7 @@ footer {
 
 .modern-checkbox-card:hover .checkbox-card-content {
     border-color: #d1d5db;
-    background: #f3f4f6;
+    background: var(--border-color);
 }
 
 /* Checked state targeting */
@@ -437,7 +471,7 @@ textarea:focus {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1.5rem;
-    background-color: #ffffff;
+    background-color: var(--card-bg);
     box-shadow: var(--card-shadow);
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -491,8 +525,8 @@ textarea:focus {
 .badge-annet { background-color: var(--cat-annet-bg); color: var(--cat-annet-text); }
 
 .worker-card {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     border-radius: 12px;
 }
@@ -519,7 +553,7 @@ textarea:focus {
 }
 
 .btn-borderless-icon:hover {
-    background-color: #f3f4f6;
+    background-color: var(--border-color);
     opacity: 0.8;
 }
 
@@ -546,7 +580,7 @@ textarea:focus {
 
 .hero-section {
     text-align: center;
-    background-color: #ffffff;
+    background-color: var(--card-bg);
     background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.04) 0%, rgba(255, 255, 255, 0) 70%);
     padding: calc(var(--spacing-lg) * 2) var(--spacing-lg);
     border-radius: var(--border-radius);
@@ -651,7 +685,7 @@ textarea:focus {
 .sticky-tabs {
     position: sticky;
     top: 0;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--card-bg);
     backdrop-filter: blur(8px);
     z-index: 10;
     padding-top: 1rem;
@@ -751,7 +785,7 @@ textarea:focus {
 }
 
 .modal-content {
-    background-color: #ffffff;
+    background-color: var(--card-bg);
     padding: var(--spacing-lg);
     border-radius: var(--border-radius);
     max-width: 500px;
@@ -796,7 +830,7 @@ textarea:focus {
 .email-display {
     font-family: monospace;
     font-size: 1.1rem;
-    background-color: #fff;
+    background-color: var(--card-bg);
     padding: var(--spacing-sm);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -851,7 +885,7 @@ textarea:focus {
 }
 
 .profile-card {
-    background-color: #ffffff;
+    background-color: var(--card-bg);
     padding: 2.5rem;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
@@ -1038,7 +1072,7 @@ textarea:focus {
 /* Job Status Badges */
 .badge-filled {
     background-color: #475569; /* Slate 600 */
-    color: #ffffff;
+    color: var(--card-bg);
     font-size: 0.9rem;
     padding: 0.4rem 0.8rem;
     margin-bottom: var(--spacing-md);
@@ -1075,7 +1109,7 @@ textarea:focus {
         margin: 0;
         padding: 20px;
         color: #000;
-        background: #fff;
+        background: var(--card-bg);
         z-index: 9999;
     }
 
@@ -1083,7 +1117,7 @@ textarea:focus {
     body {
         margin: 0;
         padding: 0;
-        background-color: #fff;
+        background-color: var(--card-bg);
     }
 
     /* Specifically hide UI components that shouldn't appear anywhere near print output */
@@ -1098,7 +1132,7 @@ textarea:focus {
     padding: 2.5rem;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    background-color: #ffffff;
+    background-color: var(--card-bg);
 }
 
 .auth-modal-header {
@@ -1139,19 +1173,19 @@ textarea:focus {
 .modern-input {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-family: inherit;
     font-size: 1rem;
     transition: all 0.2s ease;
-    background-color: #f9fafb;
+    background-color: var(--bg-color);
 }
 
 .modern-input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-    background-color: #ffffff;
+    background-color: var(--card-bg);
 }
 
 .auth-modal-options {
@@ -1207,7 +1241,7 @@ textarea:focus {
 .modern-toggle {
     margin-top: 2rem;
     text-align: center;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--border-color);
     padding-top: 1.5rem;
 }
 
