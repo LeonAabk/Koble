@@ -329,7 +329,7 @@ function updateNavForUser(user) {
         }
     }
 
-    if (window.location.hash === '#admin') {
+    if (window.location.hash === '#admin' || window.location.hash === '#profile') {
         handleRouting();
     }
 }
@@ -454,6 +454,7 @@ function handleRouting() {
         }
     } else if (window.location.hash === '#profile') {
         if (currentUser) {
+            closeAuthModal();
             showView(elProfileSection);
             elProfileEmailDisplay.textContent = currentUser.email;
             elProfileDisplayName.value = localStorage.getItem('koble_display_name') || '';
