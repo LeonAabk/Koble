@@ -93,9 +93,6 @@ const authOptionsGroup = document.getElementById('auth-options-group');
 const forgotPasswordLink = document.getElementById('forgot-password-link');
 
 const navLoginBtn = document.getElementById('nav-login-btn');
-const navUserInfo = document.getElementById('nav-user-info');
-const navUserEmail = document.getElementById('nav-user-email');
-const navProfileBtn = document.getElementById('nav-profile-btn');
 
 let authMode = 'login'; // 'login', 'register', or 'forgotPassword'
 
@@ -324,38 +321,8 @@ async function handleLogout() {
 
 function updateNavForUser(user) {
     currentUser = user;
-    if (user) {
-        navLoginBtn.classList.add('hidden');
-        navUserInfo.classList.remove('hidden');
-        navUserEmail.textContent = user.email;
 
-        // Add Admin link if user is admin
-        if (user.email === 'admin@koble.no') {
-            if (!document.getElementById('nav-admin-btn')) {
-                const adminLink = document.createElement('a');
-                adminLink.href = 'admin.html';
-                adminLink.id = 'nav-admin-btn';
-                adminLink.className = 'btn-text';
-                adminLink.style.textDecoration = 'none';
-                adminLink.textContent = 'Admin';
-                // Insert before 'Min Profil' button
-                navUserInfo.insertBefore(adminLink, document.getElementById('nav-profile-btn'));
-            }
-        } else {
-            const adminLink = document.getElementById('nav-admin-btn');
-            if (adminLink) {
-                adminLink.remove();
-            }
-        }
-    } else {
-        const adminLink = document.getElementById('nav-admin-btn');
-        if (adminLink) {
-            adminLink.remove();
-        }
-        navLoginBtn.classList.remove('hidden');
-        navUserInfo.classList.add('hidden');
-        navUserEmail.textContent = '';
-
+    if (!user) {
         // If they are on employer view but logged out, send to home
         if (!elEmployerSection.classList.contains('hidden') || !elProfileSection.classList.contains('hidden')) {
             showHomeView();
@@ -440,14 +407,6 @@ if (forgotPasswordLink) {
 
 authForm.addEventListener('submit', handleAuthSubmit);
 
-navProfileBtn.addEventListener('click', () => {
-    showView(elProfileSection);
-    elProfileEmailDisplay.textContent = currentUser.email;
-    elProfileDisplayName.value = localStorage.getItem('koble_display_name') || '';
-    elProfilePhone.value = localStorage.getItem('koble_phone') || '';
-    fetchAndRenderMyWorkerProfiles();
-});
-
 elProfileLogoutBtn.addEventListener('click', handleLogout);
 
 if (elProfileSaveSettingsBtn) {
@@ -493,9 +452,21 @@ function handleRouting() {
             elAdminDashboardSection.classList.add('hidden');
             elAdminLoginSection.classList.remove('hidden');
         }
+    } else if (window.location.hash === '#profile') {
+        if (currentUser) {
+            showView(elProfileSection);
+            elProfileEmailDisplay.textContent = currentUser.email;
+            elProfileDisplayName.value = localStorage.getItem('koble_display_name') || '';
+            elProfilePhone.value = localStorage.getItem('koble_phone') || '';
+            fetchAndRenderMyWorkerProfiles();
+        } else {
+            // Need to check auth or redirect to home if missing
+            showHomeView();
+            openAuthModal();
+        }
     } else {
         // default to landing view
-        if (!elAdminSection.classList.contains('hidden')) {
+        if (!elAdminSection.classList.contains('hidden') || !elProfileSection.classList.contains('hidden')) {
              showHomeView();
         }
     }
