@@ -147,6 +147,25 @@ footer {
     margin-top: auto;
 }
 
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.social-icon {
+    color: var(--text-light);
+    transition: all 0.2s ease-in-out;
+    display: inline-block;
+}
+
+.social-icon:hover {
+    color: var(--text-color);
+    transform: scale(1.1);
+}
+
+
 /* Utility Classes */
 .hidden {
     display: none !important;
