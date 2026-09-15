@@ -646,7 +646,8 @@ textarea:focus {
     display: inline-flex;
 }
 
-.hero-social-links .social-icon svg {
+.hero-social-links .social-icon svg,
+.hero-social-links .social-icon img {
     width: 28px;
     height: 28px;
 }
