@@ -150,18 +150,30 @@ footer {
 .social-links {
     display: flex;
     justify-content: center;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
 }
 
 .social-icon {
     color: var(--text-light);
     transition: all 0.2s ease-in-out;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+}
+
+.social-icon svg {
+    width: 32px;
+    height: 32px;
+    transition: transform 0.2s ease-in-out;
 }
 
 .social-icon:hover {
     color: var(--text-color);
+    background-color: var(--bg-pattern-color);
     transform: scale(1.1);
 }
 
