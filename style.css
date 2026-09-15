@@ -629,7 +629,31 @@ textarea:focus {
     font-size: 1.25rem;
     color: var(--text-light);
     max-width: 600px;
-    margin: 0 auto var(--spacing-lg) auto;
+    margin: 0 auto;
+}
+
+.hero-social-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0 var(--spacing-lg) 0;
+}
+
+.hero-social-links .social-icon {
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    display: inline-flex;
+}
+
+.hero-social-links .social-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.hero-social-links .social-icon:hover {
+    color: var(--primary-color);
+    transform: scale(1.1);
 }
 
 .btn-lg {
