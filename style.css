@@ -475,7 +475,7 @@ textarea:focus {
 
 /* Youth View & Job Board */
 .filter-container {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: 0;
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
@@ -701,7 +701,7 @@ textarea:focus {
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-md);
-    align-items: flex-end;
+    align-items: center;
 }
 
 .search-group, .category-group, .location-group, .sort-group {
@@ -728,14 +728,35 @@ textarea:focus {
     border-width: 0;
 }
 
-/* Employer & Feed Tabs */
-.employer-tabs,
-.feed-tabs {
+/* Dashboard Controls */
+.dashboard-controls {
+    background-color: var(--bg-pattern-color);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Employer Tabs */
+.employer-tabs {
     display: flex;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
     border-bottom: 2px solid var(--border-color);
     padding-bottom: var(--spacing-sm);
+}
+
+/* Feed Tabs */
+.feed-tabs {
+    display: inline-flex;
+    gap: var(--spacing-sm);
+    margin-bottom: 0;
+    background-color: var(--bg-color);
+    border-radius: 9999px;
+    padding: 4px;
+    width: fit-content;
 }
 
 .sticky-tabs {
@@ -758,12 +779,23 @@ textarea:focus {
     font-weight: normal;
 }
 
-.employer-tabs .btn-text.active-tab,
-.feed-tabs .btn-text.active-tab {
+.feed-tabs .btn-text {
+    border-radius: 9999px;
+}
+
+.employer-tabs .btn-text.active-tab {
     color: var(--primary-color);
     font-weight: bold;
     border-bottom: 3px solid var(--primary-color);
     margin-bottom: calc(-1 * var(--spacing-sm) - 2px); /* overlap border */
+}
+
+.feed-tabs .btn-text.active-tab {
+    color: var(--primary-color);
+    font-weight: bold;
+    background-color: var(--card-bg);
+    border-radius: 9999px;
+    box-shadow: var(--card-shadow);
 }
 
 /* Danger Button */
