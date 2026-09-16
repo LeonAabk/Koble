@@ -271,49 +271,48 @@
             </div>
 
             <div id="jobs-section">
-                <div class="feed-tabs">
-                    <button id="youth-tab-active" class="btn-text active-tab">Ledige oppdrag</button>
-                    <button id="youth-tab-filled" class="btn-text">Tildelte oppdrag</button>
-                </div>
+                <div class="dashboard-controls">
+                    <div class="feed-tabs">
+                        <button id="youth-tab-active" class="btn-text active-tab">Ledige oppdrag</button>
+                        <button id="youth-tab-filled" class="btn-text">Tildelte oppdrag</button>
+                    </div>
 
-                <div class="filter-container">
-                <div class="search-group">
-                    <label for="search-input" class="sr-only">Søk i oppdrag:</label>
-                    <input type="text" id="search-input" placeholder="Søk etter tittel eller beskrivelse...">
-                </div>
+                    <div class="filter-container">
+                    <div class="search-group">
+                        <label for="search-input" class="sr-only">Søk i oppdrag:</label>
+                        <input type="text" id="search-input" placeholder="Søk etter tittel eller beskrivelse...">
+                    </div>
 
-                <div class="category-group">
-                    <label for="filter-category">Kategori:</label>
-                    <select id="filter-category">
-                        <option value="Alle">Alle kategorier</option>
-                        <option value="Gårdsarbeid">Gårdsarbeid</option>
-                        <option value="Vedlikehold">Vedlikehold</option>
-                        <option value="Hushjelp">Hushjelp</option>
-                        <option value="Russedugnad / Gruppearbeid">Russedugnad / Gruppearbeid</option>
-                        <option value="Annet">Annet</option>
-                    </select>
-                </div>
+                    <div class="category-group">
+                        <select id="filter-category">
+                            <option value="Alle">Alle kategorier</option>
+                            <option value="Gårdsarbeid">Gårdsarbeid</option>
+                            <option value="Vedlikehold">Vedlikehold</option>
+                            <option value="Hushjelp">Hushjelp</option>
+                            <option value="Russedugnad / Gruppearbeid">Russedugnad / Gruppearbeid</option>
+                            <option value="Annet">Annet</option>
+                        </select>
+                    </div>
 
-                <div class="location-group">
-                    <label for="filter-location">Sted:</label>
-                    <select id="filter-location">
-                        <option value="Alle">Alle steder</option>
-                        <option value="Hamar">Hamar</option>
-                        <option value="Stange">Stange</option>
-                        <option value="Ringsaker">Ringsaker</option>
-                        <option value="Løten">Løten</option>
-                        <option value="Annet">Annet</option>
-                    </select>
-                </div>
+                    <div class="location-group">
+                        <select id="filter-location">
+                            <option value="Alle">Alle steder</option>
+                            <option value="Hamar">Hamar</option>
+                            <option value="Stange">Stange</option>
+                            <option value="Ringsaker">Ringsaker</option>
+                            <option value="Løten">Løten</option>
+                            <option value="Annet">Annet</option>
+                        </select>
+                    </div>
 
-                <div class="sort-group">
-                    <label for="filter-sort">Sorter etter:</label>
-                    <select id="filter-sort">
-                        <option value="newest">Nyeste først</option>
-                        <option value="oldest">Eldste først</option>
-                    </select>
+                    <div class="sort-group">
+                        <select id="filter-sort">
+                            <option value="newest">Nyeste først</option>
+                            <option value="oldest">Eldste først</option>
+                        </select>
+                    </div>
+                    </div>
                 </div>
-            </div>
 
             <!-- Job cards will be dynamically injected here by JS -->
             <div id="job-board" class="job-board">
